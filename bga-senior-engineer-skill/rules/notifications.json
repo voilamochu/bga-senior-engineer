@@ -342,20 +342,19 @@
     {
       "id": "NOTF-013",
       "priority": 3,
-      "rule": "Spectators must never receive private notifications. All notifications sent to spectators must contain only public information visible to non-players. Filter spectator recipients server-side before dispatching any notifyPlayer call.",
+      "rule": "Spectator notification filtering is governed by SYNC-005. Notification payloads must be designed so that public notifications contain only spectator-safe data. Private notifications target a single active player.",
       "violation": [
-        "Spectator receives a private notification intended for a specific player — hidden information is leaked to a non-player",
-        "Spectator receives refreshHand data that contains player-specific state",
-        "Notification method does not distinguish between player and spectator recipients"
+        "Public notification payload includes data that is not safe for spectator consumption",
+        "Private notification payload is not scoped to a single active player"
       ],
-      "check": "Verify every notifyPlayer call checks whether the target player is a spectator before sending. Verify spectator client never receives refreshHand or any per-player private notification. Verify public notifications are safe for spectator consumption.",
-      "fix": "Add spectator awareness to Notifications methods. Private notifications check the recipient is an active player, not a spectator. Spectators receive only notifyAllPlayers notifications. Use the framework spectator filtering if available, but verify server-side.",
+      "check": "For every notification type: verify the public payload contains only information safe for spectators. Verify private notification payloads are scoped to exactly one active player.",
+      "fix": "Design notification payloads with spectator safety as a requirement. Public payloads contain only information visible to non-players. Private payloads target one active player. Refer to SYNC-005 for spectator detection and filtering at dispatch time.",
       "exceptions": [],
       "tags": [
         "notifications",
         "spectator",
         "security",
-        "filtering"
+        "payload"
       ],
       "applies_to": [
         "Notifications"

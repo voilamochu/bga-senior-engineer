@@ -237,7 +237,8 @@
       ],
       "see_also": [
         "CORE-010",
-        "PERS-004"
+        "PERS-009",
+        "PERS-010"
       ]
     },
     {
@@ -266,7 +267,8 @@
         "Game.php"
       ],
       "see_also": [
-        "STAT-006"
+        "STAT-009",
+        "STAT-011"
       ]
     },
     {

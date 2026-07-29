@@ -1,0 +1,255 @@
+{
+  "domain": "undo-replay",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "ai-os/bga-senior-engineer-doctrine.md, ai-os/rule-partition-plan.md",
+  "rules": [
+    {
+      "id": "UNDO-001",
+      "priority": 3,
+      "rule": "Every Manager mutation method records old values to the undo log table before writing new values.",
+      "violation": [
+        "Mutation writes new values without first logging the current value",
+        "Mutation logs incomplete pre-image (only primary key, not all affected columns)",
+        "Mutation uses application-level caching rather than reading live DB row for old-value capture",
+        "Mutation method returns void without side-effect logging"
+      ],
+      "check": "For every Manager mutation method that writes to a game table, verify the first DB operation reads and inserts the current row state into the undo log. Assert the log entry contains the full row pre-image. Grep for UPDATE or INSERT patterns without a preceding log insert.",
+      "fix": "Add a log capture call at the start of each mutation method. Use a helper method that reads the current row and inserts old-value entries into the undo log table before the mutation executes.",
+      "tags": ["undo", "old-value-logging", "mutations"],
+      "applies_to": ["Managers", "Actions"],
+      "exceptions": [
+        "Operations explicitly marked as non-undoable via CORE-007 exception (e.g. score finalization)"
+      ],
+      "see_also": ["CORE-006", "ACTN-012"]
+    },
+    {
+      "id": "UNDO-002",
+      "priority": 3,
+      "rule": "Undo reverses mutations in strict LIFO order within checkpoint boundaries.",
+      "violation": [
+        "Undo processes log entries in insertion order instead of reverse chronological",
+        "Undo skips log entries within the checkpoint boundary",
+        "Undo processes entries from a different checkpoint than the target",
+        "Partial undo stops mid-checkpoint without reversing remaining entries"
+      ],
+      "check": "When an undo is triggered, verify that log entries within the checkpoint boundary are iterated in DESC order by log sequence ID. Assert every entry within the boundary is processed. Assert no entry outside the boundary is touched.",
+      "fix": "Implement the undo iterator as a reverse-ordered query on the log table filtered to the target checkpoint range. Apply the old value for each log entry in DESC order. Commit after all entries are reversed.",
+      "tags": ["undo", "lifo", "reversal"],
+      "applies_to": ["Undo"],
+      "exceptions": [],
+      "see_also": ["CORE-007", "UNDO-003"]
+    },
+    {
+      "id": "UNDO-003",
+      "priority": 3,
+      "rule": "Checkpoints are created at each logical commit boundary to delimit the set of mutations that can be reversed together.",
+      "violation": [
+        "Action completes without creating a checkpoint",
+        "Multiple actions share a single checkpoint instead of each creating its own",
+        "Checkpoint is created after mutations have already been logged to the undo table",
+        "Checkpoint is omitted on state transitions that close a turn phase"
+      ],
+      "check": "Verify that each action method or state transition that can be undone creates a checkpoint before any mutation. Assert checkpoint count equals reversible action count for a turn. Grep for action handlers that lack a checkpoint creation call.",
+      "fix": "Insert checkpoint creation as the first step in every reversible action handler. The checkpoint records the current game state identifier and demarcates the undo boundary.",
+      "tags": ["undo", "checkpoint", "commit", "boundaries"],
+      "applies_to": ["Actions", "Undo"],
+      "exceptions": [
+        "Irreversible operations exempted by CORE-007 need not create checkpoints"
+      ],
+      "see_also": ["UNDO-012", "UNDO-013"]
+    },
+    {
+      "id": "UNDO-004",
+      "priority": 3,
+      "rule": "The undo log marks undone entries with a cancel column rather than deleting them.",
+      "violation": [
+        "Undo deletes log entries instead of setting a cancel flag",
+        "Undo log has no cancel or equivalent tombstone column",
+        "Cancel column allows NULL but is not indexed for query filtering",
+        "Replay re-executes cancelled entries instead of skipping them"
+      ],
+      "check": "Inspect the undo log table schema. Verify a `cancel` column (TINYINT(1) or BOOLEAN) exists with a default of 0. Verify an index on (cancel, checkpoint_id) exists. Verify replay queries filter WHERE cancel = 0.",
+      "fix": "Add `cancel TINYINT(1) DEFAULT 0` to the undo log table. Add an index on `(cancel, checkpoint_id)`. Update all undo and replay queries to filter on `cancel = 0`.",
+      "tags": ["undo", "log", "cancellation", "tombstone"],
+      "applies_to": ["Persistence", "Undo"],
+      "exceptions": [],
+      "see_also": ["PERS-001", "UNDO-002"]
+    },
+    {
+      "id": "UNDO-005",
+      "priority": 3,
+      "rule": "Simultaneous-turn undo uses a command queue pattern with do/undo/reevaluate triple on each command.",
+      "violation": [
+        "Simultaneous turn actions mutate state directly instead of enqueueing commands",
+        "Command has do() but no undo() or reevaluate()",
+        "Undo reverses a command without calling reevaluate() on remaining commands",
+        "Command queue processes commands out of order during replay"
+      ],
+      "check": "For every MULTIPLE_ACTIVE_PLAYER state, verify command classes extend a BaseActionCommand with do/undo/reevaluate methods. Assert undo calls reevaluate on all remaining unexecuted commands. Verify replay replays commands in the same order they were originally queued.",
+      "fix": "Implement BaseActionCommand with do/undo/reevaluate. Enqueue all simultaneous actions as commands. On undo, call undo() on the target command then reevaluate() on every remaining command in FIFO order.",
+      "tags": ["undo", "simultaneous", "command-queue", "reevaluate"],
+      "applies_to": ["Actions", "Undo", "SimultaneousTurns"],
+      "exceptions": [
+        "Single-player games with no simultaneous turns may omit the command queue"
+      ],
+      "see_also": ["STAT-016"]
+    },
+    {
+      "id": "UNDO-006",
+      "priority": 3,
+      "rule": "The game initializes a seeded RNG during setup. The same seed plus the same sequence of actions produces an identical game state.",
+      "violation": [
+        "Setup uses unseeded random sources (time(), rand() without seed)",
+        "RNG is seeded but the seed is not persisted for replay",
+        "Game logic reads wall-clock time or uses unseedable random operations",
+        "Seed is not passed through to all subsystems that require deterministic behaviour"
+      ],
+      "check": "Assert bga_rand or equivalent is seeded from the game setup parameter. Verify the seed is stored in globals or the game table for replay. Grep for time(), date(), or other non-deterministic calls in game logic.",
+      "fix": "Seed the RNG from the game setup parameter. Persist the seed. Replace all non-deterministic operations with seeded equivalents. Route all random calls through a central seeded generator.",
+      "tags": ["replay", "rng", "determinism", "seed"],
+      "applies_to": ["Game.php", "Setup"],
+      "exceptions": [],
+      "see_also": ["TEST-007"]
+    },
+    {
+      "id": "UNDO-007",
+      "priority": 3,
+      "rule": "Notification payloads carry absolute state values. Deltas or relative changes are forbidden.",
+      "violation": [
+        "Notification sends 'resources changed by +2' instead of 'resources total is 5'",
+        "Notification sends a partial diff that requires client-side accumulation",
+        "Replay of notifications across a reconnect produces different client state than original execution",
+        "Handler logic computes derived values that depend on notification history"
+      ],
+      "check": "Inspect every notification method. Assert each payload includes the complete current value of the affected state, not a delta. Verify replay of all notifications from game start produces identical client state as the original live play.",
+      "fix": "Replace delta payloads with the absolute state value read from the domain model after the mutation. Every notification payload must be self-contained and interpretable without reference to prior notifications.",
+      "tags": ["replay", "notifications", "idempotency", "absolute-values"],
+      "applies_to": ["Notifications"],
+      "exceptions": [],
+      "see_also": ["NOTF-012"]
+    },
+    {
+      "id": "UNDO-008",
+      "priority": 3,
+      "rule": "Replay notification handlers render payload data without executing domain validation or game logic.",
+      "violation": [
+        "Notification handler calls Manager validation methods during replay",
+        "Handler re-computes game state instead of rendering the supplied payload",
+        "Handler conditionally skips rendering based on current client state during replay",
+        "Handler triggers side effects (sounds, animations) that change behaviour between live and replay"
+      ],
+      "check": "Review each notif_* handler. Assert it only reads from the notification payload and applies DOM updates. Assert it never calls game logic, validation, or state computation methods. Verify handlers produce identical DOM from identical payload regardless of when they execute.",
+      "fix": "Remove all domain logic calls from notification handlers. Handlers should be pure render functions: read payload, update DOM. Move any conditional logic into the notification method that constructs the payload.",
+      "tags": ["replay", "handlers", "domain-logic", "architecture"],
+      "applies_to": ["Notifications", "Client"],
+      "exceptions": [],
+      "see_also": ["SYNC-003", "ANIM-001"]
+    },
+    {
+      "id": "UNDO-009",
+      "priority": 3,
+      "rule": "Replay uses refreshUI as a shortcut to rebuild full public state rather than replaying every individual public notification.",
+      "violation": [
+        "Replay replays all public notifications one-by-one instead of calling refreshUI once",
+        "refreshUI is called but does not produce identical DOM to the replayed notification sequence",
+        "refreshUI is omitted during replay, forcing notification-by-notification execution",
+        "RefreshUI during replay includes animation delays that slow replay to real-time speed"
+      ],
+      "check": "Verify the replay path calls refreshUI as its first public state restoration step. Assert refreshUI produces the same public DOM state as replaying all public notifications in sequence. Verify animation blocking is disabled during replay refreshUI.",
+      "fix": "Insert a refreshUI call at the start of the replay path before any individual notification replay. Ensure refreshUI delegates to each Manager getAllDatas and sends the merged public state. Disable animations for the duration of the refreshUI call during replay.",
+      "tags": ["replay", "performance", "refreshUI", "shortcut"],
+      "applies_to": ["Notifications", "Synchronization"],
+      "exceptions": [],
+      "see_also": ["SYNC-009", "NOTF-005"]
+    },
+    {
+      "id": "UNDO-010",
+      "priority": 3,
+      "rule": "After an undo completes, the server sends refreshUI for public state and refreshHand per-player for hidden state.",
+      "violation": [
+        "Undo reverses log entries but does not trigger refreshUI for public state",
+        "Undo triggers refreshUI but omits refreshHand for per-player hidden state",
+        "Undo triggers notifications before the undo transaction commits, exposing stale data on rollback",
+        "RefreshUI after undo does not delegate to all Managers, missing some state dimensions"
+      ],
+      "check": "After every undo operation, verify refreshUI is sent to all players and refreshHand is sent to each player individually. Assert refreshUI payload includes full state from all Managers. Assert refreshHand includes per-player hidden information.",
+      "fix": "Insert refreshUI (all players) and refreshHand (per-player) calls after the undo transaction commits. Ensure refreshUI delegates to every Manager getAllDatas. Ensure refreshHand sends the current hidden state for each player.",
+      "tags": ["undo", "notifications", "refreshUI", "refreshHand"],
+      "applies_to": ["Notifications", "Undo"],
+      "exceptions": [],
+      "see_also": ["NOTF-005", "NOTF-006", "SYNC-006", "SYNC-007"]
+    },
+    {
+      "id": "UNDO-011",
+      "priority": 3,
+      "rule": "After an undo completes, the server sends clearTurn to remove stale pending-state indicators from all clients.",
+      "violation": [
+        "Undo reverses log entries but does not send clearTurn",
+        "clearTurn is sent before refreshUI, causing a flash of empty state",
+        "clearTurn payload omits per-player pending-action data that must be cleared",
+        "clearTurn is sent after undo but within an open transaction, risking visibility on rollback"
+      ],
+      "check": "After every undo operation, verify clearTurn is sent to all players. Assert clearTurn is sent after refreshUI/refreshHand and after the undo transaction commits. Verify clearTurn payload includes all pending-state keys that must be cleared.",
+      "fix": "Insert clearTurn notification after refreshUI and refreshHand, following the undo transaction commit. The clearTurn payload should list all pending-state identifiers that were active before the undo and are now invalid.",
+      "tags": ["undo", "notifications", "clearTurn", "cleanup"],
+      "applies_to": ["Notifications", "Undo"],
+      "exceptions": [],
+      "see_also": ["NOTF-007", "SYNC-008"]
+    },
+    {
+      "id": "UNDO-012",
+      "priority": 3,
+      "rule": "A checkpoint is created before any operation that cannot be reversed, even if the operation is outside normal undo boundaries.",
+      "violation": [
+        "Irreversible operation (e.g. game-ending score tally) executes without a preceding checkpoint",
+        "Checkpoint is created after the irreversible operation begins, losing pre-operation state",
+        "Irreversible operation is not flagged in the undo log so replay cannot identify the non-undoable boundary",
+        "Non-undoable checkpoint is not distinguished from regular undo checkpoints"
+      ],
+      "check": "Identify all operations marked as irreversible. Verify a checkpoint is created before the first irreversible mutation. Assert the checkpoint is flagged differently (e.g. `is_irreversible_boundary = 1`) so undo mechanisms stop before it.",
+      "fix": "Insert a flagged checkpoint before every irreversible operation. The undo system must respect these flagged checkpoints as hard boundaries: it can reverse up to but not past them.",
+      "tags": ["undo", "safety", "checkpoint", "irreversible"],
+      "applies_to": ["Actions", "Undo"],
+      "exceptions": [
+        "Operations that are explicitly non-undoable by design (e.g. game deletion) need no checkpoint"
+      ],
+      "see_also": ["UNDO-003"]
+    },
+    {
+      "id": "UNDO-013",
+      "priority": 3,
+      "rule": "Undo operations execute within a single DB transaction. If any step fails, the entire undo is rolled back.",
+      "violation": [
+        "Undo writes old values back without wrapping in a DB transaction",
+        "Undo commits after each log entry reversal instead of committing once at the end",
+        "Undo failure leaves partial state with some entries reversed and others not",
+        "Notifications are sent before the undo transaction commits"
+      ],
+      "check": "Verify the undo entry point begins a DB transaction before processing any log entries. Assert the transaction is committed only after all log entries have been reversed. Verify notifications are sent after commit. Introduce a deliberate failure mid-undo and assert no state change persists.",
+      "fix": "Wrap the entire undo reversal loop in a DB transaction. Commit once after all entries are processed. Defer all notification sends until after the transaction commits. Add a try/catch that rolls back on any exception.",
+      "tags": ["undo", "transactions", "atomicity", "rollback"],
+      "applies_to": ["Undo", "Persistence"],
+      "exceptions": [],
+      "see_also": ["PERS-014"]
+    },
+    {
+      "id": "UNDO-014",
+      "priority": 3,
+      "rule": "Replay correctness is validated by executing a full replay from game start and comparing final DB state against a known-good snapshot.",
+      "violation": [
+        "Replay is never tested against a known-good reference state",
+        "Replay test replays only a subset of actions instead of the full sequence",
+        "Replay comparison checks only specific tables instead of the entire game database",
+        "Replay uses a different seed than the original game execution",
+        "Replay produces a different final state than the original execution for the same seed and actions"
+      ],
+      "check": "Create a replay test that: (1) sets up game state with a specific seed, (2) executes N actions, (3) snapshots the full DB state, (4) replays from game start using the same seed and action sequence, (5) compares final DB state against the snapshot. Assert byte-identical comparison.",
+      "fix": "Implement replay validation test following TEST-006 pattern. The test must assert bitwise identical final DB state between original execution and replay. Add this test to CI and run it on every change to game logic.",
+      "tags": ["replay", "validation", "testing", "determinism"],
+      "applies_to": ["Testing"],
+      "exceptions": [],
+      "see_also": ["TEST-006"]
+    }
+  ]
+}
