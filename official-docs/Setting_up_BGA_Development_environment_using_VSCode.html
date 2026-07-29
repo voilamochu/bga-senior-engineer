@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Setting up BGA Development environment using VSCode - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Setting_up_BGA_Development_environment_using_VSCode rootpage-Setting_up_BGA_Development_environment_using_VSCode action-view"><div class="article"><p>Microsoft Visual Studio Code is light weight IDE/Editor. All desktops.
+</p><h2><span class="mw-headline" id="Downloads">Downloads</span></h2><ul><li>Download and install vscode from <a class="external free" href="https://code.visualstudio.com" rel="nofollow">https://code.visualstudio.com</a></li>
+<li>Download and install php (8.4) command line interface (for local tests and debugging - optional)</li></ul><h2><span class="mw-headline" id="Extensions">Extensions</span></h2><p>Use <a class="external text" href="https://marketplace.visualstudio.com/items?itemName=NevinFoster.bga-extension-pack&amp;ssr=false#overview" rel="nofollow">BGA Extension Pack</a> to download all of the recommended extensions with one click.
+</p><ul><li>PHP Intelephense - <a class="external free" href="https://marketplace.visualstudio.com/items?itemName=bmewburn.vscode-intelephense-client" rel="nofollow">https://marketplace.visualstudio.com/items?itemName=bmewburn.vscode-intelephense-client</a></li>
+<li>Or PHP IntelliSense - <a class="external free" href="https://marketplace.visualstudio.com/items?itemName=zobo.php-intellisense" rel="nofollow">https://marketplace.visualstudio.com/items?itemName=zobo.php-intellisense</a></li>
+<li>PHP Debug - <a class="external free" href="https://marketplace.visualstudio.com/items?itemName=xdebug.php-debug" rel="nofollow">https://marketplace.visualstudio.com/items?itemName=xdebug.php-debug</a></li>
+<li>SQLTools - <a class="external free" href="https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools" rel="nofollow">https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools</a></li>
+<li>Prettier - code formatter - <a class="external free" href="https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode" rel="nofollow">https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode</a></li>
+<li>SFTP (by Natizyskunk) -  <a class="external free" href="https://marketplace.visualstudio.com/items?itemName=Natizyskunk.sftp" rel="nofollow">https://marketplace.visualstudio.com/items?itemName=Natizyskunk.sftp</a></li></ul><h2><span id="Intellisense_-_Navigation.2FAuto-complete"></span><span class="mw-headline" id="Intellisense_-_Navigation/Auto-complete">Intellisense - Navigation/Auto-complete</span></h2><h3><span class="mw-headline" id="JavaScript_Intellisense">JavaScript Intellisense</span></h3><ul><li>Since BGA framework ditched dojo in 2025 we can rejoice and enjoy full ide support. If you try it for old dojo projects - it does not really work.</li></ul><ul><li>A good way to improve auto-complete and such is to use Typescript and SCSS, this is not for the beginners.
+<ul><li>Original wiki: <a class="external free" href="https://en.doc.boardgamearena.com/Using_Typescript_and_Scss" rel="nofollow">https://en.doc.boardgamearena.com/Using_Typescript_and_Scss</a></li></ul></li></ul><h3><span class="mw-headline" id="PHP_Intellisense">PHP Intellisense</span></h3><p>The "_ide_helper.php" file, included in every project, will help your IDE know the available functions of the framework. This file may be updated automatically on your FTP folder, so don't hesitate to pull it back if it misses something, it might have been updated!
+</p><p>Option 1) You can define them as class attributes, for example if I have $this-&gt;token_types = [...] in the material file I can define them in in the class of game.php
+</p><pre>   private array $token_types;
+</pre><p>Option 2)
+</p><pre>  "intelephense.diagnostics.undefinedProperties": false
+</pre><h3><span class="mw-headline" id="Unit_testing">Unit testing</span></h3><p>If using phpunit, install it via composer somewhere in home directory, i.e.
+</p><pre>  cd /home/&lt;yourusername&gt;/php-composer
+  composer require --dev phpunit/phpunit ^13
+</pre><p>Then add this path to include paths in settings
+</p><pre>  "intelephense.environment.includePaths": [
+      "/home/&lt;yourusername&gt;/php-composer"
+  ],
+</pre><p>See more about unit testing in <a href="Testing_by_developer.html" title="Testing by developer">Testing by developer</a>
+</p><h2><span class="mw-headline" id="File_Sync">File Sync</span></h2><p>You can set up your sync using other methods, not related to vscode (such as rsync), if you want to do that see <a href="/Tools_and_tips_of_BGA_Studio#File_Sync" title="Tools and tips of BGA Studio">Tools_and_tips_of_BGA_Studio#File_Sync</a> otherwise see below:
+</p><ul><li><b>Install this extension</b> <a class="external free" href="https://marketplace.visualstudio.com/items?itemName=Natizyskunk.sftp" rel="nofollow">https://marketplace.visualstudio.com/items?itemName=Natizyskunk.sftp</a> (File-&gt;Preferences-&gt;Extensions ... type SFTP and make sure its by Natizyskunk)</li></ul><ul><li><b>Open VSCode on an empty folder</b> that will be the local root of your project.</li></ul><ul><li>Execute Ctrl+Shift+P on Windows/Linux or Cmd+Shift+P on Mac to open the command palette, and the type/run : <b>"SFTP: config"</b> - the edit will open with json config</li></ul><ul><li><b>Update the json</b> as below:</li></ul><pre>{
+    "name": "BGA",
+    "host": "1.studio.boardgamearena.com",
+    "protocol": "sftp",
+    "port": 2022,
+    "username": "&lt;your SFTP username&gt;",
+    "password": "&lt;your SFTP password&gt;",
+    "remotePath": "/&lt;your project name&gt;/",
+    "uploadOnSave": true,
+    "ignore": [
+        ".vscode",
+        ".git",
+        ".DS_Store",
+        "package-lock.json",
+        "yarn.lock",
+        "misc",
+        "node_modules",
+        "_ide_helper.php",
+        "bga-framework.d.ts",
+        "* *",
+        "sync-helpers.sh",
+        "vendor",
+        ".phpunit.cache"
+    ],
+    "syncOption": {
+        "skipCreate": false, 
+        "delete": true 
+    }
+}
+</pre><ul><li>syncOption delete: true - means you want to delete remote file if deleted locally</li>
+<li>syncOption skipCreate: false - means you want to add new files when added locally (false because its reverse option)</li>
+<li>remotePath - do not remove slashes, it is part of the path</li></ul><h3><span class="mw-headline" id="One_time_only_-_first_sync">One time only - first sync</span></h3><p>- Execute Ctrl+Shift+P on Windows/Linux or Cmd+Shift+P on Mac to open the command palette, and the type/run : <b>"SFTP: Download Project"</b>.
+</p><p>After initially downloading the project, you can add _ide_helper.php to the "ignore" list. Even though it is needed locally for the IDE to understand BGA-related php code, you will never need to update it. 
+</p><h3><span class="mw-headline" id="Daily_use">Daily use</span></h3><p>You don't have to do anything else! Each time you modify/save a file in VSCode, it will upload it to the SFTP Server.
+</p><p>Note: the SFTP sync may fail with a permissions error when create or delete nested folders. To fix this, execute `chmod -R 755 &lt;your directory name&gt;` in your terminal, then force sync to remote.
+</p><h3><span class="mw-headline" id="Split_settings_for_version_control">Split settings for version control</span></h3><p>If you want to commit this file to version control, use private key (upload ssh key <a class="external free" href="https://studio.boardgamearena.com/controlpanel" rel="nofollow">https://studio.boardgamearena.com/controlpanel</a>) instead and move user/password settings into vscode user settings
+</p><pre>    "remotefs.remote": {
+        "bgadev": {
+            "name": "BGA",
+            "host": "1.studio.boardgamearena.com",
+            "protocol": "sftp",
+            "port": 2022,
+            "username": "&lt;yourdevusername&gt;",
+            "privateKeyPath": "~/.ssh/id_rsa",
+        },
+      }
+</pre><p>in project folder sftp.json (replace &lt;yourproject&gt; with project name)
+</p><pre>{
+    "remote": "bgadev",
+    "remotePath": "/&lt;yourproject&gt;/",
+    "uploadOnSave": true,
+    "ignore": [
+        ".git"
+    ],
+    "syncOption": {
+        "skipCreate": false, 
+        "delete": true 
+    },
+    "watcher": {
+        "files": "**/*.{js,css}",
+        "autoUpload": true,
+        "autoDelete": true
+    }
+}
+</pre><p>Note: you don't need watcher section if you don't use code generators, but its needed if you use typescript, scss or similar code generator tools.
+</p><h2><span class="mw-headline" id="Code_Formatter">Code Formatter</span></h2><p>I think Prettier has better format, you can install Prettier plugin to do the formatting, for PHP add the following in package.json
+</p><pre> "devDependencies": {
+     "@prettier/plugin-php": "^0.22",
+     "prettier": "^3.6"
+ },
+ "prettier": {
+   "plugins": ["@prettier/plugin-php"],
+   "braceStyle": "1tbs",
+   "printWidth": 140,
+   "trailingComma": "none"
+ }
+</pre><h2><span class="mw-headline" id="Code_generators">Code generators</span></h2><p>If you want to run code generators for example for typescript or scss you can install this extension:
+</p><ul><li><a class="external free" href="https://marketplace.visualstudio.com/items?itemName=emeraldwalk.RunOnSave" rel="nofollow">https://marketplace.visualstudio.com/items?itemName=emeraldwalk.RunOnSave</a></li></ul><p>In settings.json add these (example only):
+</p><pre>   "emeraldwalk.runonsave": {
+       "commands": [
+           {
+               "match": ".*\\.ts$",
+               "isAsync": true,
+               "cmd": "npm run build:ts"
+           },
+           {
+               "match": ".*\\.scss$",
+               "isAsync": true,
+               "cmd": "npm run build:scss"
+           }
+       ]
+   }
+</pre><p>In this example <code>build:ts</code> and <code>build:scss</code> are scripts configured via package.json
+</p><pre>     {
+       "match": "misc/.*material\\.csv$",
+       "isAsync": true,
+       "cmd": "php7.4 ${env.HOME}/git/bga-sharedcode/misc/genmat.php ${file}"
+     }
+</pre><h2><span class="mw-headline" id="User_templates">User templates</span></h2><p>You can define user template to avoid writing boilerplate code, here is example of php template for states
+(it is placed in global location php.json - you can open it from the gui File-&gt;Preferences-&gt;Configure User Snippets and type php
+</p><pre>{
+  "Player loop in game.php": {
+    "prefix": ["players"],
+    "body": [
+      "\\$players = \\$this-&gt;loadPlayersBasicInfos();",
+      "foreach (\\$players as \\$player_id =&gt; \\$player_info) {",
+      "${1}",
+      "}"
+    ]
+  }
+
+}
+</pre></div></body>
+</html>

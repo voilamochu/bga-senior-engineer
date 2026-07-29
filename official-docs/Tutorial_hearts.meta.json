@@ -1,0 +1,15 @@
+{
+  "title": "Tutorial hearts",
+  "source_html": "Tutorial_hearts.html",
+  "clean_html": "Tutorial_hearts.html",
+  "url": "https://en.doc.boardgamearena.com/Tutorial_hearts",
+  "depth": 1,
+  "sha256_raw": "0f87536e52b1df9273c5c5b703f89322e6785c8678a5e4e7bc5cbd23c7426d6d",
+  "sha256_clean": "f04a1810a746c108e980eb31f7faa8f808194b12235063cc4109963a3f4aab11",
+  "word_count": 9260,
+  "code_block_count": 89,
+  "table_count": 0,
+  "image_count": 6,
+  "heading_count": 41,
+  "cleaned_at": "2026-07-06T06:38:20.083078+00:00"
+}

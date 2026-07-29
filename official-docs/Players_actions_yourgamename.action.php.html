@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Players actions: yourgamename.action.php - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Players_actions_yourgamename_action_php rootpage-Players_actions_yourgamename_action_php action-view"><div class="article"><p><span style="color:red; font-size:20px;"><b>IMPORTANT NOTE:</b> This file is deprecated, you shouldn't need to use it if you use <a class="external text" href="https://en.doc.boardgamearena.com/Main_game_logic:_yourgamename.game.php#Actions_(autowired)" rel="nofollow">Autowired action</a></span>
+</p><h2><span class="mw-headline" id="Purpose_of_this_file">Purpose of this file</span></h2><p>With this file, you define all the player entry points (i.e., possible game actions) for your game.
+</p><p>The role of the methods defined in this file is to filter the arguments, format them a bit, and then call a corresponding PHP method from your main game logic ("yourgame.game.php" file).
+</p><p><br/>
+</p><h2><span class="mw-headline" id="Example_of_typical_action_method">Example of typical action method</span></h2><p>(from Reversi example)
+</p><pre>    public function actPlayDisc()
+    {
+        $this-&gt;setAjaxMode();     
+        $x = $this-&gt;getArg( "x", AT_posint, true );
+        $y = $this-&gt;getArg( "y", AT_posint, true );
+        $result = $this-&gt;game-&gt;actPlayDisc( $x, $y );
+        $this-&gt;ajaxResponse( );
+    }
+</pre><h2><span class="mw-headline" id="Methods_to_use_in_action_methods">Methods to use in action methods</span></h2><p><b>function setAjaxMode()</b>
+</p><p><b>function ajaxResponse()</b>
+</p><p><b>function getArg( $argName, $argType, $mandatory=false, $default=NULL, $argTypeDetails=array(), $bCanFail=false  )</b>
+</p><p>You must <i>not</i> use "_GET", "_POST" or equivalent PHP variables to do this, as it is unsafe.
+</p><ul><li>argName: the name of the argument to retrieve.</li>
+<li>argType: the type of the argument. You should use one of the following:</li></ul><pre> 'AT_int' for an integer
+ 'AT_posint' for a positive integer 
+ 'AT_float' for a float
+ 'AT_bool' for 1/0/true/false
+ 'AT_enum' for an enumeration (argTypeDetails lists the possible values as an array)
+ 'AT_alphanum' for a string with 0-9a-zA-Z_ and space
+ 'AT_alphanum_dash' for a string with 0-9a-zA-Z_- and space
+ 'AT_numberlist' for a list of numbers separated with "," or ";" (example: 1,4;2,3;-1,2)
+ 'AT_base64' for a base64-encoded string (SECURITY WARNING*)
+ 'AT_json' for a JSON stringified string (SECURITY WARNING**)
+</pre><ul><li>mandatory: specify "true" if the argument is mandatory.</li>
+<li>default: if mandatory=false, you can specify here a default value in case the argument is not present.</li>
+<li>argTypeDetails: used with the 'AT_enum'. Validates that the value passed in is in this list.</li>
+<li>bCanFail: if true, specify that it may be possible that the argument won't be of the type specified by argType (and then do not log this as a fatal error in the system, and return a standard exception to the player).</li></ul><p><br/>
+<b>SECURITY WARNING</b>: If using AT_base64 or AT_json, or other undocumented unchecked types you must perform validation on unpacked data, i.e. do not use any of it unchecked, i.e. pass to DB queries or return back in notifications.
+</p><pre> public function actMyAction()
+ {
+   $this-&gt;setAjaxMode();
+   $args = $this-&gt;getArg('actionArgs', AT_json, true);
+   $this-&gt;validateJSonAlphaNum($args, 'actionArgs');
+   $this-&gt;game-&gt;actMyAction($args);
+   $this-&gt;ajaxResponse();
+ }
+</pre><pre> public function validateJSonAlphaNum($value, $argName = 'unknown')
+ {
+   if (is_array($value)) {
+     foreach ($value as $key =&gt; $v) {
+       $this-&gt;validateJSonAlphaNum($key, $argName);
+       $this-&gt;validateJSonAlphaNum($v, $argName);
+     }
+     return true;
+   }
+   if (is_int($value)) {
+     return true;
+   }
+   $bValid = preg_match("/^[_0-9a-zA-Z- ]*$/", $value) === 1;
+   if (!$bValid) {
+     throw new \BgaSystemException("Bad value for: $argName", true, true, FEX_bad_input_argument);
+   }
+   return true;
+ }
+</pre><p><b>AT_enum and argTypeDetails Example</b>
+</p><pre> $myarg = $this-&gt;getArg( 'myarg', AT_enum, false, null, [ 'apple', 'orange', 'banana' ] ); // optional enum
+</pre><p><b>function isArg( $argName )</b>
+</p><p>It returns "true" or "false" according to whether "argName" has been specified as an argument of the AJAX request or not.
+</p><h2><span class="mw-headline" id="Useful_tip:_retrieve_a_list_of_numbers">Useful tip: retrieve a list of numbers</span></h2><p>If your Javascript sends a list of integers separated by ";" (example: "1;2;3;4") as an argument, you can transform them into a PHP array with the following:
+</p><pre>    public function actPlayCards()
+    {
+        $this-&gt;setAjaxMode();     
+
+        $card_ids_raw = $this-&gt;getArg( "card_ids", AT_numberlist, true );
+        
+        // Removing last ';' if exists
+        if( substr( $card_ids_raw, -1 ) == ';' )
+            $card_ids_raw = substr( $card_ids_raw, 0, -1 );
+        if( $card_ids_raw == '' )
+            $card_ids = array();
+        else
+            $card_ids = explode( ';', $card_ids_raw );
+
+        $this-&gt;game-&gt;actPlayCards( $card_ids );
+        $this-&gt;ajaxResponse( );
+    }
+</pre><h2><span id="Example_pass_array_of_Id.27s"></span><span class="mw-headline" id="Example_pass_array_of_Id's">Example pass array of Id's</span></h2><p>If your Javascript sends a list of object denomated by alphanumerical tokenId, you can use AT_alphanum type and space as array separator:
+</p><pre>    // sending 'card_ids' =&gt; "card_1 card_23 card_12"
+    public function actPlayCards()   {
+        $this-&gt;setAjaxMode();     
+
+        $card_ids_raw = $this-&gt;getArg( "card_ids", AT_alphanum, true );
+        $card_ids_raw = trim($card_ids_raw);
+
+        if( $card_ids_raw == '' )
+            $card_ids = array();
+        else
+            $card_ids = explode( ' ', $card_ids_raw );
+
+        $this-&gt;game-&gt;actPlayCards( $card_ids );
+        $this-&gt;ajaxResponse( );
+    }
+</pre><h2><span class="mw-headline" id="Retrieving_data_from_ajax_call">Retrieving data from ajax call</span></h2><p>Note that this is not possible to return any result from a player action: it should return nothing (action went fine) or an exception (action unsuccessful).
+</p><h2><span class="mw-headline" id="Game_action_handler">Game action handler</span></h2><p>This is a note on what you should be doing and not doing in ggg.game.php action handler vs in action.php action handler
+</p><ul><li>action handler in action.php should very simple and it should ONLY extract arguments from ajax call, pass them down to game handler</li>
+<li>it should not implement any game logic or check for validity beyong the syntax. I.e. DO NOT put checkAction this action.php</li></ul><p>game.php
+</p><ul><li>call checkAction('actMyAction') first</li>
+<li>check arguments for game validity (i.e. player is not cheating), throw system exceptions if it is (usually this cases where JS side won't be sending it but you still have to check for it)</li>
+<li>perfom action and update database, can do more check if throw user exception if this is not valid move by the rules</li>
+<li>send notifications (must send notification even if empty if not transitioning in new state on some paths)</li>
+<li>transition to new state</li></ul></div></body>
+</html>

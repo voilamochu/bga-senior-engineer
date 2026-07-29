@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Studio logs - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Studio_logs rootpage-Studio_logs action-view"><div class="article"><p><br/>
+</p><p>BGA implemented several production issues reporting tools:
+</p><ul><li>Syntax errors reporting</li>
+<li>Unexpected errors reporting</li>
+<li>Backend &amp; frontend issues reporting</li></ul><p>All of these are available at the bottom of your game studio page.  Access your game studio page (for instance: <a class="external text" href="https://studio.boardgamearena.com/studiogame?game=medina" rel="nofollow">https://studio.boardgamearena.com/studiogame?game=xxx</a>) and scroll to the "<b>Errors in production</b>" block:
+</p><h2><span id="BGA_request.26SQL_logs"></span><span class="mw-headline" id="BGA_request&amp;SQL_logs">BGA request&amp;SQL logs</span></h2><p>This log is useful:
+</p><ul><li>When you want to check what SQL requests has been built during a request.</li>
+<li>When you want to debug your PHP code using "self::trace"</li>
+<li>When you want to know why a request takes too much time.</li></ul><p><br/>
+On this log, you can see:
+</p><h3><span class="mw-headline" id="Your_requests">Your requests</span></h3><p>Example:
+</p><pre> 20/06 21:50:56 [info] [T403] [4/mytest0] /cinco/cinco/exchange4Cards.html?id=4&amp;lock=97d1c7a1-903a-4d1f-8206-de39ce8204fc&amp;table=403&amp;testuser=4&amp;dojo.preventCache=1371757856044
+</pre><p>Note that the best way to check your Ajax request is to read the [<a class="external text" href="http://en.doc.boardgamearena.com/Tools_and_tips_of_BGA_Studio#Input.2FOutput_debugging_section" rel="nofollow">Input/Output section</a>].
+</p><h3><span class="mw-headline" id="Request_responses">Request responses</span></h3><p>Example:
+</p><pre> 20/06 21:50:56 [notice] [T403] [4/mytest0] OK-0 169 d141 c8 e0 I9 A158 V0 T0 /cinco/cinco/exchange4Cards.html?id=4&amp;lock=97d1c7a1-903a-4d1f-8206-de39ce8204fc&amp;table=403&amp;testuser=4&amp;dojo.preventCache=1371757856044
+</pre><p>You can recognize a response because it contains [notice]. Usually, there is one response for each request.
+</p><ul><li>20/06 21:50:56: the date</li>
+<li>[notice]</li>
+<li>[T403]: this is a log from table 403</li>
+<li>[4/mytest0]: this is use "mytest0", with id 4</li>
+<li>OK-0: it means that the request ended up successfully, with no exception (expected or unexpected).</li>
+<li>169: this is the time taken to process the request (169ms).</li>
+<li>d141: this is the total Database time used to process the request (141ms).</li></ul><h3><span class="mw-headline" id="SQL_requests">SQL requests</span></h3><p>Example:
+</p><pre> 20/06 21:50:56 [info] [T403] [4/mytest0] 0.26 SELECT player_tokenColor FROM player WHERE player_id ='4'
+</pre><p>All requests to Database are traced in this log. You can see here the time take by the request (0,26ms).
+</p><h3><span class="mw-headline" id="Custom_trace">Custom trace</span></h3><p>You can use special PHP methods in your PHP code to left some trace in this log:
+</p><ul><li>$this-&gt;trace( "your message here" );    // Display "your message here" in the log</li>
+<li>$this-&gt;dump( "My variable", $variable_to_dump );   // Display the content of $variable_to_dump in the log</li></ul><h2><span class="mw-headline" id="BGA_unexpected_exceptions_logs">BGA unexpected exceptions logs</span></h2><p>In this log you can check the last Unexpected exceptions from your game.
+</p><p>The log displayed the complete stacktrace of the exception, so you can debug it.
+</p><h2><span class="mw-headline" id="BGA_Production_Logs">BGA Production Logs</span></h2><h3><span class="mw-headline" id="How_to_access_production_server_exception_logs">How to access production server exception logs</span></h3><ol><li>Navigate to your game page on the Studio website
+<ol><li>e.g. https://studio.boardgamearena.com/studiogame?game=YOURGAMEID</li></ol></li>
+<li>Scroll to the bottom of the page</li>
+<li>Click the `Display recent errors from production` button
+<ol><li><a class="image" href="/File:Production_errors_buttuns.png"><img alt="Production errors buttuns.png" decoding="async" height="156" src="/images/thumb/a/a0/Production_errors_buttuns.png/458px-Production_errors_buttuns.png" srcset="/images/thumb/a/a0/Production_errors_buttuns.png/687px-Production_errors_buttuns.png 1.5x, /images/a/a0/Production_errors_buttuns.png 2x" width="458"/></a></li></ol></li></ol><h2><span id="Backend_.26_frontend_issues_reporting"></span><span class="mw-headline" id="Backend_&amp;_frontend_issues_reporting">Backend &amp; frontend issues reporting</span></h2><p>This is the next generation reporting tool.  It is based on Sentry, a tool that aggregates any frontend and backend errors encountered by users.  It allows modern statistics and gives more context.
+</p><h3><span class="mw-headline" id="Sentry_concepts">Sentry concepts</span></h3><p>When an error or a warning is caught, information is sent to Sentry in the form of an event, which is processed.  Sentry then as the following concepts:
+</p><ul><li><b>Event</b>: an error or warning that triggered either in the user browser or in one of BGA servers</li>
+<li><b>Issue:</b> all events are attached to an issue.  Sentry figures out how to merge then depending on the place the event has taken place in the code.  Hence, false positive could happen</li>
+<li><b>Issue  ID</b>: a unique value assigned to an issue.</li>
+<li><b>Project:</b> a software module.  We currently have two projects that are exposed to the studio developers: <i>gameserver-js</i> (frontend) and gameserver (<i>backend</i>)</li>
+<li><b>Tags:</b> metadata associated to an event, like browser version, user ID, etc.  They are used to provide statistics in the issues page.</li>
+<li><b>Release:</b> a release is a package name and a version name.  It helps knowing when an issue appears, then narrowing down its cause.  There are two releases set on BGA: mainsite release (our code) and game release (your code)</li></ul><h4><span class="mw-headline" id="Views">Views</span></h4><p>The sentry viewer offer several views.
+</p><h5><span class="mw-headline" id="Issues_list_view">Issues list view</span></h5><p>This is the landing view, it shows an issue list after a brief query on the Sentry server.
+</p><p>In the event of more than 25 issues, it is possible to paginate over them (right red rectangle).  Ordering can also be changed, it can be:
+</p><ul><li><b>number of events:</b> the more, the more impactful this issue is.</li>
+<li><b>last seen:</b> last time an event has been added to this issue.  The more ancient, the more likely it is fixed.</li>
+<li><b>first seen:</b> first time an event has been recorded into this issue.  This is valuable to understand when a bug was introduced (for instance, if that matches a release date)</li>
+<li><b>trend:</b> Sentry "magic" ordering to determine which issues are currently gaining momentum.</li></ul><p><a class="image" href="/File:Issues_list.png"><img alt="Issues list.png" decoding="async" height="290" src="/images/thumb/2/2b/Issues_list.png/600px-Issues_list.png" srcset="/images/thumb/2/2b/Issues_list.png/900px-Issues_list.png 1.5x, /images/thumb/2/2b/Issues_list.png/1200px-Issues_list.png 2x" width="600"/></a>
+</p><ul><li><b>ID:</b> Sentry internal ID regarding this event.  It is unique and starts with the project name.  Hence, "<code>GAMESERVER-JS-XXX</code>" is an error related to frontend (javascript)</li>
+<li><b>Type:</b> error, warning or sometimes, it contains the name of the exceptions raised</li>
+<li><b>Description:</b> short description, normally the same error as the user experienced if that was not a silent error</li>
+<li><b>Seen:</b> first and last times this issue has been encountered</li>
+<li><b>Status:</b>  number of events (🏴) and users (👤) affected by this.</li></ul><p>Please note that we tried hard to limit false positives into this list, but, mainly for frontend errors, some errors can be "ours" and not your code.  This can be guessed in the next screen if the stack is empty.
+</p><h5><span class="mw-headline" id="Issue_detail_view">Issue detail view</span></h5><p>This view shows the details of an issue.  As every "specific" data is attached to an event and not an issue, this view chooses by default an event (latest one) and uses its data to fill in some fields (for instance, tags).  If you navigate between events (see next view), this data is subjected to change.
+</p><p>This page is separated into several blocks.
+</p><h6><span class="mw-headline" id="Main_information">Main information</span></h6><p><a class="image" href="/File:Issue_main_informations.png"><img alt="Issue main informations.png" decoding="async" height="98" src="/images/thumb/c/c5/Issue_main_informations.png/300px-Issue_main_informations.png" srcset="/images/thumb/c/c5/Issue_main_informations.png/450px-Issue_main_informations.png 1.5x, /images/thumb/c/c5/Issue_main_informations.png/600px-Issue_main_informations.png 2x" width="300"/></a>
+</p><ul><li><b>Type of error</b> (warning, error, exception name, etc.)</li>
+<li><b>Description of error</b></li>
+<li><b>Error ID</b></li>
+<li>More detailed information and counters:
+<ul><li><b>Priority:</b> Sentry estimate of the criticality of this issue</li>
+<li><b>Count:</b> number of events</li>
+<li><b>User count:</b> approximate number of users impacted by this issue</li>
+<li><b>First seen</b></li>
+<li><b>Last seen</b></li></ul></li></ul><h6><span class="mw-headline" id="Culprit">Culprit</span></h6><p><a class="image" href="/File:Issue_culprit.png"><img alt="Issue culprit.png" decoding="async" height="32" src="/images/thumb/e/ef/Issue_culprit.png/300px-Issue_culprit.png" srcset="/images/thumb/e/ef/Issue_culprit.png/450px-Issue_culprit.png 1.5x, /images/thumb/e/ef/Issue_culprit.png/600px-Issue_culprit.png 2x" width="300"/></a> This summarizes where and the issue happens, with a source file position and a release.
+</p><h6><span class="mw-headline" id="Stack_trace">Stack trace</span></h6><p><a class="image" href="/File:Issue_stack_trace.png"><img alt="Issue stack trace.png" decoding="async" height="77" src="/images/thumb/0/07/Issue_stack_trace.png/300px-Issue_stack_trace.png" srcset="/images/thumb/0/07/Issue_stack_trace.png/450px-Issue_stack_trace.png 1.5x, /images/thumb/0/07/Issue_stack_trace.png/600px-Issue_stack_trace.png 2x" width="300"/></a>
+</p><p>Every element of the stack trace is clickable to see a hint on exactly when the execution was.  Please note that some of this code is minified and hence is not very readable.  However, it can still provide useful information.  We plan to perhaps unminify this code later.
+</p><h6><span class="mw-headline" id="Request">Request</span></h6><p><a class="image" href="/File:Issue_request_details.png"><img alt="Issue request details.png" decoding="async" height="47" src="/images/thumb/f/f3/Issue_request_details.png/300px-Issue_request_details.png" srcset="/images/thumb/f/f3/Issue_request_details.png/450px-Issue_request_details.png 1.5x, /images/thumb/f/f3/Issue_request_details.png/600px-Issue_request_details.png 2x" width="300"/></a> This block contains details on the request, namely:
+</p><ul><li><b>URL:</b> complete URL of the request, but without the query string</li>
+<li><b>Method:</b> could be <code>GET</code> or <code>POST</code></li>
+<li><b>Query:</b> all query parameters if any</li></ul><h6><span class="mw-headline" id="Tags">Tags</span></h6><p><a class="image" href="/File:Issue_tags.png"><img alt="Issue tags.png" decoding="async" height="81" src="/images/thumb/5/5f/Issue_tags.png/300px-Issue_tags.png" srcset="/images/thumb/5/5f/Issue_tags.png/450px-Issue_tags.png 1.5x, /images/thumb/5/5f/Issue_tags.png/600px-Issue_tags.png 2x" width="300"/></a>
+</p><h6><span class="mw-headline" id="Statistics">Statistics</span></h6><p><a class="image" href="/File:Issue_statistics_-_histogram.png"><img alt="Issue statistics - histogram.png" decoding="async" height="212" src="/images/thumb/0/0f/Issue_statistics_-_histogram.png/300px-Issue_statistics_-_histogram.png" srcset="/images/0/0f/Issue_statistics_-_histogram.png 1.5x" width="300"/></a>
+</p><p><a class="image" href="/File:Issue_statistics.png"><img alt="Issue statistics.png" decoding="async" height="342" src="/images/thumb/c/ca/Issue_statistics.png/300px-Issue_statistics.png" srcset="/images/c/ca/Issue_statistics.png 1.5x" width="300"/></a>
+</p><ul><li>browsers</li>
+<li>device family</li>
+<li>OSes</li>
+<li>users</li>
+<li>tables</li></ul><p>The more a stats impacts a browser, user or device brand, the more it is suspect that the issue is specific to them.
+</p><h5><span class="mw-headline" id="Events_list_view">Events list view</span></h5><p><a class="image" href="/File:Issue_events_list.png"><img alt="Issue events list.png" decoding="async" height="108" src="/images/thumb/6/64/Issue_events_list.png/300px-Issue_events_list.png" srcset="/images/thumb/6/64/Issue_events_list.png/450px-Issue_events_list.png 1.5x, /images/thumb/6/64/Issue_events_list.png/600px-Issue_events_list.png 2x" width="300"/></a>
+</p></div></body>
+</html>

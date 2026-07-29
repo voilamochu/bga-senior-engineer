@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Translations - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Translations rootpage-Translations action-view"><div class="article"><p><br/>
+</p><p><br/>
+Using BGA Studio, the game you create is ready to be translated to each language by the BGA community. To make this possible, you only need to specify which string must be translated and how to combine them.
+</p><h2><span class="mw-headline" id="Localization_Overview">Localization Overview</span></h2><p>Localization for BGA games happens largely on the CLIENT. Games must be developed in English and English strings are sent to the client.
+</p><p>For anyone who has worked on a system where translation happens at the server and localized strings are sent to the client: you must unlearn what you have learned. Just stick with English and send the untranslated English strings. The magic happens at the client.
+</p><h2><span id="How_will_my_strings_be_translated.3F"></span><span class="mw-headline" id="How_will_my_strings_be_translated?">How will my strings be translated?</span></h2><p>When developing your game, all strings must be in English. Strings must be coherent with the English version of the game.
+</p><p><br/>
+</p><h2><span id="What_do_I_have_to_do_from_a_programming_standpoint.3F"></span><span class="mw-headline" id="What_do_I_have_to_do_from_a_programming_standpoint?">What do I have to do from a programming standpoint?</span></h2><p>Not as much as you think. Read on for full details, but the golden rules are:
+</p><ol><li>Make sure that any string on the server side that needs to be translated on the client side is wrapped in a clienttranslate() function when defined. For example: $my_response = clienttranslate('Hey translators, please translate this string'). clienttranslate doesn't actually do anything at all (it just passes the text through) but the translation engine searches your code for strings wrapped in that function and uses them to build the list of strings that need to be translated.</li>
+<li>On the client side, just display your text, but wrap it in _().
+<ol><li>If you pass a string constant to _() - such as _('This is my string') then the parser will automatically detect and add your string to the list of strings that need to be translated, AND it will display the local translation for it when displaying.</li>
+<li>If you pass a variable to _() - such as _(args.my_message) then MAKE SURE that the variable is set to an English string that is either defined somewhere in your PHP code in a clienttranslate() function or somewhere else in your javascript code in a _() function. As long as it is, the translators will provide translations for it, and the _() function will display the local translation of your English string.</li></ol></li>
+<li>A string used as the message for notify-&gt;all or notify-&gt;player will automatically have its translation displayed on the client - you don't need to do anything EXCEPT make sure that it is wrapped in a clienttranslate() on the server, so that it gets translated.</li>
+<li>A string used as the "description" or "descriptionmyturn" for a state in your state machine will also be automatically translated on the client - you don't need to do anything EXCEPT make sure that it is wrapped in a clienttranslate() on the server, so that it gets translated.</li>
+<li>A string used in the pre-games option screen will also automatically have any translation displayed at the client - you don't need to do anything EXCEPT make sure that it is wrapped in a totranslate() on the server (nota bene: you should not use clienttranslate() here as this file is processed specifically and those strings will not be included in the game translation file but in the main site translation file - with a prefix to keep translations isolated by module - as they have to be translated on main site pages. If you need exactly the same string in your game for a client side translation, it should be declared somewhere else in your code wrapped inside a clienttranslate() to be included in the game translation file.</li>
+<li>A string used in the statistics screen will operate like a string in the pre-game options screen. It will automatically have any translation displayed at the client as long as you make sure that it is wrapped in a totranslate() on the server.</li>
+<li>If you are using parameters for a call to notify-&gt;all or notify-&gt;player, or for a state's "description" or "descriptionmyturn" and those parameters contain text that needs to be translated, you will need to tell the system to display the translated versions of them by using the 'i18n' argument. See below for full details.</li></ol><h2><span class="mw-headline" id="What_strings_should_be_marked_for_translation">What strings should be marked for translation</span></h2><p>YES:
+</p><ul><li>Every text that can be visible by the player when the game is running normally. This includes tooltips, texts on cards, error messages.</li></ul><p>NO:
+</p><ul><li>Error messages that are not supposed to happen (unexpected errors).</li>
+<li>Player names (i.e. do not put player_name or any php key send via notification which is essentially a player name, such as 'other_player' in 'i18n' array)</li>
+<li>Proper names of characters or places in some cases (consult the publisher)</li>
+<li>Numbers (i.e  _("42"))</li>
+<li>Keywords used internally</li></ul><h2><span id="What_rules_should_I_follow_for_the_original_English_strings.3F"></span><span class="mw-headline" id="What_rules_should_I_follow_for_the_original_English_strings?">What rules should I follow for the original English strings?</span></h2><p>For a coherent and homogeneous interface, here are some rules about ending a sentence with a final period '.'
+</p><ul><li>As a general rule:
+<ul><li>If a sentence is displayed isolated in the interface =&gt; no final period</li>
+<li>If a sentence is followed or could be followed by another sentence in the same interface space =&gt; final period.</li></ul></li></ul><ul><li>In detail:
+<ul><li>No final period:
+<ul><li>button labels</li>
+<li>section titles</li>
+<li>menu elements</li>
+<li>links triggering an isolated action</li>
+<li>anything that is not a full sentence</li>
+<li>current actions in the status bar</li></ul></li>
+<li>Final period:
+<ul><li>complete sentences (e.g., explanations and descriptions) that can be chained with other sentences</li></ul></li>
+<li>Either a period or no period is acceptable (but this should be consistent throughout the game) for:
+<ul><li>isolated tooltips / small sentences</li>
+<li>game logs (no period is usually preferable)</li>
+<li>error messages (unless there is more than one sentence in the error message; final period is mandatory in this case)</li></ul></li></ul></li></ul><p>Otherwise, you should try to follow as closely as possible the general style and format (including capitalization) used in the published English rulebook and game materials.
+</p><h2><span class="mw-headline" id="Focus_on_translating_notifications">Focus on translating notifications</span></h2><p>Usually, translating a website is simple: you just call a function on every string you have to translate, and the string is translated in the player's language. On Board Game Arena, this is exactly the same with the "_( string )" function.
+</p><h2><span id="How_to_not_make_translators_crazy_.3B.29"></span><span class="mw-headline" id="How_to_not_make_translators_crazy_;)">How to not make translators crazy ;)</span></h2><ul><li>Try to reuse the exact same strings (with the same case, etc.) to minimize the number of strings to translate.
+<ul><li><b>Example</b>: Consider replacing <pre>clienttranslate("Winner")</pre> and <pre>clienttranslate("Winners")</pre> (two strings to translate) with <pre>clienttranslate("Winner(s)")</pre></li>
+<li><b>Example 2</b>: <pre>clienttranslate("play a card")</pre> and <pre>clienttranslate("Play a card")</pre> means there will be two strings to translate.</li></ul></li>
+<li>Do not mark as translatable a game element that does not have to be translated (ex: if the name of a monster on a card is "Zzzzz", maybe there's no need to translate it).</li>
+<li>Words does not come in the same order in each language. Thus, when you have to translate a string with an argument, do not write something like:</li></ul><pre>clienttranslate("First part of the string, ").$argument.' '.clienttranslate("second part of the string")</pre><p>Write instead:
+</p><pre>clienttranslate_('First part of the string, ${argument} second part of the string'), ['argument' =&gt; $argument ]</pre><p>(or the equivalent "dojo.string.substitute" in Javascript)
+</p><ul><li>This also applies to punctuation marks. I.e. this is not good: _("Pick")+":"</li>
+<li>When translators are going to translate your game, the most difficult task for them is to get the context of the string to be translated. The shorter the string is, the more difficult the task is for them. As a rule of thumb, try to avoid short, insignificant strings that require knowledge of their surrounding context. You can also leave a comment on the context of the string in the translation program (English to English) if you are the developer of the game.</li>
+<li>Use same sentence for plural vs singular. We prefer to write "player gets 1 coin(s)" (or "coin/s") rather than write two versions of the same string for plural and singular - it reduces the number of strings to translate. Also using the icon to represent coin in logs may solve this issue.</li>
+<li>Instead of writing elaborate strings like "With the effect of ZZZ, player XXX gains a new YYY", which is very difficult to translate, write strings like "ZZZ: XXX gets YYY".</li>
+<li>Use present tense instead of past. E.g., "player gets wood" instead of "player got wood".</li>
+<li>Where two strings are identical apart from (say) a number, use the same string with a ${parameter}, and call format_string_recursive (on the client) or use args (for notifications and state descriptions) to provide the details. But *never* do that for composing multiple sentences with words: other languages have different grammar and it would most likely create untranslatable strings.</li></ul><h2><span class="mw-headline" id="Gender_specific_pronouns">Gender specific pronouns</span></h2><p><b>Avoid using gender-specific wording as much as possible</b>
+</p><ul><li>Do not use subject pronouns (he, she), use ${player_name} or word "player" if needed. Word "they" is fine in English (plural) but may be not in other languages (like French), so avoid using it also (use "players" or similar nouns).</li>
+<li>Do not use weird stuff like he/she or s/he, see about on how to replace them</li></ul><p>Possessive pronouns
+</p><ul><li>There is [<a class="external text" href="https://forum.boardgamearena.com/viewtopic.php?f=11&amp;t=19432&amp;start=10#p88592" rel="nofollow">a pronoun replacement system</a>] is in place however it is limited to replace possessive pronouns (his, her, their), not subject pronouns (he, she, they).</li>
+<li>The pronoun replacement system does not change word "their" as a singular genderless pronoun. In some case its actually needed, for example if you say "King sends his troops" in the log and King is not a player name, but character in the game - it will be changed to "her" if a player is female, which is not correct, in this case their would be appropriate (or just "the troops")</li>
+<li>If possible re-phrase to not use possessive either: "returns card to the hand" or "returns card to player's hard" is better.</li></ul><h2><span id="WARNING:_Make_sure_your_strings_will_be_translated.21"></span><span class="mw-headline" id="WARNING:_Make_sure_your_strings_will_be_translated!">WARNING: Make sure your strings will be translated!</span></h2><p>For each game, our translation tool does a full scan of the code, looking for translation markers like "_()" or "clienttranslate()". (See below for the full list of translation markers.)
+</p><pre>    // Examples: the following strings will be translated:
+    var mystring_translated = _("my string");       // JS
+    $mystring_translated = clienttranslate("my string");    // PHP
+
+    // Examples: the following strings WILL NOT be translated:
+    $my_string = "my string";
+    $not_translated = clienttranslate( $my_string );   // The original string is not contained within a translator marker =&gt; no translation
+    $not_translated = clienttranslate( sprintf( "my string with a %s argument", $argument ) ); // Ditto
+</pre><h2><span id="On_client_side_.28Javascript.29"></span><span class="mw-headline" id="On_client_side_(Javascript)">On client side (Javascript)</span></h2><p>On client side, things are quite simple: you just have to use the "_()" function for all strings you want to translate.
+</p><pre>// Get a string in player's language:
+var translated = _("original english string");
+
+// Get a string in player's language with parameter:
+var translated = dojo.string.substitute( _("You can pick ${p} cards and discard ${d}"), {
+    p: 2,
+    d: 4
+} );
+</pre><p><b>WARNING:</b> in Javascript strings to translate, you should never use '\n', '\t' or such, as it will break the translation bundle and result in all the Javascript translation to fail. In any case, the strings will result in HTML code, and such character codes won't have any impact on the HTML rendering. You should use HTML markup instead.
+</p><pre> Try to use a translated string in JS object declaration : impossible =&gt; string is NOT translated
+</pre><h3><span class="mw-headline" id="Formatting_on_client_side">Formatting on client side</span></h3><p>Sometimes you will want to apply some formatting on the client side, but don't want to put HTML tags within the source string (which may be confusing for translators).
+</p><pre>/**
+ * @function bga_format
+ * Replaces delimiters with HTML tags in translated text
+ * @param {string} translated string
+ * @param {Object} map of replacements to make, should be of the form
+ *     {
+ *         '*': (t) =&gt; t,
+ *         '_': 'classname',
+ *     }
+ *     keys are delimiters within the translated string
+ *     values are either strings (classname of surrounding span) or function (flexible replacements)
+ * @returns {string} Returns the original string, with replacements made.
+ */
+</pre><p>Example:
+</p><pre>// Get a string in player's language:
+bga_format(_('You receive a *special* _tile_'), {
+    '*': (t) =&gt; '&lt;b&gt;' + t + '&lt;/b&gt;',
+    '_': 'tile-name'
+});
+</pre><p>The above will return something along the lines of:
+</p><pre>You receive a &lt;b&gt;special&lt;/b&gt; &lt;span class="tile-name"&gt;tile&lt;/span&gt;
+</pre><p>Or, if the user is playing in Spanish, for example:
+</p><pre>Recibes una &lt;span class="tile-name"&gt;loseta&lt;/span&gt; &lt;b&gt;especial&lt;/b&gt;
+</pre><p>Notes:
+</p><ul><li>The text passed to <code>bga_format</code> must still be translated using <code>_()</code>, don't forget it!</li>
+<li>Good characters to demarcate formatting are: <code>['*', '_']</code> (other single characters will work, just make sure it will be clear to a translator)</li>
+<li>If the replacements object is a string, the inner text will be placed within a <code>&lt;span&gt;</code> tag with the string as a class</li>
+<li>If the replacements object is a function, the inner text will be passed as an argument to the function, and the return value will replace the text and the delimiters</li></ul><h2><span id="On_server_side_.28PHP.29"></span><span class="mw-headline" id="On_server_side_(PHP)">On server side (PHP)</span></h2><p>On PHP side, you can use 3 different functions to specify that a string must be translated.
+</p><h3><span class="mw-headline" id="Function_clienttranslate">Function clienttranslate</span></h3><p><b>clienttranslate( 'string to translate' ):</b>
+</p><p>In general, you use clienttranslate:
+</p><ul><li>In your <b>Game state classes</b>, for the fields "description" and "descriptionmyturn".</li></ul><pre>      description: clienttranslate('${card_name}: ${actplayer} must discard 4 identical energies'),
+</pre><ul><li>In <b>material.inc.php</b>, when defining text for game materials that must be displayed on the client side.</li></ul><pre>$this-&gt;card_types = array(
+
+     1 =&gt; array(
+        'name' =&gt; clienttranslate('Amulet of Air'), // Thus, we can use "_( card_name )" on Javascript side.
+</pre><ul><li>When sending a notification with <i>notify-&gt;all</i> or <i>notify-&gt;player</i>, in the game log string and all game log arguments that need a translation.</li></ul><pre>     // A game log string with no argument:
+     $this-&gt;bga-&gt;notify-&gt;all( 'pickLibraryCards', clienttranslate('Everyone draw cards from their library'), [] );
+</pre><p>As a consequence there is no point passing variables to this function. E.g.:
+</p><pre>    notif="foo";
+    $this-&gt;bga-&gt;notify-&gt;all( 'log', clienttranslate(notif),[]); // BAD
+    
+    notif=clienttranslate("foo");
+    $this-&gt;bga-&gt;notify-&gt;all( 'log', notif,[]); // GOOD
+
+    $this-&gt;bga-&gt;notify-&gt;all( 'log', clienttranslate("player gains ${num} gems"),[num=&gt;2]); // BAD it is dynamic string enterpreted by php 
+    $this-&gt;bga-&gt;notify-&gt;all( 'log', clienttranslate('player gains ${num} gems'),[num=&gt;2]); // GOOD, difference is single quotes
+
+    $this-&gt;bga-&gt;notify-&gt;all( 'log', clienttranslate("player gains ".${num}." gems"),[num=&gt;2]); // BAD concatenation 
+
+</pre><p>Translating arguments is a little bit more complex. This uses the <b>i18n</b> special argument as below:
+</p><pre> // In the following example, we translate the game log itself, but also the "card_name" argument:
+
+ $this-&gt;bga-&gt;notify-&gt;all( 'winPoints', clienttranslate('${card_name}: ${player_name} gains ${points} point(s)'), array(
+                'i18n' =&gt; array( 'card_name' ),     // &lt;===== We specify here that "card_name" argument must be translated
+                'player_id' =&gt; $player_id,
+                'player_name' =&gt; $this-&gt;getPlayerNameById($player_id),
+                'points' =&gt; $points,
+                'card_name' =&gt; $this-&gt;card_types[8]['name'] // &lt;==== Here, we provide original English string.
+            ) ); 
+</pre><p>To ensure the translation of the i18n argument will be made, clienttranslate must have been used somewhere, for instance:
+</p><pre>$this-&gt;card_types = array(
+...
+     8 =&gt; array(
+        'name' =&gt; clienttranslate("Amulet of Fire"),
+...
+</pre><p>Pay attention when using the <b>i18n</b> argument when translating arguments for the client: do NOT use same argument for both translations AND key codes for client-side actions (like using 'card_name' to move it on the player board as described in the example). It's pretty obvious in the example, but it can be very tricky when translation is made at the end of the development (which is often the case). Use explicit argument names like 'card_name_translated' by example.
+</p><h4><span class="mw-headline" id="Formatting_arrays_with_i18n">Formatting arrays with i18n</span></h4><p>When sending list to a i18n parameter, the framework will translate each entry if the value is an array.
+</p><pre>    'resourceNames' =&gt; ['wood', 'crystal', 'copper']),
+    'i18n' =&gt; ['resourceNames'],
+    'separator' =&gt; ['resourceNames' =&gt; 'and'],
+</pre><p>It will display "Wood, Crystal and Copper" (for this example, the translation is the same word with an uppercase).
+</p><p>Any other separator will be used to join the list, so <code>'separator' =&gt; ['resourceNames' =&gt; ' / '],</code> will render "Wood / Crystal / Copper" (notice the spaces in the separator).
+</p><h4><span class="mw-headline" id="Throwing_an_exception_because_the_player_did_a_forbidden_move">Throwing an exception because the player did a forbidden move</span></h4><pre>// This will display a translatable red message to the player that just did some wrong action:
+throw new UserException(clienttranslate('You must choose 3 cards'));
+</pre><p>Note that the use of UserException signals that this exception is "expected". In theory, all exception that are expected should be translated.
+</p><pre>// this is the same but with variable
+throw new UserException(new NotificationMessage(clienttranslate('You must choose ${n} cards'), ['n' =&gt; $card_num]));
+</pre><h4><span class="mw-headline" id="Creating_labels">Creating labels</span></h4><p>Label which is generated based of player's name, using client side (which is better):
+in .js:
+</p><pre>  for (var player_id in this.gamedatas.players) {
+      var player_color = this.gamedatas.players[player_id].color;
+      var player_name = this.gamedatas.players[player_id].name;
+      $('empire_title_'+player_color).innerHTML=this.format_string_recursive(_("${player_name}'s EMPIRE"), {player_name: player_name});
+  }
+</pre><h2><span class="mw-headline" id="Top_Secret_Undocumented_Features">Top Secret Undocumented Features</span></h2><p>If your string contains the clause '$${value}' (such as 'You gain $${value}.') then the translation system seems to move the position of the $ to a localized location (eg $5 in English but 5$ in French). This only seems to occur when using the argument 'value'.
+</p><pre>   var lang = _('$locale'); // en, fr, etc.
+</pre><h2><span class="mw-headline" id="Preview_another_language">Preview another language</span></h2><pre>&amp;lang=es</pre><h2><span class="mw-headline" id="Analyze_your_project">Analyze your project</span></h2><p>It looks super complex but there is help!
+On studio control panel you can find a button "Check project" - it runs bunch of static analysis on your project including scanning for bad translations and missing translations.
+It also will extract all you translation keys as translator will see them so you can double check - and run spell checker on them.
+</p><h2><span class="mw-headline" id="Using_translations_from_a_base_project">Using translations from a base project</span></h2><p>In some cases, when 2 projects share a big part of the same code (example: Ticket to Ride and Ticket to Ride Europe), you might not want the translators to re-translate every sentence in common for every language. We have an experimental feature to avoid translations of sentences that are common, if you are concerned for a new project please contact us using <a class="external free" href="https://studio.boardgamearena.com/support" rel="nofollow">https://studio.boardgamearena.com/support</a>.
+</p><h2><span class="mw-headline" id="Other_Useful_Links">Other Useful Links</span></h2><ul><li>BLOG post about translations <a class="external free" href="https://bga-devs.github.io/blog/posts/translations-summary/" rel="nofollow">https://bga-devs.github.io/blog/posts/translations-summary/</a></li></ul></div></body>
+</html>

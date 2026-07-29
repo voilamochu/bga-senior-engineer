@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Studio file reference - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Studio_file_reference rootpage-Studio_file_reference action-view"><div class="article"><p><br/>
+</p><p>This is a quick reference for the files used to implement a game. For more information, follow the wiki links.
+</p><h3><span class="mw-headline" id="software_versions">software versions</span></h3><p>See <a href="/Studio#Software_Versions" title="Studio">Studio#Software_Versions</a>
+</p><h3><span id="img.2F"></span><span class="mw-headline" id="img/">img/</span></h3><p>This directory contains the images for your game (the game art). 
+</p><p>See <a href="/Game_art:_img_directory" title="Game art: img directory">Game art: img directory</a>
+</p><h3><span class="mw-headline" id="gameinfos.jsonc">gameinfos.jsonc</span></h3><p>In this file you describe the meta-information for your game: game name, publisher name, number of player, etc...
+</p><h3><span class="mw-headline" id="dbmodel.sql">dbmodel.sql</span></h3><p>File for creating specific database tables that you will need to persist data during the game (for example a table for cards).
+</p><p>See <a href="/Game_database_model:_dbmodel.sql" title="Game database model: dbmodel.sql">Game database model: dbmodel.sql</a>
+</p><h3><span id="gameoptions.json.2C_gamepreferences.json"></span><span class="mw-headline" id="gameoptions.json,_gamepreferences.json">gameoptions.json, gamepreferences.json</span></h3><p>File for describing your game options (or game variants).
+</p><p>See <a href="/Options_and_preferences:_gameoptions.json,_gamepreferences.json" title="Options and preferences: gameoptions.json, gamepreferences.json">Options_and_preferences: gameoptions.json, gamepreferences.json</a>.
+</p><h3><span id=".3Cgamename.3E.css"></span><span class="mw-headline" id="&lt;gamename&gt;.css">&lt;gamename&gt;.css</span></h3><p>CSS styles specific to your game.
+</p><p>See <a href="/Game_interface_stylesheet:_yourgamename.css" title="Game interface stylesheet: yourgamename.css">Game interface stylesheet: yourgamename.css</a>.
+</p><h3><span id="modules.2Fphp.2FGame.php"></span><span class="mw-headline" id="modules/php/Game.php">modules/php/Game.php</span></h3><p>This is the main file for your game logic. Here you initialize the game, persist data, implement the rules and notify changes to the client interface. 
+</p><p>See <a href="/Main_game_logic:_Game.php" title="Main game logic: Game.php">Main game logic: Game.php</a>.
+</p><h3><span id="modules.2Fjs.2FGame.js"></span><span class="mw-headline" id="modules/js/Game.js">modules/js/Game.js</span></h3><p>This is the main file for your game interface. Here you will define:
+</p><ul><li>which actions on the page will generate calls to the server</li>
+<li>what happens when you get a notification for change from the server and how it will show in the browser.</li></ul><p>When this file changes you need to do simple reloading of currently running game (F5).
+</p><h3><span id=".3Cgamename.3E.view.php.2C_.3Cgamename.3E_.3Cgamename.3E.tpl"></span><span class="mw-headline" id="&lt;gamename&gt;.view.php,_&lt;gamename&gt;_&lt;gamename&gt;.tpl">&lt;gamename&gt;.view.php, &lt;gamename&gt;_&lt;gamename&gt;.tpl</span></h3><p><b>IMPORTANT NOTE:</b> These files are deprecated, you shouldn't need to use it if you generate the template from the JS file.
+</p><p>When this file changes you need to do simple reloading of currently running game (F5).
+</p><h3><span class="mw-headline" id="material.inc.php">material.inc.php</span></h3><p><b>IMPORTANT NOTE:</b> This file is deprecated, see the dedicated page about it for more information.
+</p><p>When this file changes reloading is not required, however if your js side using some data from there (which it should) do simple reloading of currently running game (F5) .
+</p><h3><span id="modules.2Fphp.2FStates"></span><span class="mw-headline" id="modules/php/States">modules/php/States</span></h3><p>The classes describing the states of your game.
+</p><h3><span class="mw-headline" id="states.inc.php">states.inc.php</span></h3><p><b>IMPORTANT NOTE:</b> This file is deprecated, you shouldn't need to change it if you use State classes
+</p><p>When this file changes it requires simple reloading, however if changes are breaking it requires to start a new game.
+</p><h3><span class="mw-headline" id="stats.json">stats.json</span></h3><p>File used to list statistics that you want to update during the game to be presented to players at the end of the game.
+</p><p>See <a href="/Game_statistics:_stats.json" title="Game statistics: stats.json">Game statistics: stats.json</a>.
+</p><h3><span id="modules.2F"></span><span class="mw-headline" id="modules/">modules/</span></h3><p>Modules directory can contain additional php files which can be included in main game.php via include or require. It also can contain addition js files. This directory is checked in version control.
+</p><h3><span id="misc.2F"></span><span class="mw-headline" id="misc/">misc/</span></h3><p>Directory containing files you would like to keep with project but not needed on production server. This directory is checked in version control. Total limit is 1 Mb for this directory.
+</p><h3><span id=".3Cother_files.3E"></span><span class="mw-headline" id="&lt;other_files&gt;">&lt;other files&gt;</span></h3><p>You can use other files but they won't be checked in source control and published in production. That includes any additional .js or .php files. If you need them use modules/ directory.
+</p></div></body>
+</html>

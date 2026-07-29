@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>First steps with BGA Studio - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-First_steps_with_BGA_Studio rootpage-First_steps_with_BGA_Studio action-view"><div class="article"><p><br/>
+</p><h2><span class="mw-headline" id="Connect_to_the_BGA_Studio_website">Connect to the BGA Studio website</span></h2><p>Go to BGA Studio website:
+<a class="external free" href="http://studio.boardgamearena.com" rel="nofollow">http://studio.boardgamearena.com</a>
+</p><p>If you don't have account see <a href="How_to_join_BGA_developer_team.html" title="How to join BGA developer team?">How to join BGA developer team?</a>
+</p><h2><span class="mw-headline" id="Create_a_new_game_project">Create a new game project</span></h2><p>You can do most of the projects-related operations from "Control Panel / Manage games". In particular, you can create a new project automatically from there.
+</p><ul><li>Click on your profile icon on the top right of any page.</li>
+<li>Click on the Control Panel button on the top right. This is only visible if you are on a developer account.</li>
+<li>Click on the "Manage Games" button on the left side of the page.</li></ul><p>Your first "game" should be one of the tutorials, so your project name should be something like "tutorialbob". Type "0" for Board Game Geek ID and click the "Create Project" button. The new project will appear after you refresh the page.
+</p><p>For reference top bar studio links
+</p><ul><li>AVAILABLE LICENSES - list of all available licenses (not public domain) -  <a class="external free" href="https://studio.boardgamearena.com/licensing" rel="nofollow">https://studio.boardgamearena.com/licensing</a></li>
+<li>STUDIO PROJECTS - list of all registered studio projects - <a class="external free" href="https://studio.boardgamearena.com/projects" rel="nofollow">https://studio.boardgamearena.com/projects</a></li>
+<li>CONTROL PANEL - manage projects - <a class="external free" href="https://studio.boardgamearena.com/controlpanel" rel="nofollow">https://studio.boardgamearena.com/controlpanel</a>. <br/>Note: the control panel is accessible from the player popup menu (top right), with the gear and bargraph blue icon next to the player icon.</li></ul><h2><span id="Set_up_dev_environment_ide.2C_editor_and_File_Sync"></span><span class="mw-headline" id="Set_up_dev_environment_ide,_editor_and_File_Sync">Set up dev environment ide, editor and File Sync</span></h2><p>From the initial email from the Studio you get:
+</p><ul><li>the name of the SFTP server to connect to</li>
+<li>your SFTP login and password</li></ul><p>Note: this is NOT the same login/password as dev account, find email that talks about SFTP specifically
+</p><ul><li>Your projects will be listed in the "home" folder. If you have already created a new game project, you should see a folder with the project name be in your "home" folder.</li>
+<li>If you want to see tutorial projects in your folder, go to <a class="external free" href="https://studio.boardgamearena.com/projects" rel="nofollow">https://studio.boardgamearena.com/projects</a>, select "Already published", search "Reversi" or any project name you want to look at, then click the "[Get readonly access]" link  of this game. Once you've clicked this link, the game folder will be visible in your "home" FTP folder, in read-only.</li>
+<li>Connect to the SFTP server using your SFTP login and password, through your favourite SFTP client software or use IDE integraton (see  <a href="/Tools_and_tips_of_BGA_Studio#File_sync" title="Tools and tips of BGA Studio">File Sync</a> or <a href="Setting_up_BGA_Development_environment_using_VSCode.html" title="Setting up BGA Development environment using VSCode">Setting_up_BGA_Development_environment_using_VSCode</a>). Make sure to download the remote project folder into a local folder.</li>
+<li>If you are not sure what editor to use see <a href="/Tools_and_tips_of_BGA_Studio#Code_Editors_and_IDEs" title="Tools and tips of BGA Studio">Code editors and IDE</a>,</li>
+<li>Note: You have to setup AUTOMATED sync between your folder and remote folder, manually ftp'ing files would be no-starter.</li>
+<li>Note: You can also upload your ssh key via studio control panel to avoid password exchange <a class="external free" href="https://studio.boardgamearena.com/controlpanel" rel="nofollow">https://studio.boardgamearena.com/controlpanel</a></li></ul><h2><span id="Let.27s_code.21"></span><span class="mw-headline" id="Let's_code!">Let's code!</span></h2><p>Now, you can try to launch a new game on BGA Studio from the "Play now" menu entry, as you would do on Board Game Arena website.
+</p><ol><li>To launch your game from Studio go to CONTROL PANEL -&gt; Manage games -&gt; &lt;your_game&gt; -&gt; &lt;your_game_page&gt; -&gt; Play (see how to access control panel above). You can also use link <a class="external free" href="https://studio.boardgamearena.com/studiogame?game=" rel="nofollow">https://studio.boardgamearena.com/studiogame?game=</a>&lt;your_game&gt;</li>
+<li>Press Create to create a table</li>
+<li>Select number of players and select Training mode in game configuration panel</li>
+<li>Click <b>Express start</b>. Do not use "Start game" buttons in studio - it adds unnecessary complexity of logging it from multiple accounts. When using <b>Express start</b> your game launches with the maximum number of players specified using your own dev player accounts (dev0, dev1, dev2, etc). If you don't see <b>Express start</b> button make sure you are in Manual mode for game creation. Note: for Solo mode you do actually want to use Start Game instead of Express start, the latter has some issues (warnings).</li>
+<li>Game will open with an empty canvas: in the game zone you just have an empty div for player tables, and a fake counter space on each player panel.</li>
+<li>Switch to your SFTP home folder, go into your game folder. Edit the &lt;your_game&gt;.js file (tutorial: modules/js/Game.js), and add a sentence in the HTML part of the line <code>this.getGameAreaElement().insertAdjacentHTML</code>, then save (this assumes you mount or sync the folder).</li>
+<li>Go back to your browser and refresh, check that the game zone has updated.</li>
+<li>Click the red arrow next to a test account's name in the player panel to view the game from that player's account <br/><a class="image" href="/File:Change_active_player.jpg"><img alt="Change active player.jpg" decoding="async" height="121" src="/images/0/03/Change_active_player.jpg" width="250"/></a></li>
+<li>Open the menu (three-line "hamburger" icon at the upper right) and choose 'Express STOP'. The game ends automatically and you are brought back to the table screen for this ended game.</li></ol><p><br/>
+Then you can modify the provided skeleton and begin to develop your game :)
+</p><h2><span class="mw-headline" id="Commit_your_changes">Commit your changes</span></h2><p>Committing uploads your changes on BGA's <a class="external text" href="http://en.wikipedia.org/wiki/Revision_control" rel="nofollow">revision control</a> system. This is an extra assurance not to lose your code, and to have the possibility to get a previous version of your code if you need to backtrack. It also helps us to follow your progress (we get an email when you commit). So you should commit from time to time, when you hit some landmark in your development.
+</p><ol><li>Enter your commit comment (such as 'My first commit') then hit the 'Submit' button;</li>
+<li>Check the log for errors, it should end with the following lines:</li></ol><pre> Transmitting file data .
+ Committed revision #revision number#.
+ HAL says: done.
+</pre><p>NOTE: committing the code is currently not working until admin commits it manually the first time. Even if it does you cannot automatically deal with this version control system except for committing. Therefore its recommended to use another means of storing the code in version control system, such as local git repo or github, see <a href="/Tools_and_tips_of_BGA_Studio#Version_Control" title="Tools and tips of BGA Studio">Version Control</a>
+</p><h2><span id="That.27s_all.21"></span><span class="mw-headline" id="That's_all!">That's all!</span></h2><p>Now you know about the basics of updating your game on BGA Studio and testing your changes.
+</p><p>For links to tutorials and ALL studio documentation see <a href="Studio.html" title="Studio">Studio</a>.
+</p></div></body>
+</html>

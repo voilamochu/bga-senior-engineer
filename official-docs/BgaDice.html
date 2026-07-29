@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>BgaDice - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-BgaDice rootpage-BgaDice action-view"><div class="article"><p><br/>
+</p><h2><span class="mw-headline" id="Overview">Overview</span></h2><p><b>bga-dice</b> is a javascript component to display dice.
+</p><p>To see how its work and access examples of source code (via browser dev tools) see
+<b><a class="external text" href="https://x.boardgamearena.net/data/game-libs/bga-dice/1.x/docs/index.html" rel="nofollow">Doc</a></b>
+</p><h2><span class="mw-headline" id="Usage">Usage</span></h2><p>Load the lib:
+</p><pre>const BgaAnimations = await importEsmLib('bga-animations', '1.x'); // the library uses bga-animations so this is required!
+const BgaDice = await importEsmLib('bga-dice', '1.x');
+</pre><p>This line should be placed on top of the JS file, before any class declaration.
+</p><pre>define([
+    "dojo","dojo/_base/declare",
+    "ebg/core/gamegui",
+    "ebg/counter",
+    getLibUrl('bga-animations', '1.x'), // the lib uses bga-animations so this is required!
+    getLibUrl('bga-dice', '1.x'),
+],
+function (dojo, declare, gamegui, counter, BgaAnimations, BgaDice) { // note that the index of `BgaAnimations` must match the index of the define array
+</pre><p>In your game setup:
+</p><pre>        // create the animation manager, and bind it to the `gameui.bgaAnimationsActive()` function
+        this.animationManager = new BgaAnimations.Manager({
+            animationsActive: () =&gt; this.bga.gameui.bgaAnimationsActive(),
+        });
+
+        // create the dice manager
+        this.diceManager = new BgaDice.Manager({
+            animationManager: this.animationManager,
+            type: 'my-game-die',
+        });
+</pre><p>Only setup an animation manager if you don't already have one, else re-use the same one.
+</p><pre>
+
+        // create the stock, in the game setup
+        this.dieStock = new BgaDice.LineStock(this.diceManager, document.getElementById('dice-stock'));
+        this.dieStock.addDice(gamedatas.dice); // dice should be something like [{ id: 1, face: 5, location: 'table' }]
+
+async notif_rollDice(args) {
+    await this.dieStock.rollDice(args.rolledDice); // similar form as above, but with a different face value.
+}
+
+</pre><p>Look at the demo page and the demo source code for a list of all possibilities!
+</p><h2><span class="mw-headline" id="Versioning">Versioning</span></h2><p>The lib is using semver, so you can require 1.x to be sure to have the last fixes without risking a breaking change. Any breaking change will be noted on the Changelog section.
+</p><h2><span class="mw-headline" id="Using_with_TypeScript">Using with TypeScript</span></h2><p>If you use TypeScript and this lib, you can download the <b><a class="external text" href="https://x.boardgamearena.net/data/game-libs/bga-dice/1.x/dist/bga-dice.d.ts" rel="nofollow">d.ts</a></b> file to put in on your game folder to benefit from auto-completion. Depending on the way you build, you might need to remove the last line (the export instruction) to be able to use it.
+</p><pre>define([
+        "dojo",
+        "dojo/_base/declare",
+        "ebg/core/gamegui",
+        "ebg/counter",
+        "ebg/stock",
+        getLibUrl('bga-animations', '1.x'),
+    ],
+function (dojo, declare, gamegui, counter, stock, BgaAnimations) {
+    (window as any).BgaAnimations = BgaAnimations; //trick
+    return declare("bgagame.reforest", ebg.core.gamegui, new Reforest());
+});
+</pre><h2><span class="mw-headline" id="Changelog">Changelog</span></h2><p><b>1.0.2</b>: more logs for dice element not matching a card / accept keyed objects in addition to arrays on inputs
+</p><p><b>1.0.0</b>: Initial version
+</p></div></body>
+</html>

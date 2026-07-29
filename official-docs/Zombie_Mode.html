@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Zombie Mode - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Zombie_Mode rootpage-Zombie_Mode action-view"><div class="article"><p><br/>
+</p><h2><span class="mw-headline" id="What_is_the_Zombie_mode">What is the Zombie mode</span></h2><p>When a player leaves a game for any reason (being expelled out of time or quitting the game), he becomes a "zombie player". 
+In this case, the results of the game won't count for statistics, but we must let the other players finish the game anyway. 
+</p><h2><span class="mw-headline" id="The_different_Zombie_levels">The different Zombie levels</span></h2><dl><dt>Level 0: the passing zombie</dt>
+<dd>Just pass to the next step without doing any action</dd>
+<dd><i>For example, in 7 wonders, take a random card and discard it (we cannot just pass in this game as it would mess with the next player hand)</i></dd>
+<dd><i>For example, in Catan, roll the dice and pass</i></dd></dl><dl><dt>Level 1: the random zombie</dt>
+<dd>Code a random possible action</dd>
+<dd><i>For example, in 7 wonders, take a random card and play it</i></dd>
+<dd><i>For example, in Catan, roll the dice and take a random possible action</i></dd></dl><dl><dt>Level 2: the greedy zombie</dt>
+<dd>Take the action that will bring the most value given the visible information. Isn't planning for future move, nor remember previously known information. Does not try to take a lower value in order to block the opponent.</dd>
+<dd><i>For example, in 7 wonders, take a card that will bring the most points to the players. If there is a tie, the one that will cost less. If there is still a tie, randomly in the subset</i></dd>
+<dd><i>For example, in Catan, roll the dice and play the action that will bring the most points to the players</i></dd></dl><dl><dt>Level 3: the smart zombie</dt>
+<dd>Can plan and/or remember previously revealed information.</dd>
+<dd><i>For example, in 7 wonders, it could remember which cards could be back in the next turn to make the best move.</i></dd>
+<dd><i>For example, in Catan, instead of declining all trades for zombie, trade only if it's in the benefit of the zombie player</i></dd></dl><p><br/>
+</p><p>While developing your zombie mode, keep in mind that:
+</p><ul><li>Do not refer to the rules, because this situation is not planned by the rules.</li>
+<li>Try to figure that you are playing with your friends and one of them has to leave: how can we finish the game without killing the spirit of the game?</li>
+<li>The idea is NOT to develop an artificial intelligence for the game.</li>
+<li>Do not try to end the game early, even in a two-player game. The zombie is there to allow the game to continue, not to end it.</li></ul><p>When you have developed the Zombie Mode, you can indicate the level you made in the Game Metadata Manager. If some parts are one level and some are another level, indicate the predominant one. In case of a tie, indicate the lowest one.
+</p><h2><span class="mw-headline" id="Implementing_the_Zombie_mode">Implementing the Zombie mode</span></h2><p>Each time a zombie player must play, the <code>zombie</code> function of the state the zombie player is in is called.
+</p><pre>    function zombie(int $playerId): void {
+        return NextPlayer::class;
+    }
+</pre><p>Example of Zombie level 1
+</p><pre>    function zombie(int $playerId, array $args): void {
+        // random choice over possible moves
+        $zombieChoice = $this-&gt;getRandomZombieChoice($args['playableCardsIds']);
+
+        // this function will return the state to go to, so we return it to end the zombie function
+        return $this-&gt;actPlayCard($zombieChoice, $playerId, $args);
+    }
+</pre><p>Example of Zombie level 2
+</p><pre>    function zombie(int $playerId, array $args): void {
+        $possibleSpaces = $args['possibleSpaces'];
+        $playerCards = $this-&gt;getPlayerCards($playerId);
+
+        $possibleAnswerPoints = [];
+        foreach ($possibleSpaces as $choice) {
+            // for each possible choice, compute the points the player/Bot would immediately gain
+            $possibleAnswerPoints[$choice] = $this-&gt;getPointsFromState3Choice($playerCards, $choice);
+        }
+
+        // get top choice over possible moves
+        $zombieChoice = $this-&gt;getBestZombieChoice($possibleAnswerPoints);
+
+        // this function will return the state to go to, so we return it to end the zombie function
+        return $this-&gt;actPlayCard($zombieChoice, $playerId, $args);
+    }
+</pre><p><b>Very important</b>: your zombie code will be called when the player leaves the game. The server will handle the Zombie turn, so there is no current player associated to this action. In your zombieTurn function, you must <b>never</b> use <code>getCurrentPlayerId()</code> or <code>getCurrentPlayerName()</code>, but use <code>$playerId</code> or <code>$this-&gt;getPlayerNameById($playerId)</code> instead.
+</p><h2><span class="mw-headline" id="Testing_the_Zombie_mode">Testing the Zombie mode</span></h2><p>Create a table in Friendly mode (the infinite time symbol if you're starting from the game page) and Express Start.
+</p><p>As it's friendly mode, you won't get karma penalty. If it's not friendly mode, you would lose karma, and testing repeatedly, your player might not be allowed to join games anymore!
+</p><pre>    function debug_playToEndRound() {
+      $currentRound = $this-&gt;globals-&gt;get(ROUND);
+      $security = 0;
+      // make sure the condition will not create an infinite loop!
+      while ($this-&gt;globals-&gt;get(ROUND) == $currentRound &amp;&amp; $security &lt; 100) {
+        $security++;
+        foreach($this-&gt;gamestate-&gt;getActivePlayerList() as $playerId) {
+            $playerId = (int)$playerId;
+            $this-&gt;gamestate-&gt;runStateClassZombie($this-&gt;gamestate-&gt;getCurrentState($playerId), $playerId);
+        }
+      }
+    }
+</pre><p>Click on the debug icon on the top right, select "playToEndRound", and see the bot playing automatically until it reaches the round 2!
+</p><h2><span id="Implementing_the_Zombie_mode_.28if_you.27re_not_using_State_classes.29"></span><span class="mw-headline" id="Implementing_the_Zombie_mode_(if_you're_not_using_State_classes)">Implementing the Zombie mode (if you're not using State classes)</span></h2><p>Each time a zombie player must play, your "zombieTurn" method is called.
+</p><ul><li>$state: the current game state.</li>
+<li>$active_player: the id of the active player.</li></ul><p>Most of the time, your zombieTurn method looks like this:
+</p><pre>    protected function zombieTurn(array $state, int $active_player): void {
+        $state_name = $state["name"];
+
+        if ($state["type"] === "activeplayer") {
+            switch ($state_name) {
+                case 'state1':
+                    $this-&gt;zombieTurn_state1($active_player);
+                    break;
+                case 'state2':
+                    $this-&gt;zombieTurn_state2($active_player);
+                    break;
+                case 'state3':
+                    $this-&gt;zombieTurn_state3($active_player);
+                    break;
+                }
+                // ... handle all your states in the same fashion
+            }
+
+            return;
+        }
+
+        // Make sure player is in a non-blocking status for role turn.
+        if ($state["type"] === "multipleactiveplayer") {
+            // this example is a Zombie level 0, for level 1 or more, it would be similar to the examples you can see for activeplayer states.
+            $this-&gt;gamestate-&gt;setPlayerNonMultiactive($active_player, '');
+            return;
+        }
+
+        throw new \feException("Zombie mode not supported at this game state: \"{$state_name}\".");
+    }
+</pre><p>Example of Zombie level 0
+</p><pre>    protected function zombieTurn_state1(int $active_player): void {
+        $this-&gt;gamestate-&gt;nextState("zombiePass"); // you need to declare this transition that will bring the player/bot to the next state.
+    }
+</pre><p>Example of Zombie level 1
+</p><pre>    protected function zombieTurn_state2(int $active_player): void {
+        $args = $this-&gt;argState1();
+        $possibleMoves = $args['possibleMoves'];
+
+        $zombieChoice = $possibleMoves[bga_rand(0, count($possibleMoves) - 1)]; // random choice over possible moves
+        return $this-&gt;actPlayState1Action($zombieChoice, $active_player); // this function will do the transition to the next state, as it does for a regular player action
+    }
+</pre><p>Example of Zombie level 2
+</p><pre>    protected function zombieTurn_state3(int $active_player): void {
+        $args = $this-&gt;argState2();
+        $possibleSpaces = $args['possibleSpaces'];
+        $playerCards = $this-&gt;getPlayerCards($active_player);
+
+        $possibleAnswerPoints = [];
+        foreach ($possibleSpaces as $choice) {
+            $possibleAnswerPoints[$choice] = $this-&gt;getPointsFromState3Choice($playerCards, $choice); // for each possible choice, compute the points the player/Bot would immediately gain
+        }
+
+        $maxPoints = max($possibleAnswerPoints);
+        $maxPointsAnswers = array_keys($possibleAnswerPoints, $maxPoints); // filter to get only the choices offering the most points
+        $zombieChoice = $maxPointsAnswers[bga_rand(0, count($maxPointsAnswers) - 1)]; // random choice over top points possible moves, in case there is more than one
+
+        $this-&gt;applyPlayCard($playerId, $zombieChoice); // this function will do the transition to the next state, as it does for a regular player action
+    }
+</pre><p><b>Very important</b>: your zombie code will be called when the player leaves the game. The server will handle the Zombie turn, so there is no current player associated to this action. In your zombieTurn function, you must <b>never</b> use <code>getCurrentPlayerId()</code> or <code>getCurrentPlayerName()</code>, but use <code>$active_player</code> or <code>$this-&gt;getPlayerNameById($active_player)</code> instead.
+</p><h2><span id="Testing_the_Zombie_mode_.28if_you.27re_not_using_State_classes.29"></span><span class="mw-headline" id="Testing_the_Zombie_mode_(if_you're_not_using_State_classes)">Testing the Zombie mode (if you're not using State classes)</span></h2><p>Create a table in Friendly mode (the infinite time symbol if you're starting from the game page) and Express Start.
+</p><p>As it's friendly mode, you won't get karma penalty. If it's not friendly mode, you would lose karma, and testing repeatedly, your player might not be allowed to join games anymore!
+</p><pre>    function debug_playToEndRound() {
+      $currentRound = $this-&gt;globals-&gt;get(ROUND);
+      $security = 0;
+      // make sure the condition will not create an infinite loop!
+      while ($this-&gt;globals-&gt;get(ROUND) == $currentRound &amp;&amp; $security &lt; 100) {
+        $security++;
+        foreach($this-&gt;gamestate-&gt;getActivePlayerList() as $playerId) {
+            $playerId = (int)$playerId;
+            $this-&gt;zombieTurn($this-&gt;gamestate-&gt;getCurrentState($playerId)-&gt;toArray(), $playerId);
+        }
+      }
+    }
+</pre><p>Click on the debug icon on the top right, select "playToEndRound", and see the bot playing automatically until it reaches the round 2!
+</p></div></body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "title": "BGA Code Sharing",
+  "source_html": "BGA_Code_Sharing.html",
+  "clean_html": "BGA_Code_Sharing.html",
+  "url": "https://en.doc.boardgamearena.com/BGA_Code_Sharing",
+  "depth": 1,
+  "sha256_raw": "181440210e013ba686eff5c803690f17f88a8b6f22b4d6123167f38a39778267",
+  "sha256_clean": "8b259467f60d80fc9e36449ac34f41156be3428ccaeb3b4128f2e646d3943a02",
+  "word_count": 1028,
+  "code_block_count": 0,
+  "table_count": 2,
+  "image_count": 0,
+  "heading_count": 4,
+  "cleaned_at": "2026-07-06T06:38:18.160404+00:00"
+}

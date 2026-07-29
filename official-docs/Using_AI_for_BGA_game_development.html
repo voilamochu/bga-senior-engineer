@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Using AI for BGA game development - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Using_AI_for_BGA_game_development rootpage-Using_AI_for_BGA_game_development action-view"><div class="article"><p>This page is to share resources and advice about using AI for BGA development.
+</p><h2><span class="mw-headline" id="Overview">Overview</span></h2><p>At the point of writing (Apr 2026) there is no model that can successfully code meaningful game completely using BGA framework.
+But AI can be used for a lot of tasks, examples of usages:
+</p><ul><li>Generating boilerplate code</li>
+<li>Translating game rules from a rulebook into structured game logic and state machines</li>
+<li>Writing and maintaining unit tests for game operations</li>
+<li>Converting game material (cards, tokens, boards) from spreadsheets into PHP data structures</li>
+<li>Debugging complex state machine flows by analyzing execution traces</li>
+<li>Refactoring repetitive patterns across multiple operation classes</li>
+<li>Writing client-side UI code (TypeScript/JS) for token rendering and animations</li>
+<li>Reviewing code for common BGA framework pitfalls and anti-patterns</li>
+<li>Generating CSS/SCSS for card layouts and sprite positioning from asset images</li>
+<li>Explaining unfamiliar parts of the BGA framework or existing codebase</li></ul><p><br/>
+</p><h2><span class="mw-headline" id="Setup">Setup</span></h2><p>To set up AI for success you need to add some documentation to your project, I suggest to use misc/docs folder.
+In addition you can run something like /init command to create initial AI document which it will use for your project.
+</p><ul><li>CLAUDE.md (or AI.md) - top-level project instructions that AI tools read automatically (would be in root of project)</li>
+<li>RULES.md - exact rules converted from PDF (you can use AI to do that too. Make sure it is NOT summarized)</li>
+<li>DESIGN.md - design of your game (software design) - if it does not exist ask AI to create software design document</li>
+<li>PROCEDURES.md - add workflows that you want AI to follow (can reference explicit skills)</li>
+<li>PLAN.md - implementation plan (when game is not complete)</li>
+<li>TODO.md - todo list (when game is complete but few things left)</li>
+<li>ASSETS.md - asset pipeline documentation (PDF sources, sprite sheets, conversion steps, sounds, fonts)</li></ul><h2><span class="mw-headline" id="Skills">Skills</span></h2><p>The best way to save the workflows is to use skills. If you developed some AI skills I suggest sharing it 
+here by providing link to git repo
+</p><hr/></div></body>
+</html>

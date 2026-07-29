@@ -1,0 +1,15 @@
+{
+  "title": "Translations",
+  "source_html": "Translations.html",
+  "clean_html": "Translations.html",
+  "url": "https://en.doc.boardgamearena.com/Translations",
+  "depth": 1,
+  "sha256_raw": "dff1b197f4a4f96fd85e519c37d4f6ed941ea7fbc29c089db9c6e74ad532a1aa",
+  "sha256_clean": "16d1a1419c3a3803b0cba37a979565f17a90a73ff0cc146c6c8ec26ce89aa528",
+  "word_count": 2886,
+  "code_block_count": 26,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 21,
+  "cleaned_at": "2026-07-06T06:38:19.960350+00:00"
+}

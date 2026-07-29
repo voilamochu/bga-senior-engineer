@@ -1,0 +1,15 @@
+{
+  "title": "BGA Undo policy",
+  "source_html": "BGA_Undo_policy.html",
+  "clean_html": "BGA_Undo_policy.html",
+  "url": "https://en.doc.boardgamearena.com/BGA_Undo_policy",
+  "depth": 2,
+  "sha256_raw": "829a17576895f729ea0983a3128e6ffc204f1988f5c681847b535ef448918ea9",
+  "sha256_clean": "28eb6d22202e45a157a2c1a689f0c752fe90b703c38dc30341f98e66ea1745ad",
+  "word_count": 957,
+  "code_block_count": 5,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 12,
+  "cleaned_at": "2026-07-06T06:38:18.413285+00:00"
+}

@@ -1,0 +1,346 @@
+.player-board {
+  border: 1px solid transparent;
+  background-image: url('img/action_frame_bg.jpg');
+  background-size: 100% 10px;
+  border-image-slice: 27 27 27 27;
+  border-image-width: 12px 12px 12px 12px;
+  border-image-outset: 0px 0px 0px 0px;
+  border-image-repeat: stretch stretch;
+  border-image-source: url('img/action_frame_panel.png');
+
+  box-shadow: -1px 2px 5px black;
+  background-color: transparent !important;
+  border-radius: 20px !important;
+
+  .mobile_version & {
+    margin-right: 2px !important;
+  }
+
+  &.spectator-mode {
+    padding: 6px 12px;
+    text-align: center;
+  }
+
+  .player_board_inner {
+    padding: 3px 6px;
+
+    .player-name {
+      position: relative;
+    }
+  }
+
+  .agricola-first-player-holder {
+    position: absolute;
+    height: 40px;
+    right: 42px;
+    top: 11px;
+    width: 20px;
+  }
+
+  .agricola-player-pannel {
+    padding: 3px 6px;
+
+    .player-panel-resources,
+    .player-panel-personal-resources,
+    .player-panel-board-resources {
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 18px;
+      justify-content: space-around;
+      position: relative;
+      padding: 0.5rem 0;
+
+      .player-reserve {
+        position: absolute;
+        top: 0%;
+        left: 0%;
+        width: 100%;
+        height: 100%;
+
+        .agricola-meeple:not(.moving):not(.meeple-firstPlayer) {
+          display: none;
+        }
+      }
+
+      .player-resource {
+        margin: 4px 0px;
+        position: relative;
+        flex-basis: 25%;
+        text-align: center;
+
+        &.resource-grain,
+        &.resource-vegetable,
+        &.resource-begging {
+          flex-basis: 24%;
+        }
+
+        &.resource-food {
+          flex-basis: 28%;
+        }
+
+        &.resource-begging {
+          transition: opacity 0.5s;
+          opacity: 1;
+          &[data-n='0'] {
+            opacity: 0;
+          }
+        }
+
+        .reserve {
+          position: absolute;
+          top: 0%;
+          left: 0%;
+          width: 100%;
+          height: 100%;
+          & > div.agricola-meeple:not(.moving) {
+            display: none;
+          }
+        }
+
+        .resource_farmer::after,
+        .resource_fence::after,
+        .resource_stable::after,
+        .resource_food::after {
+          font-size: 0.7em;
+          position: relative;
+          top: 5px;
+        }
+
+        .resource_farmer::after,
+        .resource_fence::after,
+        .resource_stable::after {
+          content: '/' attr(data-max);
+        }
+
+        .resource_food::after {
+          content: attr(data-harvest);
+          font-size: 0.75em;
+        }
+      }
+    }
+
+    .player-panel-board-resources {
+      border-top: 1px solid #80502e;
+      padding: 0.25rem 0;
+
+      .meeple-container {
+        font-size: 1.1em;
+      }
+
+      .resource-farmer {
+        .meeple-container {
+          display: none;
+          margin-left: -0.6em;
+
+          &:first-of-type {
+            margin-left: 0;
+          }
+        }
+
+        @for $i from 1 to 6 {
+          &[data-n='#{$i}'] {
+            @for $j from 0 to $i {
+              .meeple-container:nth-child(#{$j + 1}) {
+                display: inline-block;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .player-panel-personal-resources {
+      border-top: 1px solid #80502e;
+      .player-resource {
+        flex-basis: 33%;
+      }
+    }
+  }
+
+  .colorblind & .agricola-player-pannel .meeple-farmer_icon {
+    background-image: url('img/farmers_colorblind.png');
+  }
+}
+
+[data-color='ff0000'] {
+  .meeple-farmer_icon,
+  .meeple-barn,
+  .meeple-fence_icon,
+  .meeple-stable {
+    background-position-x: 0%;
+  }
+}
+
+[data-color='008000'] {
+  .meeple-farmer_icon,
+  .meeple-barn,
+  .meeple-fence_icon,
+  .meeple-stable {
+    background-position-x: 25%;
+  }
+}
+
+[data-color='72c3b1'] {
+  .meeple-farmer_icon,
+  .meeple-barn,
+  .meeple-fence_icon,
+  .meeple-stable {
+    background-position-x: 50%;
+  }
+}
+
+[data-color='982fff'] {
+  .meeple-farmer_icon,
+  .meeple-barn,
+  .meeple-fence_icon,
+  .meeple-stable {
+    background-position-x: 75%;
+  }
+}
+
+[data-color='7b7b7b'] {
+  .meeple-farmer_icon,
+  .meeple-barn,
+  .meeple-fence_icon,
+  .meeple-stable {
+    background-position-x: 100%;
+  }
+}
+
+/****************************************
+*** WHEN PLAYER PANEL IS ON THE BOARD ***
+****************************************/
+.resources-bar-holder {
+  position: relative;
+
+  .agricola-player-pannel {
+    display: flex;
+    justify-content: space-around;
+    background-image: url('img/action_frame_bg.jpg');
+    background-size: 33% auto;
+    box-shadow: 1px 2px 4px -2px black;
+    border: 1px solid black;
+    border-radius: 8px !important;
+
+    .agricola-first-player-holder {
+      position: absolute;
+      top: -30px;
+      right: 8px;
+    }
+
+
+    .player-panel-resources,
+    .player-panel-board-resources {
+      border-right: 1px solid black;
+    }
+
+    .player-panel-resources,
+    .player-panel-personal-resources,
+    .player-panel-board-resources {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 4px 6px;
+      flex-wrap: wrap;
+      font-size: 17px;
+      position: relative;
+
+      .player-reserve {
+        position: absolute;
+        top: 0%;
+        left: 0%;
+        width: 100%;
+        height: 100%;
+
+        .agricola-meeple:not(.moving):not(.meeple-firstPlayer) {
+          display: none;
+        }
+      }
+
+      .player-resource {
+        margin: 0px 4px 0px 0px;
+        position: relative;
+        text-align: center;
+
+        &.resource-begging[data-n='0'] {
+          display: none;
+        }
+
+        .reserve {
+          position: absolute;
+          top: 0%;
+          left: 0%;
+          width: 100%;
+          height: 100%;
+          & > div.agricola-meeple:not(.moving) {
+            display: none;
+          }
+        }
+
+        .resource_farmer::after,
+        .resource_fence::after,
+        .resource_stable::after,
+        .resource_food::after {
+          font-size: 0.7em;
+          position: relative;
+          top: 5px;
+        }
+
+        .resource_farmer::after,
+        .resource_fence::after,
+        .resource_stable::after {
+          content: '/' attr(data-max);
+        }
+
+        .resource_food::after {
+          content: attr(data-harvest);
+          font-size: 0.75em;
+        }
+      }
+    }
+
+    .player-panel-board-resources .resource-farmer {
+      display: none;
+    }
+  }
+  /*  data-color="${player.color}"*/
+}
+
+/* Resource toast for instant speed mode */
+.resource-toast {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: bold;
+  font-size: 16px;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0;
+  white-space: nowrap;
+
+  &.resource-toast-gain {
+    color: #1a8a1a;
+  }
+  &.resource-toast-loss {
+    color: #cc2222;
+  }
+  &.resource-toast-animate {
+    animation: resource-toast-float 2.5s ease-out forwards;
+  }
+}
+
+@keyframes resource-toast-float {
+  0% {
+    opacity: 1;
+    top: 0;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    top: -20px;
+  }
+}

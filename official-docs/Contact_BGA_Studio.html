@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Contact BGA Studio - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Contact_BGA_Studio rootpage-Contact_BGA_Studio action-view"><div class="article"><h2><span class="mw-headline" id="Purpose">Purpose</span></h2><p>This page is to find solutions for technical issues or manual steps related to games development on BGA Studio.
+</p><p>If you are a publisher and you could not reach BGA via the channel above you can go Developer discord server and ask for developers on #looking-for-developers channel (invite link at the bottom).
+</p><h2><span class="mw-headline" id="Studio_Accounts_Management">Studio Accounts Management</span></h2><p>BGA player account is not the same as studio account (even if you name them the same).
+</p><ul><li>Create studio account <a class="external free" href="https://studio.boardgamearena.com" rel="nofollow">https://studio.boardgamearena.com</a> (if you already logged in logout first)</li>
+<li>Resend welcome email (original) <a class="external free" href="https://studio.boardgamearena.com/account?page=welcomeemail" rel="nofollow">https://studio.boardgamearena.com/account?page=welcomeemail</a>
+<ul><li>Same if you forgot database or ftp account</li>
+<li>Still cannot get email, tried searching in junk for BGA, contact studio via <a class="external free" href="https://studio.boardgamearena.com/support" rel="nofollow">https://studio.boardgamearena.com/support</a></li></ul></li>
+<li>Forgot password <a class="external free" href="https://studio.boardgamearena.com/account?page=lostpassword" rel="nofollow">https://studio.boardgamearena.com/account?page=lostpassword</a></li>
+<li>Cannot ftp
+<ul><li>See section "Help with Game development or setup"</li></ul></li>
+<li>Upload ssh key <a class="external free" href="https://studio.boardgamearena.com/controlpanel" rel="nofollow">https://studio.boardgamearena.com/controlpanel</a></li></ul><h2><span class="mw-headline" id="Studio_Games_Management">Studio Games Management</span></h2><ul><li>Game management control panel located in Gear link if you click on your Account circle, direct link <a class="external free" href="https://studio.boardgamearena.com/controlpanel" rel="nofollow">https://studio.boardgamearena.com/controlpanel</a>
+<ul><li>This allows to create projects, delete projects and manage projects</li></ul></li>
+<li>Access to other project's source code
+<ul><li>Any developer can add themselves to a project as read-only from <a class="external free" href="https://studio.boardgamearena.com/projects" rel="nofollow">https://studio.boardgamearena.com/projects</a> page (almost any project).</li>
+<li>If project is not there - its either does not have bgg id, already published (in this case check radio button on this page) or was not developed on studio (some old games).</li>
+<li>You can also try to use direct link <a class="external free" href="https://studio.boardgamearena.com/gamepanel?game=template" rel="nofollow">https://studio.boardgamearena.com/gamepanel?game=template</a> (replace template with game name in the link)</li>
+<li>If you prefer github see <a class="external free" href="https://en.doc.boardgamearena.com/BGA_Code_Sharing" rel="nofollow">https://en.doc.boardgamearena.com/BGA_Code_Sharing</a></li></ul></li>
+<li>Access to frontend
+<ul><li>Even if you cannot get source access via studio, you can see the java code, css and images asset by using Browser dev tools, see <a href="Practical_debugging.html" title="Practical debugging">Practical_debugging</a></li></ul></li>
+<li>Push game to Alpha or Beta
+<ul><li>You cannot do it yourself, you have to go though checklist first <a class="external free" href="https://en.doc.boardgamearena.com/Pre-release_checklist" rel="nofollow">https://en.doc.boardgamearena.com/Pre-release_checklist</a> then use Request Alpha or Request Beta button in control panel</li></ul></li>
+<li>Your project seems to be deleted after you came back a year after - create a new project with SAME name as before (you have to remember name) - it will be restored</li>
+<li>You have permission issues syncing files, but you are admin - re-add yourself as admin via control panel. DO NOT delete yourself, select Admin (!Important, double check you selected Admin not Read/Write) type your name (same account name as before) and click add.</li>
+<li>You managed to delete yourself from your own project, or are not admin anymore - require admin interferance - contact studio via <a class="external free" href="https://studio.boardgamearena.com/support" rel="nofollow">https://studio.boardgamearena.com/support</a></li>
+<li>You want to take over abandoned game
+<ul><li>Please first ask the dev (in PM, dev forum or discord) - it may not be actually abandoned</li>
+<li>Contact the Studio support to ask for access to this project via <a class="external free" href="https://studio.boardgamearena.com/support" rel="nofollow">https://studio.boardgamearena.com/support</a></li></ul></li>
+<li>You have error creating new game: Not authorized adminstudionewproject
+<ul><li>Wait a little longer and try again</li></ul></li></ul><h2><span class="mw-headline" id="Help_with_Game_development_or_setup">Help with Game development or setup</span></h2><p>If you stuck or looking for help in regards to development (even if you think there is bug in framework) please contact fellow developers first before attempting to contact any of admins
+</p><ul><li>Google it, you may find an answer unrelated to BGA</li>
+<li>Post question of DISCORD chat server for BGA developers (invite link <a class="external free" href="https://discord.gg/YxEUacY" rel="nofollow">https://discord.gg/YxEUacY</a>). Game authors and publishers can also go there to ask about digital adaptations. Do not go there if you are a non-developer BGA player, but feel free to check out unofficial BGA user servers (at your own risk)</li>
+<li>Search and/or post on <a class="external text" href="http://forum.boardgamearena.com/viewforum.php?f=12" rel="nofollow">Development forum</a></li>
+<li>If you think there is bug in studio or APIs check these bugs <a class="external text" href="https://studio.boardgamearena.com/bugs" rel="nofollow">Bug tracking system FOR STUDIO issues and APIs</a>. You can also submit a bug there</li></ul><p>Also some specific reading may help
+</p><ul><li>Studio development setup including sftp issues - <a href="Tools_and_tips_of_BGA_Studio.html" title="Tools and tips of BGA Studio">Tools and tips of BGA Studio</a></li>
+<li>Debugging - <a href="Practical_debugging.html" title="Practical debugging">Practical debugging</a></li>
+<li>Completely Stuck - <a href="Troubleshooting.html" title="Troubleshooting">Troubleshooting</a></li>
+<li>Anything else - <a href="Studio.html" title="Studio">Studio</a></li></ul><h2><span class="mw-headline" id="Help_with_Game_assets_or_licenses">Help with Game assets or licenses</span></h2><ul><li><a class="external free" href="https://studio.boardgamearena.com/licensing" rel="nofollow">https://studio.boardgamearena.com/licensing</a></li>
+<li>Graphics help <a class="external free" href="https://en.doc.boardgamearena.com/Game_art:_img_directory" rel="nofollow">https://en.doc.boardgamearena.com/Game_art:_img_directory</a></li>
+<li>Request game assets (graphics) - <a class="external free" href="https://studio.boardgamearena.com/support" rel="nofollow">https://studio.boardgamearena.com/support</a></li></ul><h2><span class="mw-headline" id="Last_resort">Last resort</span></h2><p>You can file a request that will land in the BGA ticketing system from the <a class="external text" href="https://studio.boardgamearena.com/support" rel="nofollow">studio support page</a>.
+</p></div></body>
+</html>

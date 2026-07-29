@@ -1,0 +1,553 @@
+/**
+ *------
+ * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
+ * agricola implementation : © Timothée Pecatte <tim.pecatte@gmail.com>, Vincent Toper <vincent.toper@gmail.com>
+ *
+ * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+ * See http://en.boardgamearena.com/#!doc/Studio for more information.
+ * -----
+ *
+ * agricola.scss
+ *
+ * agricola stylesheet
+ *
+ */
+
+html {
+  background-image: url('img/background.jpg');
+}
+
+@font-face {
+  font-family: 'Dominican';
+  src: url('img/fonts/Dominican.woff2') format('woff2'), url('img/fonts/Dominican.woff') format('woff'),
+    url('img/fonts/Dominican.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CalibriB';
+  src: url('img/fonts/CalibriB.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --agricola-font-family: 'Dominican';
+}
+
+.disable-dominican {
+  --agricola-font-family: Roboto, Arial, sans-serif;
+}
+
+@import 'modules/css/variables';
+@import 'modules/css/card';
+@import 'modules/css/layout';
+@import 'modules/css/meeples';
+@import 'modules/css/playerPanel';
+@import 'modules/css/flip';
+@import 'modules/css/settings';
+@import 'modules/css/modals';
+@import 'modules/css/animalControl';
+@import 'modules/css/nouislider';
+
+.notransition {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  transition: none !important;
+}
+
+#customActions .bgabutton.disabled {
+  opacity: 0.5;
+  background: linear-gradient(rgba(189, 189, 189, 0.59), rgba(166, 165, 165, 0.45));
+  cursor: not-allowed;
+  pointer-events: all;
+}
+
+#ebd-body.help-mode {
+  .tooltipable {
+    cursor: help;
+  }
+}
+
+.help-marker {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  z-index: 900;
+  border: 1px solid black;
+  border-radius: 50%;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+#ebd-body:not(.help-mode) {
+  .help-marker {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.notransition {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  transition: none !important;
+}
+
+#page-title.instant-transitioning > div:not(.ribbon-effect) {
+  visibility: hidden !important;
+}
+
+// REMOVE THESE LINES TO REMOVE 3D RIBBON
+#page-title:not(.fixed-page-title) {
+  margin: 0 50px 20px;
+  position: relative;
+  background: #f2edc8;
+
+  .ribbon-effect {
+    background: #f2edc8;
+    position: absolute;
+    width: 70px;
+    bottom: -12px;
+    height: 90%;
+    z-index: -1;
+
+    &::before {
+      content: '';
+      display: block;
+      width: 35px;
+      height: 100%;
+      background: #80795f;
+      position: absolute;
+    }
+
+    &#page-title-left-ribbon {
+      left: -35px;
+      clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 30% 50%);
+
+      &::before {
+        right: 0;
+        clip-path: polygon(100% 100%, 0% calc(100% - 12px), 100% 0%);
+      }
+    }
+
+    &#page-title-right-ribbon {
+      right: -35px;
+      clip-path: polygon(0% 0%, 100% 0%, 70% 50%, 100% 100%, 0% 100%);
+
+      &::before {
+        left: 0;
+        clip-path: polygon(0% 100%, 100% calc(100% - 12px), 0% 0%);
+      }
+    }
+  }
+}
+
+#agr_snake_opening_hint {
+  float: right;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 12px;
+
+  .agr-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 10px;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: bold;
+    color: black;
+    background: #f2d1ae;
+    border: 1px solid black;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      background: #ecc295;
+    }
+  }
+
+  // Help-marker (the ?) is only visible when the player toggles help mode.
+  // Outside help mode we collapse it from the layout entirely so the pill
+  // looks like a clean "Snake opening" button rather than a button with an
+  // empty slot on the right.
+  .help-marker {
+    position: static;
+    width: 14px;
+    height: 14px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+}
+
+#ebd-body:not(.help-mode) #agr_snake_opening_hint .help-marker {
+  display: none;
+}
+
+// Popover content rendered inside BGA's tooltip wrapper (.midSizeDialog)
+.agr-snake-pop-title {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+.agr-snake-pop-desc {
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.agr-snake-row {
+  margin: 6px 0;
+
+  .agr-snake-row-label {
+    font-weight: bold;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 3px;
+  }
+
+  .agr-snake-row-names {
+    font-weight: bold;
+    font-size: 14px;
+  }
+}
+
+.agr-snake-row + .agr-snake-row {
+  margin-top: 14px;
+}
+
+#logs .log.notif_startNewTurn .roundedbox {
+  background: #f2d1ae;
+  border: 1px solid black;
+  border-radius: 3px;
+  text-align: center;
+  font-weight: bold;
+  clip-path: none;
+}
+
+#logs .log.notif_newUndoableStep {
+  margin-top: 0px;
+
+  .roundedbox {
+    display: none;
+    text-align: center;
+    cursor: pointer;
+    background-color: #c4c2c2;
+    font-size: 12px;
+    padding: 2px 5px;
+
+    &::before,
+    &::after {
+      content: "\f0e2";
+      font: normal normal normal 12px/1 FontAwesome;
+      margin: 0px 10px;
+    }
+  }
+
+  &.selectable .roundedbox {
+    display: block;
+  }
+}
+
+.chatwindowlogs_zone .log.notif_newUndoableStep {
+  margin-bottom: -4px;
+  padding: 0px;
+  display: none !important;
+
+  &.selectable {
+    display: block !important;
+
+    .roundedboxinner {
+      text-align: center;
+      cursor: pointer;
+      background-color: #c4c2c2;
+      font-size: 12px;
+      padding: 2px 5px;
+
+      &::before,
+      &::after {
+        content: "\f0e2";
+        font: normal normal normal 12px/1 FontAwesome;
+        margin: 0px 10px;
+      }
+
+      .msgtime {
+        display: none;
+      }
+    }
+  }
+}
+
+#logs {
+  .meeple-container {
+    font-size: 2em;
+  }
+
+  .roundedbox {
+    padding: 5px 7px;
+    background-color: #fff6c6;
+    clip-path: polygon(
+      3% 0,
+      7% 1%,
+      11% 0%,
+      16% 2%,
+      20% 0,
+      23% 2%,
+      28% 2%,
+      32% 1%,
+      35% 1%,
+      39% 3%,
+      41% 1%,
+      45% 0%,
+      47% 2%,
+      50% 2%,
+      53% 0,
+      58% 2%,
+      60% 2%,
+      63% 1%,
+      65% 0%,
+      67% 2%,
+      69% 2%,
+      73% 1%,
+      76% 1%,
+      79% 0,
+      82% 1%,
+      85% 0,
+      87% 1%,
+      89% 0,
+      92% 1%,
+      96% 0,
+      98% 3%,
+      99% 3%,
+      99% 6%,
+      100% 11%,
+      98% 15%,
+      100% 21%,
+      99% 28%,
+      100% 32%,
+      99% 35%,
+      99% 40%,
+      100% 43%,
+      99% 48%,
+      100% 53%,
+      100% 57%,
+      99% 60%,
+      100% 64%,
+      100% 68%,
+      99% 72%,
+      100% 75%,
+      100% 79%,
+      99% 83%,
+      100% 86%,
+      100% 90%,
+      99% 94%,
+      99% 98%,
+      95% 99%,
+      92% 99%,
+      89% 100%,
+      86% 99%,
+      83% 100%,
+      77% 99%,
+      72% 100%,
+      66% 98%,
+      62% 100%,
+      59% 99%,
+      54% 99%,
+      49% 100%,
+      46% 98%,
+      43% 100%,
+      40% 98%,
+      38% 100%,
+      35% 99%,
+      31% 100%,
+      28% 99%,
+      25% 99%,
+      22% 100%,
+      19% 99%,
+      16% 100%,
+      13% 99%,
+      10% 99%,
+      7% 100%,
+      4% 99%,
+      2% 97%,
+      1% 97%,
+      0% 94%,
+      1% 89%,
+      0% 84%,
+      1% 81%,
+      0 76%,
+      0 71%,
+      1% 66%,
+      0% 64%,
+      0% 61%,
+      0% 59%,
+      1% 54%,
+      0% 49%,
+      1% 45%,
+      0% 40%,
+      1% 37%,
+      0% 34%,
+      1% 29%,
+      0% 23%,
+      2% 20%,
+      1% 17%,
+      1% 13%,
+      0 10%,
+      1% 6%,
+      1% 3%
+    );
+  }
+}
+
+/* Cancelled notification messages */
+.log.cancel {
+  color: #c62828 !important;
+  text-decoration: line-through;
+}
+
+/* Desktop logs */
+.log.cancel .roundedbox {
+  background-color: rgba(240, 186, 117, 0.6) !important;
+}
+
+/* Mobile logs */
+.log.cancel.roundedbox {
+  background-color: #ef9a9a;
+}
+
+/* Check combos */
+.checkCombos {
+  background-size: 20% auto;
+
+  h1 {
+    font-family: var(--agricola-font-family);
+    text-align: center;
+    background: #eee;
+    border-top-right-radius: 8px;
+    margin: 0px 2px;
+    border-top-left-radius: 8px;
+    border-bottom: 1px solid black;
+    padding: 5px 0px;
+  }
+
+  & > div {
+    margin: 20px;
+    display: flex;
+    flex-wrap: wrap;
+
+    .player-card {
+      margin: 5px;
+    }
+  }
+
+  table {
+    border: 1px solid black;
+    margin: auto;
+    border-collapse: collapse;
+    font-size: 14px;
+
+    th {
+      padding: 2px 3px;
+      border:1px solid black;
+      font-weight: bold;
+    }
+    td {
+      width: 20px;
+      height: 20px;
+      border:1px solid black;
+      text-align: center;
+    }
+  }
+}
+
+#btnUndoLastStep {
+  background: #d97050;
+}
+
+#game-seed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  width: 100%;
+  max-width: 860px;
+  margin: 4px auto;
+  padding: 6px 10px;
+  font-size: 90%;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid #6a4b2f;
+  border-radius: 6px;
+  box-sizing: border-box;
+
+  #game-seed-label {
+    flex: 0 0 100%;
+  }
+
+  #game-seed-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+    padding: 4px 6px;
+    font-family: monospace;
+    font-size: 100%;
+    background: white;
+    border: 1px solid #6a4b2f;
+    border-radius: 3px;
+    user-select: all;
+  }
+
+  #game-seed-copy {
+    flex: 0 0 80px;
+    width: 80px;
+    padding: 4px 0;
+    font-weight: bold;
+    color: black;
+    background: #f2d1ae;
+    border: 1px solid #6a4b2f;
+    border-radius: 3px;
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
+
+    &:hover {
+      background: #ecc295;
+    }
+  }
+}
+
+html[data-theme='dark'] {
+  #game_play_area,
+  #page-title:not(.fixed-page-title),
+  #page-title:not(.fixed-page-title) #pagemaintitletext,
+  #page-title:not(.fixed-page-title) #gameaction_status,
+  #player_boards,
+  #player_boards .player-board,
+  #spectatorbox,
+  #logs .roundedbox,
+  .chatwindowlogs_zone .log.notif_newUndoableStep .roundedboxinner,
+  .agricola_popin,
+  .player-card,
+  .action-card-holder {
+    color: black;
+  }
+
+  .bgabutton_gray {
+    color: #0d0d0d;
+    background: transparent;
+    border: 1px solid #0d0d0d;
+    text-shadow: none;
+  }
+}

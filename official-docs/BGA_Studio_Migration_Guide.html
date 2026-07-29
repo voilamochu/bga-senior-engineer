@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>BGA Studio Migration Guide - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-BGA_Studio_Migration_Guide rootpage-BGA_Studio_Migration_Guide action-view"><div class="article"><p>This page is only for people who started long time ago and now need to re-write older projects into more modern versions.
+Also if you trying to fix older game you may have to look here.
+</p><h2><span class="mw-headline" id="Overview">Overview</span></h2><p>See announcement here <a class="external free" href="https://studio.boardgamearena.com/forum/viewtopic.php?f=12&amp;t=45248" rel="nofollow">https://studio.boardgamearena.com/forum/viewtopic.php?f=12&amp;t=45248</a>
+</p><h2><span class="mw-headline" id="Structural_changes">Structural changes</span></h2><p><i><b>gameoptions.inc.php</b></i> =&gt; gameoptions.json, gamepreferences.json
+</p><p>Now options and preferences are 2 json files, follow Migration steps on this page  <a class="external free" href="https://en.doc.boardgamearena.com/Options_and_preferences:_gameoptions.json,_gamepreferences.json#Migration" rel="nofollow">https://en.doc.boardgamearena.com/Options_and_preferences:_gameoptions.json,_gamepreferences.json#Migration</a>
+</p><p>When building the game with this file you will see deprecation warning: The file gameoptions.inc.php is deprecated. click "Reload game options configuration" to generate the JSON content you can then put on a gameoptions.json and gamepreferences.json file. Then you can safely delete the gameoptions.inc.php file.
+</p><p>Move and refactor, see section <a href="/BGA_Studio_Migration_Guide#Namespaced_game_class" title="BGA Studio Migration Guide">Namespaced game class</a>
+</p><p>See section <a href="/BGA_Studio_Migration_Guide#Autowire_game_actions" title="BGA Studio Migration Guide">Autowire game actions</a>
+</p><p>See section <a href="/BGA_Studio_Migration_Guide#Removal_of_view_and_template" title="BGA Studio Migration Guide">Removal of view and template</a>
+</p><p>File still there. Deprecated keys <b>designer</b>, <b>artist</b>, <b>year</b>, <b>presentation</b>, <b>tags</b>, <b>complexity</b>, <b>strategy</b>, <b>luck</b>, <b>diplomacy</b>, <b>is_beta</b> are no longer in use. Please remove these keys and use the Game Metadata Manager instead.
+</p><p><i><b>material.inc.php</b></i> =&gt; optional
+</p><p><i><b>states.inc.php</b></i> =&gt; modules/php/States
+</p><p><b>stats.inc.php</b> =&gt; stats.json
+</p><p><b>&lt;gamename&gt;.js</b>
+</p><h2><span class="mw-headline" id="IDE_Support">IDE Support</span></h2><p>A new _ide_helper.php file is now provided in every project dir, allowing IDE to provide syntax error highlighting for the framework functions. This file is regularly updated to match the latest framework updates.
+</p><p>📌 Sync the files from the FTP dir to your local copy to benefit from it. Most of the IDE like Visual Studio Code should handle _ide_helper.php if you already followed <a class="external free" href="https://en.doc.boardgamearena.com/Setting_up_BGA_Development_environment_using_VSCode" rel="nofollow">https://en.doc.boardgamearena.com/Setting_up_BGA_Development_environment_using_VSCode</a>
+</p><h2><span class="mw-headline" id="Game_configuration">Game configuration</span></h2><h3><span class="mw-headline" id="User_preferences">User preferences</span></h3><p>Access to user preferences and listener: <a class="external free" href="https://en.doc.boardgamearena.com/Game_interface_logic:_yourgamename.js#User_preferences" rel="nofollow">https://en.doc.boardgamearena.com/Game_interface_logic:_yourgamename.js#User_preferences</a>
+</p><ul><li>If you had a custom function called <code>setupPreferences()</code> reading the &lt;select&gt; values, you can now use <code>onGameUserPreferenceChanged</code> instead.</li>
+<li>If you had a copy of the user preferences on a DB table, it's not needed anymore. Remove all support of writing to this table. Replace access to this table with</li></ul><pre>       $pref = $this-&gt;userPreferences-&gt;get($playerId, $prefCode) ?? $defaultValue;
+</pre><ul><li>If you used $this-&gt;player_preferences - replace the use with use of proper API</li></ul><h4><span class="mw-headline" id="Instant_cssPref_on_user_preferences">Instant cssPref on user preferences</span></h4><p>A reload is not needed anymore to apply cssPref on a user preference change.
+</p><h3><span class="mw-headline" id="Game_options">Game options</span></h3><p>New functions to access the table options (game options) without hassle
+</p><p>📌 
+</p><ul><li>Remove declaration of game options  from "<code>initGameStateLabels</code>"</li>
+<li>Instead of using <code>$this-&gt;getGameStateValue</code> or <code>$this-&gt;gamestate-&gt;table_globals</code> use</li></ul><pre>$this-&gt;tableOptions-&gt;get(int $optionId)
+</pre><p>This new object can also return the Real-time/Turn-based setting: <a class="external free" href="https://en.doc.boardgamearena.com/Main_game_logic:_Game.php#Reflexion_time" rel="nofollow">https://en.doc.boardgamearena.com/Main_game_logic:_Game.php#Reflexion_time</a>
+</p><h2><span id="Server_parts_.28php.2C_sql.2C_etc.29"></span><span class="mw-headline" id="Server_parts_(php,_sql,_etc)">Server parts (php, sql, etc)</span></h2><h3><span class="mw-headline" id="PHP_migration">PHP migration</span></h3><p>Oct 2025: The migration was made from PHP7.4 to PHP8.4 new syntax and functions.
+</p><p>📌 
+</p><ul><li>Replace all <code>self::</code> to <code>$this-&gt;</code>   - The new project template has been updated to remove this bad practice (that may be unsupported in a future PHP version)</li></ul><ul><li>Add <code>declare(strict_types=1);</code> to all .php files and fix compiler warnings (if you use IDE it will detect it before upload).</li></ul><h3><span class="mw-headline" id="Namespaced_game_class">Namespaced game class</span></h3><p>Game class from <i><b>&lt;gamename&gt;.game.php</b></i> are now namespaced (and moved to modules/php/Game.php) and can autoload other classes of the same namespace
+</p><p>📌 The class file should be moved to modules/php/Game.php and adopted
+</p><ul><li>Move YourGameName.game.php to modules/php (create this dir if does not exists)</li>
+<li>Rename to Game.php</li>
+<li>Find the place below the copyright and add</li></ul><pre>     declare(strict_types=1);
+     namespace Bga\Games\YourGameName;
+</pre><ul><li>Remove</li></ul><pre> require_once APP_GAMEMODULE_PATH . "module/table/table.game.php";
+</pre><ul><li>Find you class declaration change YouGameName to Game (verbatim) and change extends</li></ul><pre>  class Game extends \Bga\GameFramework\Table
+</pre><ul><li>All references to non-namespaced classes in this file should be defined on top of the file with "use", for example "use \BgaUserException;" as it is this non-namespaced exception is used in the zombieTurn function.</li></ul><ul><li>All includes with relative path will need to be updated too.</li></ul><ul><li>The material.inc.php to have be moved and included directly (see below)</li></ul><p>Multiple functions of "Table" base class are now deprecated, see how to migrate in corresponding section
+</p><ul><li>notifyAllPlayers</li>
+<li>notifyPlayer</li>
+<li>mysql_fetch_assoc
+<ul><li>Deprecation warning:  mysql_fetch_assoc function detected. It is deprecated, and may be removed someday. Please replace it by standard framework DB functions!</li></ul></li>
+<li>Table (class access without namespace)</li>
+<li>isMutiactiveState (misspelled version)</li>
+<li>State management functions (getState, state, getPrivateState)</li>
+<li>Player information functions (getActivePlayerName, getCurrentPlayerName, getCurrentPlayerColor)</li>
+<li>Game mode functions (isAsync, isRealtime)</li>
+<li>Exception classes (feException, BgaUserException, etc.)</li>
+<li>...</li></ul><h3><span class="mw-headline" id="Material">Material</span></h3><p>Material file <b>material.inc.php</b> is now optional. You can define all your material directly in php class. If you still like to keep it, and using namespaced Game.php you have to move it to subfolder and include directly <a href="/Game_material_description:_material.inc.php#Move_it_to_modules/php" title="Game material description: material.inc.php">Game material description: material.inc.php#Move it to modules/php</a>
+</p><h3><span class="mw-headline" id="Autowire_game_actions">Autowire game actions</span></h3><p>Simplify the action calls by removing  <b>&lt;gamename&gt;.action.php</b>  file
+</p><p>📌 Autowired actions needs to start with "act", so it's risky to change them (if you change all actions names in the states.php, game, action and JS file, Real-time players will call the old name until they refresh. So, it needs to be done in two steps with duplicates on back side, or to be deployed when there is no Realt-time table running.
+</p><p>Deprecation warning: Actions detected on .action.php file. You can now use <a href="/Main_game_logic:_Game.php#Actions_(autowired)" title="Main game logic: Game.php">Auto-wired actions</a> to avoid pass-through functions in .action.php file. If you transform your project to use only auto-wired actions, you can then delete the .action.php file.
+</p><h3><span class="mw-headline" id="Notifications">Notifications</span></h3><p>Functions notifyAllPlayers and notifyPlayer from main game.php are deprecated
+</p><h4><span class="mw-headline" id="Notification_Decorators">Notification Decorators</span></h4><p>New notify function that handles decorators, reducing the duplicate code on notification args.
+</p><h4><span class="mw-headline" id="Notification_args_consistency">Notification args consistency</span></h4><p>Previously, when you sent an arg that was transformed by format_string_recursive or bgaFormatText, the args object was mutated and you got the transformed value in the notif_ handler.
+</p><pre>[
+ 'roundNumber' =&gt; $roundNumber, // number, to update the round counter
+ 'round_number' =&gt; $roundNumber, // number that will be transformed to string by bgaFormatText, when shown in bold in the logs
+]
+</pre><p>📌 Do not duplicate the value, as the notif_ handler will now get unmutated args
+</p><h3><span class="mw-headline" id="Deprecated_getGameName">Deprecated getGameName</span></h3><p>The getGameName() function is now useless in the Game PHP file and can be deleted
+</p><p>Deprecation warning: getGameName function detected. It is deprecated. You can delete it, it is not used anymore
+</p><h3><span class="mw-headline" id="State_Management_Functions">State Management Functions</span></h3><p>Several state-related functions have been deprecated in favor of more explicit methods:
+</p><ul><li>Replace <code>$this-&gt;gamestate-&gt;state()</code> with <code>$this-&gt;getCurrentMainState()</code> or <code>$this-&gt;getCurrentState(int $playerId)</code></li>
+<li>Replace <code>$this-&gt;getState()</code> with <code>$this-&gt;getCurrentMainStateId()</code> or <code>$this-&gt;getCurrentStateId(int $playerId)</code></li>
+<li>Replace <code>$this-&gt;getPrivateState($playerId)</code> with <code>$this-&gt;getCurrentState($playerId)</code></li>
+<li>Replace <code>$this-&gt;gamestate-&gt;states</code> access with <code>$this-&gt;getCurrentMainState()</code> or <code>$this-&gt;getCurrentState(int $playerId)</code></li>
+<li>Replace <code>$this-&gt;isMutiactiveState()</code> (misspelled) with <code>$this-&gt;isMultiactiveState()</code></li></ul><h3><span class="mw-headline" id="Player_Information_Functions">Player Information Functions</span></h3><p>Several functions for getting player information are deprecated in favor of more flexible methods:
+</p><ul><li>Replace <code>$this-&gt;getActivePlayerName()</code> with <code>$this-&gt;getPlayerNameById($activePlayerId)</code> using $activePlayerId magic parameter</li>
+<li>Replace <code>$this-&gt;getCurrentPlayerName()</code> with <code>$this-&gt;getPlayerNameById($currentPlayerId)</code> using $currentPlayerId magic parameter</li>
+<li>Replace <code>$this-&gt;getCurrentPlayerColor()</code> with <code>$this-&gt;getPlayerColorById($currentPlayerId)</code> using $currentPlayerId magic parameter</li></ul><h3><span class="mw-headline" id="Game_Mode_Functions">Game Mode Functions</span></h3><p>Functions to check game mode (turn-based vs real-time) have been moved to tableOptions:
+</p><ul><li>Replace <code>$this-&gt;isAsync()</code> with <code>$this-&gt;tableOptions-&gt;isTurnBased()</code></li>
+<li>Replace <code>$this-&gt;isRealtime()</code> with <code>$this-&gt;tableOptions-&gt;isRealTime()</code></li></ul><h3><span class="mw-headline" id="Exception_Classes">Exception Classes</span></h3><p>Old exception classes are deprecated in favor of namespaced versions:
+</p><ul><li>Replace <code>feException</code> with <code>\Bga\GameFramework\UserException</code>, <code>\Bga\GameFramework\SystemException</code>, or <code>\Bga\GameFramework\VisibleSystemException</code> depending on your need</li>
+<li>Replace <code>BgaUserException</code> with <code>\Bga\GameFramework\UserException</code></li>
+<li>Replace <code>BgaSystemException</code> with <code>\Bga\GameFramework\SystemException</code></li>
+<li>Replace <code>BgaVisibleSystemException</code> with <code>\Bga\GameFramework\VisibleSystemException</code></li>
+<li>Remove usage of <code>FEX_NOCODE</code> constant - new exception classes don't need error codes</li></ul><h3><span class="mw-headline" id="Namespace_for_Base_Classes">Namespace for Base Classes</span></h3><p>Old class references without namespaces are deprecated:
+</p><ul><li>Replace <code>extends Table</code> with <code>extends \Bga\GameFramework\Table</code></li>
+<li>Replace <code>Deck</code> with <code>\Bga\GameFramework\Components\Deck</code></li></ul><h3><span id="Deprecated_APP_.2A_Classes"></span><span class="mw-headline" id="Deprecated_APP_*_Classes">Deprecated APP_* Classes</span></h3><p>Deprecation warning:
+</p><p>We recommend you to use composition instead of extend:
+</p><p>If it's too complicated, at least replace APP_Object/APP_GameClass by APP_DbObject as APP_Object/APP_GameClass may be removed soon and don't contain anything more than APP_DbObject.
+</p><pre>class Tokens extends APP_GameClass {  
+</pre><p>becomes:
+</p><pre>class Tokens extends \APP_DbObject { 
+</pre><h3><span class="mw-headline" id="Deprecated_translation_functions">Deprecated translation functions</span></h3><p>On php side translation story is simplified
+</p><ul><li>totranslate function is not longer needed and can be replaced with clienttranslate</li>
+<li>$this-&gt;_() (or self::_()) can also be replaced with clienttranslate when use for non parameterized strings (but not in deprecated &lt;game&gt;.view.php file):</li></ul><pre> throw new UserException(clienttranslate('You must choose 3 cards'));
+</pre><p>UserException is also handling parameterized strings like the notify functions.
+</p><p>See <a href="Translations.html" title="Translations">Translations</a>
+</p><h3><span class="mw-headline" id="Deprecated_getNew">Deprecated getNew</span></h3><p>Function getNew that was only used to create new deck object is now deprecated, use $this-&gt;deckFactory-&gt;createDeck(<i>) instead</i>
+</p><h3><span class="mw-headline" id="Stats">Stats</span></h3><p>The stats function such as initStat, setStat and getStat are also deprecated in favor of access via the objects <code>$this-&gt;tableStats and $this-&gt;playerStats</code>
+See <a class="external free" href="https://en.doc.boardgamearena.com/index.php?title=Main_game_logic:_Game.php#Game_statistics" rel="nofollow">https://en.doc.boardgamearena.com/index.php?title=Main_game_logic:_Game.php#Game_statistics</a>
+</p><h3><span class="mw-headline" id="Legacy">Legacy</span></h3><p>New object to access the legacy functions, removing the need to manually decode the JSON result when getting the values.
+</p><p>📌 Use $this-&gt;legacy-&gt;actionname instead of $this-&gt;actionnameLegacy and remove JSON decoding on getters
+</p><h3><span class="mw-headline" id="Any_Globals">Any Globals</span></h3><p>New database table and API to handle any type variables instead of numerical values only
+</p><p>📌 If you had custom tables just for that you can drop them and use standard table
+</p><h3><span class="mw-headline" id="Server_Counters">Server Counters</span></h3><p>2 new counter classes have been added to easily handle the various counters your game might have. You also have 2 prebuilt counters: playerScore and playerScoreAux, to handle the scoring values, so you don't need to update manually the DB when setting the scores.
+</p><p>📌 Replace setting player_score/player_score_aux using db queries with use of $this-&gt;playerScore and $this-&gt;playerScoreAux. Remove the notifications, or part of notifications, updating the player panel score counter (if you had some custom notification you may still need them).
+</p><h3><span class="mw-headline" id="Updated_Zombie_Mode_documentation_and_recommendations">Updated Zombie Mode documentation and recommendations</span></h3><p>We now recommend making the zombie player playing randomly, instead of passing as a default. A new "Zombie Mode level" field has been added to the Game Metadata Manager, to indicated the Zombie Mode you implemented in your game.
+</p><p><br/>
+</p><h3><span class="mw-headline" id="View_and_template_files:_deprecated">View and template files: deprecated</span></h3><p><i><b>&lt;gamename&gt;.view.php, &lt;gamename&gt;_&lt;gamename&gt;.tpl</b></i> are now optional and are not generated anymore on a new project. The new project templates demonstrate how to work without them.
+</p><pre>this.getGameAreaElement().insertAdjacentHTML('beforeend', `
+  &lt;span&gt;${_('My translated text')}&lt;/span&gt;&lt;div id="player-tables"&gt;&lt;/div&gt;
+`);
+ 
+</pre><p>See more in <a href="#Access_template_elements">#Access template elements</a>
+</p><h4><span id="Forbid_access_to_global_BGA_variables_and_direct_DB_access_on_action.2Fview_files"></span><span class="mw-headline" id="Forbid_access_to_global_BGA_variables_and_direct_DB_access_on_action/view_files">Forbid access to global BGA variables and direct DB access on action/view files</span></h4><p>If you did not remove action and view files, you cannot longer use some stuff in them, such $g_user global and db access functions.
+</p><p>📌 Replace $g_user-&gt;get_id() by $this-&gt; getCurrentPlayerId()
+</p><h3><span class="mw-headline" id="States">States</span></h3><p>There is now a way to describe each game state in a State class, that will handle all logic and description of the state. It helps splitting the code into multiple files, instead of one big Game.php file.
+</p><p>📌 Create a State class for each state of the game (except 1 and 99 if they are still described in states.inc.php), move the state definition in it, and adapt the "st", "arg", "actXXX" and "zombie" functions in the class. When all classes are migrated, you can remove the states.inc.php file in the FTP folder.
+</p><h4><span class="mw-headline" id="If_still_using_states.php">If still using states.php</span></h4><p>The new class GameStateBuilder helps you build the state machine, allowing auto-completion, and avoid typo errors on state types. Complete example: 📌 <a class="external free" href="https://en.doc.boardgamearena.com/Your_game_state_machine:_states.inc.php" rel="nofollow">https://en.doc.boardgamearena.com/Your_game_state_machine:_states.inc.php</a>
+</p><p>📌 Replace the array definition by GameStateBuilder use. You can remove the declaration of states 1 and 99.
+</p><h2><span id="Client_parts_.28js.2C_html.2C_css.29"></span><span class="mw-headline" id="Client_parts_(js,_html,_css)">Client parts (js, html, css)</span></h2><h3><span class="mw-headline" id="Main_class">Main class</span></h3><p>File is moved from yourgamename.js to modules/js/Game.js and has a different structure
+<a class="external free" href="https://en.doc.boardgamearena.com/Game_interface_logic:_Game.js" rel="nofollow">https://en.doc.boardgamearena.com/Game_interface_logic:_Game.js</a>
+It won't be easy to convert this, maybe best just to use old one which still works, but move when you write a new game.
+</p><h3><span class="mw-headline" id="Deprecated_ajaxcall">Deprecated ajaxcall</span></h3><p>Introduced function bgaPerformAction to replace ajaxcall and checkAction combination, with a simpler syntax:
+</p><p>Deprecation warning: The <code>ajaxcall</code>  function is deprecated, check <a class="new" href="/index.php?title=/en.doc.boardgamearena.com/Game_interface_logic:_yourgamename.js&amp;action=edit&amp;redlink=1" title="/en.doc.boardgamearena.com/Game interface logic: yourgamename.js (page does not exist)">the</a> <code>bgaPerformAction</code> <a class="new" href="/index.php?title=/en.doc.boardgamearena.com/Game_interface_logic:_yourgamename.js&amp;action=edit&amp;redlink=1" title="/en.doc.boardgamearena.com/Game interface logic: yourgamename.js (page does not exist)">function</a>.
+</p><h3><span id="New_this.bga..2A_API_Structure"></span><span class="mw-headline" id="New_this.bga.*_API_Structure">New this.bga.* API Structure</span></h3><p>Many client-side functions have been reorganized into namespaced objects under <code>this.bga</code> for better organization and discoverability:
+</p><h4><span id="Player_Functions_.28this.bga.players.29"></span><span class="mw-headline" id="Player_Functions_(this.bga.players)">Player Functions (this.bga.players)</span></h4><p>📌
+</p><ul><li>Replace <code>this.isSpectator</code> with <code>this.bga.players.isCurrentPlayerSpectator()</code></li>
+<li>Replace <code>this.isCurrentPlayerActive()</code> with <code>this.bga.players.isCurrentPlayerActive()</code></li>
+<li>Replace <code>this.isPlayerActive(player_id)</code> with <code>this.bga.players.isPlayerActive(player_id)</code></li>
+<li>Replace <code>this.getActivePlayers()</code> with <code>this.bga.players.getActivePlayerIds()</code></li>
+<li>Replace <code>this.getActivePlayerId()</code> with <code>this.bga.players.getActivePlayerId()</code></li>
+<li>Replace <code>this.getFormattedPlayerName(...)</code> with <code>this.bga.players.getFormattedPlayerName(...)</code></li>
+<li>Replace <code>this.addAutomataPlayerPanel(...)</code> with <code>this.bga.players.addAutomataPlayerPanel(...)</code></li></ul><h4><span id="State_Functions_.28this.bga.states.29"></span><span class="mw-headline" id="State_Functions_(this.bga.states)">State Functions (this.bga.states)</span></h4><p>📌
+</p><ul><li>Replace <code>this.on_client_state</code> with <code>this.bga.states.isOnClientState()</code></li>
+<li>Replace <code>this.setClientState(stateName, args)</code> with <code>this.bga.states.setClientState(stateName, args)</code></li>
+<li>Replace <code>this.restoreServerGameState()</code> with <code>this.bga.states.restoreServerGameState()</code></li></ul><h4><span id="Status_Bar_Functions_.28this.bga.statusBar.29"></span><span class="mw-headline" id="Status_Bar_Functions_(this.bga.statusBar)">Status Bar Functions (this.bga.statusBar)</span></h4><p>📌
+</p><ul><li>Replace <code>this.updatePageTitle()</code> with <code>this.bga.statusBar.setTitle(title, args)</code></li>
+<li>Replace <code>this.removeActionButtons()</code> with <code>this.bga.statusBar.removeActionButtons()</code></li></ul><h4><span id="Action_Functions_.28this.bga.actions.29"></span><span class="mw-headline" id="Action_Functions_(this.bga.actions)">Action Functions (this.bga.actions)</span></h4><p>📌
+</p><ul><li>Replace <code>this.checkAction(action, nomessage)</code> with <code>this.bga.actions.checkAction(action, nomessage)</code></li>
+<li>Replace <code>this.checkPossibleActions(action)</code> with <code>this.bga.actions.checkPossibleActions(action)</code></li>
+<li>Replace <code>this.bgaPerformAction(...)</code> with <code>this.bga.actions.performAction(...)</code> - Note: catch result is now <code>{ message, args }</code> instead of just <code>message</code></li></ul><h4><span id="Dialog_Functions_.28this.bga.dialogs.29"></span><span class="mw-headline" id="Dialog_Functions_(this.bga.dialogs)">Dialog Functions (this.bga.dialogs)</span></h4><p>📌
+</p><ul><li>Replace <code>this.showMoveUnauthorized()</code> with <code>this.bga.dialogs.showMoveUnauthorized()</code></li>
+<li>Replace <code>this.showMessage(msg, type)</code> with <code>this.bga.dialogs.showMessage(msg, type)</code></li>
+<li>Replace <code>this.confirmationDialog(text, callback, callback_cancel)</code> with <code>this.bga.dialogs.confirmation(text)</code> - Note: now returns a Promise instead of using callbacks</li>
+<li>Replace <code>this.multipleChoiceDialog(text, choices, callback)</code> with <code>this.bga.dialogs.multipleChoice(text, choices)</code> - Note: now returns a Promise instead of using callbacks</li></ul><h4><span id="Image_Functions_.28this.bga.images.29"></span><span class="mw-headline" id="Image_Functions_(this.bga.images)">Image Functions (this.bga.images)</span></h4><p>📌
+</p><ul><li>Replace <code>this.dontPreloadImage(image)</code> with <code>this.bga.images.dontPreloadImage(image)</code> or <code>this.bga.images.dontPreloadImages([...])</code></li>
+<li>Replace <code>this.ensureSpecificGameImageLoading(imagelist)</code> with <code>this.bga.images.preloadImage(image)</code> or <code>this.bga.images.preloadImages([...])</code></li></ul><h4><span id="Game_Area_Functions_.28this.bga.gameArea.29"></span><span class="mw-headline" id="Game_Area_Functions_(this.bga.gameArea)">Game Area Functions (this.bga.gameArea)</span></h4><p>📌
+</p><ul><li>Replace <code>this.getGameAreaElement()</code> with <code>this.bga.gameArea.getElement()</code></li>
+<li>Replace <code>this.addLastTurnBanner(message, args)</code> with <code>this.bga.gameArea.addLastTurnBanner(message, args)</code></li>
+<li>Replace <code>this.removeLastTurnBanner()</code> with <code>this.bga.gameArea.removeLastTurnBanner()</code></li>
+<li>Replace <code>this.addWinConditionBanner(message, args)</code> with <code>this.bga.gameArea.addWinConditionBanner(message, args)</code></li></ul><h4><span id="Player_Panel_Functions_.28this.bga.playerPanels.29"></span><span class="mw-headline" id="Player_Panel_Functions_(this.bga.playerPanels)">Player Panel Functions (this.bga.playerPanels)</span></h4><p>📌
+</p><ul><li>Replace <code>this.getPlayerPanelElement(playerId)</code> with <code>this.bga.playerPanels.getElement(playerId)</code></li>
+<li>Replace <code>this.scoreCtrl[player_id]</code> with <code>this.bga.playerPanels.getScoreCounter(player_id)</code></li></ul><h4><span id="User_Preferences_.28this.bga.userPreferences.29"></span><span class="mw-headline" id="User_Preferences_(this.bga.userPreferences)">User Preferences (this.bga.userPreferences)</span></h4><p>📌
+</p><ul><li>Replace <code>this.getGameUserPreference(pref_id)</code> with <code>this.bga.userPreferences.get(pref_id)</code></li>
+<li>Replace <code>this.setGameUserPreference(pref_id, value)</code> with <code>this.bga.userPreferences.set(pref_id, value)</code></li></ul><h4><span id="Notification_Functions_.28this.bga.notifications.29"></span><span class="mw-headline" id="Notification_Functions_(this.bga.notifications)">Notification Functions (this.bga.notifications)</span></h4><p>📌
+</p><ul><li>Replace <code>this.bgaSetupPromiseNotifications(...)</code> with <code>this.bga.notifications.setupPromiseNotifications(...)</code></li></ul><h4><span id="Animation_Functions_.28this.bga.gameui.29"></span><span class="mw-headline" id="Animation_Functions_(this.bga.gameui)">Animation Functions (this.bga.gameui)</span></h4><p>📌
+</p><ul><li>Replace <code>this.instantaneousMode</code> with <code>this.bga.gameui.bgaAnimationsActive()</code> - Note: logic is reversed (instantaneousMode was true when animations should be skipped, bgaAnimationsActive() returns true when animations should play)</li></ul><h3><span class="mw-headline" id="Access_to_DOM_elements">Access to DOM elements</span></h3><p>New functions getPlayerPanelElement(player_id) and this.getGameAreaElement()
+</p><p><a class="external free" href="https://en.doc.boardgamearena.com/Game_interface_logic:_Game.js#Adding_stuff_to_player%27s_panel" rel="nofollow">https://en.doc.boardgamearena.com/Game_interface_logic:_Game.js#Adding_stuff_to_player%27s_panel</a>
+</p><h3><span class="mw-headline" id="Notification_setup">Notification setup</span></h3><p>Notifications can now be automatically scanned and called without needing to register them one by one. They'll handle Promises, so they end synchronously when the Promise resolves.
+</p><p><a class="external free" href="https://en.doc.boardgamearena.com/Game_interface_logic:_Game.js#Notifications" rel="nofollow">https://en.doc.boardgamearena.com/Game_interface_logic:_Game.js#Notifications</a>
+</p><p>A new utility function has been added to support Promises for old Dojo animations
+</p><p>📌 Dojo.subscribe calls in setupNotifications must be removed if using promise-based notification setup. Notif_ function should be async and return a Promise, make sure they wait for the expected amount of time if the sync setup was using a numerical duration
+</p><h3><span class="mw-headline" id="Status_bar_manipulation">Status bar manipulation</span></h3><p>Function to change the title from the JS
+</p><p><a class="external free" href="https://en.doc.boardgamearena.com/Game_interface_logic:_yourgamename.js#Title_bar" rel="nofollow">https://en.doc.boardgamearena.com/Game_interface_logic:_yourgamename.js#Title_bar</a>
+</p><p>This also includes a new function to create action buttons, that are more screen-reader compatible than the previous version. The new button parameters also allow you to set a confirm popin or an autoclick for confirmation buttons
+</p><h3><span class="mw-headline" id="Dojo_usage">Dojo usage</span></h3><p>Dojo usage has been reduced to minimum in the new project template and the doc, as native JS is now able to do almost the same things, with better performance and more knowledge for newcomers of the native (vanilla) JS.
+</p><table class="wikitable">
+<tbody><tr>
+<th>Dojo API
+</th>
+<th>Category
+</th>
+<th>Description
+</th>
+<th>Vanilla JS Replacement
+</th></tr>
+<tr>
+<td><code>dojo.byId("id")</code>
+</td>
+<td>DOM Selection
+</td>
+<td>Selects a single DOM element by its ID.
+</td>
+<td><code>document.getElementById("id")</code>
+</td></tr>
+<tr>
+<td><code>dojo.query("selector")</code>
+</td>
+<td>DOM Selection
+</td>
+<td>Selects a collection of DOM elements using CSS selectors.
+</td>
+<td><code>document.querySelectorAll("selector")</code> or <code>document.querySelector("selector")</code>
+</td></tr>
+<tr>
+<td><code>dojo.connect(node, "onclick", fn)</code>
+</td>
+<td>Event Handling
+</td>
+<td>Connects an event handler to a DOM element.
+</td>
+<td><code>node.addEventListener("click", fn)</code>
+</td></tr>
+<tr>
+<td><code>dojo.disconnect(handle)</code>
+</td>
+<td>Event Handling
+</td>
+<td>Removes an event handler created with <code>dojo.connect</code>.
+</td>
+<td><code>handle.remove()</code> for event listeners, or <code>node.removeEventListener("click", fn)</code>
+</td></tr>
+<tr>
+<td><code>dojo.stopEvent(evt)</code>
+</td>
+<td>Event Handling
+</td>
+<td>Prevents propagation and default action for an event.
+</td>
+<td><code>evt.preventDefault(); evt.stopPropagation();</code>
+</td></tr>
+<tr>
+<td><code>dojo.place(node, parent, "last")</code>
+</td>
+<td>DOM Manipulation
+</td>
+<td>Places a DOM node inside a parent node at a specific position.
+</td>
+<td><code>parent.appendChild(node)</code>, when using raw html <code>parent.insertAdjacentHTML('beforeend', html)</code>
+</td></tr>
+<tr>
+<td><code>dojo.create("tag", props, parent)</code>
+</td>
+<td>DOM Manipulation
+</td>
+<td>Creates a new DOM element with optional properties.
+</td>
+<td><code>document.createElement("tag")</code>, then set properties and use <code>parent.appendChild()</code>
+</td></tr>
+<tr>
+<td><code>dojo.style(node, "color", "red")</code>
+</td>
+<td>Styling
+</td>
+<td>Sets an inline CSS property on a DOM node. <b>CAUTION:</b> <code>dojo.style(node, "left")</code> (and "right", "width", etc) return lengths in pixels as numbers, not the set CSS style.
+</td>
+<td><code>node.style.color = "red"</code>
+</td></tr>
+<tr>
+<td><code>dojo.hasClass(node, "className")</code>
+</td>
+<td>Styling
+</td>
+<td>Checks if a DOM node has a specific CSS class.
+</td>
+<td><code>node.classList.contains("className")</code>
+</td></tr>
+<tr>
+<td><code>dojo.addClass(node, "className")</code>
+</td>
+<td>Styling
+</td>
+<td>Adds a CSS class to a DOM node.
+</td>
+<td><code>node.classList.add("className")</code>
+</td></tr>
+<tr>
+<td><code>dojo.removeClass(node, "className")</code>
+</td>
+<td>Styling
+</td>
+<td>Removes a CSS class from a DOM node.
+</td>
+<td><code>node.classList.remove("className")</code>
+</td></tr>
+<tr>
+<td><code>dojo.forEach(array, fn)</code>
+</td>
+<td>Array Utilities
+</td>
+<td>Iterates over an array.
+</td>
+<td><code>array.forEach(fn)</code>
+</td></tr>
+<tr>
+<td><code>dojo.map(array, fn)</code>
+</td>
+<td>Array Utilities
+</td>
+<td>Transforms an array by applying a function to each element.
+</td>
+<td><code>array.map(fn)</code>
+</td></tr>
+<tr>
+<td><code>dojo.fadeOut, dojo.fadeIn</code>
+</td>
+<td>Animations
+</td>
+<td>Various animations
+</td>
+<td>Use <a class="external free" href="https://en.doc.boardgamearena.com/BgaAnimations" rel="nofollow">https://en.doc.boardgamearena.com/BgaAnimations</a> or CSS animations
+</td></tr>
+<tr>
+<td><code>dojo.hitch(this, "functionName")</code>
+</td>
+<td>Variable scoping
+</td>
+<td>Binds <code>this</code> (or other variable) in a callback
+</td>
+<td><code>functionName.bind(this)</code>
+</td></tr>
+<tr>
+<td><code>dojo.destroy(node)</code>
+</td>
+<td>DOM Manipulation
+</td>
+<td>Destroys a DOM element
+</td>
+<td><code>node.remove()</code>
+</td></tr>
+<tr>
+<td><code>dojo.indexof(array,value)</code>
+</td>
+<td>Array Utilities
+</td>
+<td>index of the item in the array,
+</td>
+<td><code>array.indexof(value) or array.indexof(test)</code>
+</td></tr>
+<tr>
+<td><code>dojo.string.substitute</code>
+</td>
+<td>String Utilities
+</td>
+<td>template substitution
+</td>
+<td><code>Use JS template strings, i.e. `<div id="${id}"></div>`. Note: not suitable for translations if variables are used inside</code>
+<p><br/>
+</p>
+</td></tr></tbody></table><h3><span class="mw-headline" id="Sound_loading">Sound loading</span></h3><p>New functions load/play have been added for the sounds:
+</p><p>📌 Replace template loading of sounds and global function playSound
+</p><h3><span class="mw-headline" id="Formatting_of_log_message_using_bgaFormatText">Formatting of log message using bgaFormatText</span></h3><p>This function, if defined, will allow you to insert HTML in the logs without overriding format_string_recursive. Example: 📌<a class="external free" href="https://en.doc.boardgamearena.com/BGA_Studio_Cookbook#Define_this.bgaFormatText%28%29_method" rel="nofollow">https://en.doc.boardgamearena.com/BGA_Studio_Cookbook#Define_this.bgaFormatText%28%29_method</a>
+</p><p><br/>
+</p><h3><span class="mw-headline" id="Automata_player_panel">Automata player panel</span></h3><p>A new framework function to add a player panel for your game automas <a class="external free" href="https://en.doc.boardgamearena.com/Game_interface_logic:_yourgamename.js#Adding_a_player_panel_for_an_automata" rel="nofollow">https://en.doc.boardgamearena.com/Game_interface_logic:_yourgamename.js#Adding_a_player_panel_for_an_automata</a>
+</p><h3><span class="mw-headline" id="New_JS_libraries">New JS libraries</span></h3><p>New JS libraries are created to help you design your games, especially for components that you will find on numerous games. See <a href="/Studio#BGA_Studio_game_components_reference" title="Studio">Studio#BGA Studio game components reference</a>
+</p><h3><span class="mw-headline" id="CSS_imports">CSS imports</span></h3><p>Default BGA imports are auto-included, if you find this code and comment in .css you can delete it
+</p><pre> @import url(../../../css/csslayer.css);
+ /* Note: you must not use any @import directive other than this one */
+</pre><h3><span class="mw-headline" id="Future_support_of_dark_mode">Future support of dark mode</span></h3><p>BGA doesn't support dark mode yet. To have some games compatible when we do, we added a theme data tag you can use as described here:
+</p></div></body>
+</html>

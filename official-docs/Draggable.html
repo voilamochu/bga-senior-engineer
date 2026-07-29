@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Draggable - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Draggable rootpage-Draggable action-view"><div class="article"><p>Draggable is the component that supports drag and drop.
+</p><p><br/>
+</p><pre>		createMyDraggableInStock(targetDivId, allDragTargets) {
+			var draggableObj = new ebg.draggable();
+			draggableObj.create(this, targetDivId, targetDivId);
+
+			dojo.connect(draggableObj, 'onStartDragging', this, (item_id, left, top) =&gt; {
+				//console.log("onStart", item_id, left, top);
+			});
+			dojo.connect(draggableObj, 'onDragging', this, (item_id, left, top, dx, dy) =&gt; {
+				//console.log("onDrag", item_id, left, top, dx, dy);
+				var targetParent = this.getDragTarget(item_id, allDragTargets, left, top);
+				if (targetParent) {
+					dojo.query(".drag_target_hover").removeClass("drag_target_hover");
+					dojo.addClass(targetParent, "drag_target_hover");
+				}
+
+			});
+			dojo.connect(draggableObj, 'onEndDragging', this, (item_id, left, top, bDragged) =&gt; {
+				if (!bDragged) return;
+				//console.log("onDrop", item_id, left, top, bDragged);
+				var targetParent = this.getDragTarget(item_id, allDragTargets, left, top);
+				const fromstock = this.getStockSourceByDivId(item_id);
+				const cardId = this.getStockCardIdByDivId(item_id);
+				const tostock = this.getStockByTargetId(targetParent);
+				if (tostock &amp;&amp; tostock != fromstock) {
+					var cardType = fromstock.getItemTypeById(cardId);
+					tostock.addToStockWithId(cardType, cardId);
+					fromstock.removeFromStockById(cardId);
+				} else {
+					fromstock.resetItemsPosition();
+				}
+
+				dojo.query(".drag_target_hover").removeClass("drag_target_hover");
+			});
+			return draggableObj;
+		}
+
+</pre><h2><span class="mw-headline" id="Modern_alternatives">Modern alternatives</span></h2><p>Draggable it was created long time ago when HTML5 did not have such support,
+it probably best to use direct html5 spec now
+</p><ul><li>Use pointer events Pointer Events API
+<ul><li>code pen <a class="external free" href="https://codepen.io/VictoriaLa/pen/MWOgYYZ" rel="nofollow">https://codepen.io/VictoriaLa/pen/MWOgYYZ</a> (works on mobile also)</li>
+<li>game: Century</li></ul></li></ul><ul><li>Use native drag and drop HTML Drag and Drop
+<ul><li>code pen <a class="external free" href="https://codepen.io/VictoriaLa/pen/rNGXKxj" rel="nofollow">https://codepen.io/VictoriaLa/pen/rNGXKxj</a> (it does not work on Mobile browsers and Chrome does not fire most of the events as of now)</li>
+<li>game: Patchwork</li></ul></li></ul><p>Common drag and drop problems: <a class="external free" href="https://www.codemzy.com/blog/drag-and-drop-bug-fixes" rel="nofollow">https://www.codemzy.com/blog/drag-and-drop-bug-fixes</a>
+</p></div></body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Bots and Artificial Intelligence - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Bots_and_Artificial_Intelligence rootpage-Bots_and_Artificial_Intelligence action-view"><div class="article"><p><br/>
+There is no framework support (now) for AI/Bots, so it is all custom stuff.
+</p><h2><span class="mw-headline" id="Games">Games</span></h2><p>The following game have modes that support bots Conspiracy, Glow, Crew, Crew Deepsea, Tapestry.
+</p><h2><span class="mw-headline" id="Techniques">Techniques</span></h2><h3><span class="mw-headline" id="Testing_bot">Testing bot</span></h3><p>Testing bot is actually JavaScript bot that presses on buttons on behalf of player. Its handy for testing on Studio.
+Recommended way of doing it is add Studio only button (together with debug bar) "Run bot/Stop bot", when running it can react to state changes and press stuff.
+Example "Battleship" (this only appear on Studio as this is for testing only)
+</p><h3><span class="mw-headline" id="JavaScript_AI">JavaScript AI</span></h3><p>Currently I don't see how it is feasible, JS code requires real player connected to game and browser, so it cannot be run as AI engine
+</p><h3><span class="mw-headline" id="Server_Bot_as_registered_game_Player">Server Bot as registered game Player</span></h3><p>This would be ideal, but currently only Can't Stop does it and no other game can use this technique
+</p><h3><span class="mw-headline" id="Server_Bot_as_game_state_action">Server Bot as game state action</span></h3><p>This is the only feasible way in production. In addition to whatever game states are doing, it can handle fake players and simulate their moves
+</p><h4><span class="mw-headline" id="Bot_Player_ID">Bot Player ID</span></h4><p>Reserve non-exising player id for bots (i.e. 1-6).
+If bot needs color and order see below.
+</p><h4><span id="Bot_Color.2C_Order_and_Resources"></span><span class="mw-headline" id="Bot_Color,_Order_and_Resources">Bot Color, Order and Resources</span></h4><p>Create table similar player to track bots color, name, score, score_aux and possibly other stuff
+</p><pre>CREATE TABLE IF NOT EXISTS `playerextra` (
+ `player_id` int(10) unsigned NOT NULL,
+ `player_name` varchar(32) NOT NULL,
+ `player_avatar` varchar(10) NOT NULL,
+ `player_color` varchar(6) NOT NULL,
+ `player_no` int(10) NOT NULL,
+ `player_score` int(10) NOT NULL DEFAULT '0',
+ `player_score_aux` int(10) NOT NULL DEFAULT '0',
+ `player_ai` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 = player is an AI',
+  PRIMARY KEY (`player_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
+</pre><h4><span class="mw-headline" id="Bot_Actions">Bot Actions</span></h4><ul><li>All actions that can be done by Bot have to have $player_id as argument and not use active player</li>
+<li>Separate code of ajax actions themselves and functional code, so function can be run from ajax action or from game state action</li>
+<li>If you using getPlayerNameById to send player_name in notification, you may have to wrap it (same for player color)</li></ul><pre>   public function getPlayerName(int $player_id) {
+       if ($player_id == PLAYER_AUTOMA)
+           return _('Automa');
+       return $this-&gt;getPlayerNameById($player_id);
+   } 
+</pre><ul><li>You may also create a function like loadPlayersBasicInfosWithBots which will return similar data as loadPlayersBasicInfos but with bots ids. Cache the result if using a lot</li></ul><pre>    function loadPlayersBasicInfosWithBots() {
+        $player_basic = $this-&gt;loadPlayersBasicInfos();
+        if ( !$this-&gt;isAutoma())
+            return $player_basic;           
+        if ( !isset($this-&gt;player_bots)) {
+            $this-&gt;player_bots = $this-&gt;getCollectionFromDb("SELECT * FROM playerextra");
+        }
+        return $this-&gt;player_bots + $player_basic;
+    }
+</pre><h4><span class="mw-headline" id="Bot_Player_Panel">Bot Player Panel</span></h4><p>If you want bot on player panel, use this.bga.playerPanels.addAutomataPlayerPanel
+</p><h4><span class="mw-headline" id="Bot_Player_Notifications">Bot Player Notifications</span></h4><p>When you send notification with ${player_name} you also should send 'player_id' with you fake id.
+In additio getAllDatas() should contain record matching fake player id in players field, i.e if $player has data for fake player:
+</p><pre>   protected function getAllDatas() {
+       $result = [];
+   ...
+           $result ['players'] [$player_id] ['id'] = $player['id'];
+           $result ['players'] [$player_id] ['score'] = $player['score'];
+           $result ['players'] [$player_id] ['color'] = $player['color'];
+           $result ['players'] [$player_id] ['name'] = $player['name'];
+  ...
+       return $result;
+  }
+</pre><hr/></div></body>
+</html>

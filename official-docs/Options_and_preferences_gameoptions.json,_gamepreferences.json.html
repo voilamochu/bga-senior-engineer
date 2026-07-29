@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Options and preferences: gameoptions.json, gamepreferences.json - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Options_and_preferences_gameoptions_json_gamepreferences_json rootpage-Options_and_preferences_gameoptions_json_gamepreferences_json action-view"><div class="article"><p><br/>
+</p><p>In <code>gameoptions.json</code>, you can define your game options (i.e. game variants).
+</p><p>Note: 
+</p><ul><li>If your game has no variants or preferences, you don't have to modify these files.</li>
+<li>you can use jsonc instead of json, to allow comments in the Json.</li>
+<li>If a change on this file doesn't reflect on the Studio, go to the control panel and press "Reload game options configuration" on Studio to force your changes to be detected (or have an error about the issue).</li></ul><p>Make sure you understand difference between options and preferences:
+</p><ul><li>Game options - something usually in the rule book defined as "variant" (except for player count, which is automatically handled). For example, whether to include <i>The River</i> in Carcassonne.</li>
+<li>User preferences - personal choices of each player only visible to that specific player - i.e. layout, whether or not to prompt for action, whether or not auto-opt in in some actions, etc.</li></ul><h2><span class="mw-headline" id="Game_Options">Game Options</span></h2><p>Game options are selected by the table creator and usually correspond to game variants, for example if the game includes expansions or certain special rules.
+</p><pre> {
+    "100": { "name": "Game Setup", ... },
+    "101": { "name": "Draft", ... }
+ }
+</pre><p>Each key corresponds to the option id, and each value is that option definition, which is described below.
+</p><p><b>Note 2:</b> the key in json file must be a string type, even its correspond to a number in other places (such as php, or other references in same json).
+</p><p>To get the value of a table option from the Game class, using the JSON key.
+</p><p><br/>
+To access json data (the metadata only) can use
+</p><pre>  $game_options = $this-&gt;getTableOptions();
+</pre><p>The options will be displayed in order they appear in JSON, not sorted by id or name!
+</p><h3><span class="mw-headline" id="Details_of_game_options_format">Details of game options format</span></h3><p>The following are the values of the option definition object:
+</p><ul><li><b>name</b> - <b>mandatory</b>. The name of the option visible for table creator. This is automatically marked for translation.</li>
+<li><b>values</b> - <b>mandatory</b>. The map representing possible values of this option. The key of the map is possible value of this option, its a number but has to be string in json. The value is an object descring it.
+<ul><li><b>name</b> - <b>mandatory</b>. String representation of the numeric value visible to table creator. This is automatically marked for translation.</li>
+<li><b>description</b> - String description of this value to use when the name of the option is not self-explanatory. Displayed at the table under the option when this value is selected. Note: if there is no description, this should be omitted.</li>
+<li><b>tmdisplay</b> - String representation of the option visible in the table description in the lobby. Usually if a variant values are On and Off (default), the tmdisplay would be same as description name when On, and nothing (empty string) when Off. (<b>Warning</b>: due to some caching, a change in tmdisplay may not be effective immediately in the studio, even after forcing a reload of options.) <b>Pro Tip:</b> You can use this as a pre-game communication by adding fake options that just do nothing in the game but make it easier to find other player wanted the same game configuration (see the crew deep sea for example).</li>
+<li><b>nobeginner</b> - Set to true if not recommended for beginners</li>
+<li><b>firstgameonly</b> - Set to true if this option is recommended only for the first game (discovery option)</li>
+<li><b>beta</b> - Set to true to indicate that this option is in "beta" development stage (there will be a warning for players starting the game)</li>
+<li><b>alpha</b> - Set to true to indicate that this option is in "alpha" development stage (there will be a warning, and starting the game will be allowed only in training mode except for the developer)</li>
+<li><b>premium</b> - Option can be only used by premium members</li></ul></li>
+<li><b>default</b> - indicates the default value to use for this option (optional, if not present the first value listed is the default)</li>
+<li><b>displaycondition</b> - (array of conditions) - checks the conditions before displaying the option for selection. All (or any) conditions must be true for the option to be displayed. All or any depends on value of displayconditionoperand</li></ul><p>Supported display condition types:
+</p><ul><li><ul><li><i>minplayers</i> condition ensures at least this many players (Note: if your game works with a disjoint interval of player counts, you can supply an array of valid counts instead of a single value)</li>
+<li><i>maxplayers</i> condition ensures at most this many players</li>
+<li><i>otheroption</i> condition ensures another option is set to given values.</li>
+<li><i>otheroptionisnot</i> condition ensure another option is NOT set to this given values</li></ul></li>
+<li><b>displayconditionoperand</b> - can be 'and' (this is the default) or 'or'. Allows to change the behaviour to display the option if one of the conditions is true instead of all of them.</li>
+<li><b>startcondition</b> - (map from value to conditions array) - checks the conditions (on options VALUES) before starting the game. All conditions must be true for the game to start, otherwise players will get a red error message when attempting to begin the game.</li></ul><p>Supported start condition types:
+</p><ul><li><ul><li><i>minplayers</i> condition ensures at least this many players (an array of values is not supported here)</li>
+<li><i>maxplayers</i> condition ensures at most this many players</li>
+<li><i>otheroption</i> conditions ensure another option is set to this given values. That works the same as in <b>displaycondition</b>.</li>
+<li><i>otheroptionisnot</i> conditions ensure another option is NOT set to this given value.  That works the same as in <b>displaycondition</b>.</li></ul>
+<dl><dd>For all these condition types, a <i>gamestartonly</i> boolean option can be added, if you have options that are exclusive. Setting this boolean to <i>true</i> will defer the evaluation of the startcondition to the game creation, instead of preventing the player to select options that are exclusive at all. See <a href="#gamestartonly">below</a> for an example. <span style="background: #FFCDD2; color: #B71C1C; padding: 2px;">But this should never be used -- see the warning below</span></dd></dl></li>
+<li><b>notdisplayedmessage</b> - if option is not suppose to be visible because of displaycondition but this is set, the text will be visible instead of combo drop down</li>
+<li><b>level</b> - what kind of option it is: <i>base</i>, <i>major</i>, or <i>additional</i>. See <a href="#level">below</a> for more informations.</li></ul><p><br/>
+Common (reserved) options for all tables (reserved range 200-299):
+</p><ul><li>201 (const GAMESTATE_RATING_MODE) - ELO OFF (aka Training mode),
+<ul><li>0 = Normal</li>
+<li>1 = Training</li>
+<li>2 = Arena</li></ul></li>
+<li>200 (const GAMESTATE_CLOCK_MODE) - game speed profile
+<ul><li>[0, 1, 2] - realtime (technically &lt;10 realtime but you cannot define range in php)</li>
+<li>values &gt;=10 - turn based (currently 10..21)</li>
+<li>Note there are two similar values, 9 = realtime "no time limit with friends only" vs. 20 = turn-based "no time limit with friends only"</li></ul></li></ul><p>GAMESTATE_RATING_MODE and GAMESTATE_CLOCK_MODE are PHP global constants usable in your PHP game code (ex: <code>$this-&gt;tableOptions-&gt;get(GAMESTATE_CLOCK_MODE)</code>) but not in json.
+</p><pre>{
+  "100": {
+    "name": "Game Variant",
+    "values": {
+      "1": {
+        "name": "Learning",
+        "firstgameonly": true,
+        "tmdisplay": "Learning"
+      },
+      "2": {
+        "name": "Base",
+      },
+      "3": {
+        "name": "Extended",
+        "nobeginner": true,
+        "beta": true,
+        "tmdisplay": "Extended"
+      }
+    },
+    "default": 2
+  },
+  "101": {
+    "name": "Draft variant",
+    "values": {
+      "1": {
+        "name": "No draft"
+      },
+      "2": {
+        "name": "Draft",
+        "tmdisplay": "Draft",
+        "premium": true,
+        "nobeginner": true
+      }
+    },
+    "displaycondition": [
+      {
+        "type": "otheroption",
+        "id": 100,
+        "value": [ 2, 3 ]
+      },
+      {
+        "type": "otheroption",
+        "id": 201,
+        "value": 1
+      }
+    ],
+    "startcondition": {
+      "1": [],
+      "2": [
+        {
+          "type": "maxplayers",
+          "value": 3,
+          "message": "Draft option is available for 3 players maximum."
+        }
+      ]
+    }
+  },
+  "102": {
+    "name": "Takeovers",
+    "values": {
+      "2": {
+        "name": "No takeover"
+      },
+      "1": {
+        "name": "Allow takeovers",
+        "tmdisplay": "Takeovers",
+        "premium": true,
+        "nobeginner": true
+      }
+    },
+    "displaycondition": [
+      {
+        "type": "otheroption",
+        "id": 100,
+        "value": [ 3 ]
+      }
+    ],
+    "startcondition": {
+      "2": [],
+      "1": [
+        {
+          "type": "maxplayers",
+          "value": 2,
+          "message": "Rebel vs Imperium Takeover Scenario is available for 2 players only."
+        }
+      ]
+    }
+  }
+}
+</pre><p><b>Example of option that condition on ELO off:</b>
+</p><pre>{
+  "100": {
+    "name": "Learning Game (No Research)",
+    "values": {
+      "1": {
+        "name": "Off",
+        "tmdisplay": ""
+      },
+      "2": {
+        "name": "On",
+        "tmdisplay": "Learning Game"
+      }
+    },
+    "startcondition": {
+      "2": {
+        "type": "otheroption",
+        "id": 201,
+        "value": 1,
+        "message": "Learning variant available only in friendly mode"
+      }
+    }
+  }
+}
+</pre><p><b>Example of condition that is only available for REALTIME game mode:</b>
+</p><pre>"displaycondition": [
+    { "type": "otheroption", "id": 200, "value": [0, 1, 2] }
+],
+</pre><p><b>Example of using condition on your own option:</b>
+</p><pre>{
+  "102": {
+    "name": "Scenarios",
+    "values": {
+      "1": {
+        "name": "Off",
+        "nobeginner": false
+      },
+      "2": {
+        "name": "On",
+        "tmdisplay": "Scenarios",
+        "nobeginner": true
+      }
+    },
+    "displaycondition": [
+      {
+        "type": "otheroptionisnot",
+        "id": 100,
+        "value": 1
+      }
+    ],
+    "notdisplayedmessage": "Scenarios variant is not available if Learning variant is chosen"
+  }
+}
+
+</pre><p><b>Example of handling solo vs multiplayer options:</b></p><h4><span class="mw-headline" id="displaycondition_vs_startcondition">displaycondition vs startcondition</span></h4><p><code>displaycondition</code> should be used when an option should not be present in the list under certain conditions.
+</p><ul><li>2 player maps: A B C D</li>
+<li>3 player maps: E F G H</li>
+<li>4 player maps: I J K L</li></ul><p><code>startcondition</code> should be used when a specific combination of option values is invalid, but the option itself still makes sense to show.
+</p><ul><li>Player 1 faction: A, B, C, D, E, F, G</li>
+<li>Player 2 faction: A, B, C, D, E, F, G</li>
+<li>startcondition: both players can't be the same faction</li></ul><p>These options should both be displayed at all times, but there are some invalid configurations.
+</p><h4><span class="mw-headline" id="gamestartonly">gamestartonly</span></h4><div style="padding: 1em; background: #FFCDD2; color: #B71C1C">
+<p><b>WARNING:</b> <a class="external text" href="https://studio.boardgamearena.com/bug?id=104" rel="nofollow">See studio bug #104</a>. You should <b>NEVER</b> use <code>gamestartonly</code>! Otherwise, you allow players to (unknowingly!) create a turn-based table with impossible options that can never start. Players receive no indication that the option combination they selected is invalid until the last player joins the table (hours or days later) and the game attempts to auto-start. The table won't start because of the <code>startcondition</code>, and the table options cannot be changed because it's a turn-based table, so the table must be abandoned. This is a horrible user experience. Please don't subject players to this.
+</p>
+</div><p>On the table configuration page, it won't let you select a combination which is invalid according to <code>startcondition</code>. Doing so will show a red warning, and will revert the option to the previous value. This means you could end up in a situation where you can't easily change between certain options (requiring you to set or unset options in a specific order).
+</p><p>Probably the easiest way to see what the difference is is with an example.
+</p><ul><li>set to training mode</li>
+<li>set player count to 1</li>
+<li>try setting "Clan Auction" to one of the "On" options</li>
+<li>try starting the game, there's an error! Ie. <code>"gamestartonly" =&gt; true</code></li></ul><p>Then, with a _Sushi Go Party!_ table:
+</p><ul><li>set number of players to 7</li>
+<li>try setting "Sushi Go! / Sushi Go Party!" to "Sushi Go!"</li>
+<li>you can't set the option! Ie. <code>"gamestartonly" =&gt; false</code></li></ul><p>In code:
+</p><pre>{
+  "100": {
+    "name": "Option name",
+    "values": [],
+    "startcondition": {
+      "1": [
+        {
+          "type": "maxplayers",
+          "value": 2,
+          "message": "This option is available for 2 players only.",
+          "gamestartonly": true
+        }
+      ]
+    }
+  }
+}
+</pre><h4><span class="mw-headline" id="level">level</span></h4><pre>{
+    "100": {
+        "name": "Option name",
+        "values": [...],
+        "level": "major"
+    }
+}
+</pre><ul><li><b>base</b> is the default value (you don't need to specify it).</li>
+<li><b>major</b> denotes a major option, which will always be displayed on top, and with a specific UI.</li>
+<li><b>additional</b> means this option will not be displayed by default, to unclutter the option panel.</li></ul><p>About major options:
+</p><ul><li>a game can only have <b>1 major option</b>, and of course, it must be a important game changer.</li>
+<li>the pictures will default to the standard Game Box, and can be set independently for each value, from the <a href="Game_metadata_manager.html" title="Game metadata manager">Game metadata manager</a> (in the "Major Variants" section). Note: this cannot be tested from Studio as there is not studio-only Game metadata manager, to see Major Variants option - the game has to be deployed at least as alpha.</li>
+<li>the major option can have more than 2 values (there will then be an arrow to slide to the other values, carousel-like)</li>
+<li>the naming of major variant values should be concise and the values should have descriptive text (not just "enabled" or "disabled")
+<ul><li>👍 Option name "Expansion", option values "Base game", "Bigger is Better" =&gt; Displayed as <i>"Expansion: Base game"</i> or <i>"Expansion: Bigger is Better"</i></li>
+<li>👎 Option name "Bigger is Better", option values "Enabled", "Disabled =&gt; Displayed as <i>"Bigger is Better: Enabled"</i> or <i>"Bigger is Better: Disabled"</i></li></ul></li></ul><p>About additional options:
+</p><ul><li>Please set each option that concerns small details in this category: Advanced players will find this option anyway, and it will simplify the interface of the page of your game.</li></ul><p><a class="image" href="/File:Option-levels.png" title="Option levels"><img alt="Option levels" decoding="async" height="536" src="/images/thumb/0/0c/Option-levels.png/800px-Option-levels.png" srcset="/images/thumb/0/0c/Option-levels.png/1200px-Option-levels.png 1.5x, /images/0/0c/Option-levels.png 2x" width="800"/></a>
+</p><h4><span class="mw-headline" id="option_presentation">option presentation</span></h4><p>An option WILL be displayed as a <b>Checkbox</b> instead of a selector if certain conditions are met:
+</p><ul><li>option has only <b>2 values</b></li>
+<li>values are either (case insensitive):
+<ul><li><i>yes</i> and <i>no</i></li>
+<li><i>on</i> and <i>off</i></li>
+<li><i>enabled</i> and <i>disabled</i></li></ul></li></ul><p>The "default" value still has to be specified, and can be "on" or "off" (it's actually just a difference in display).
+</p><h2><span class="mw-headline" id="User_Preferences">User Preferences</span></h2><p>User preferences is something cosmetic about the game interface which however can create user wars, so you can satisfy all users
+by giving them individual preferences. You should use this only if it significantly improves the interface for a large proportion of users.
+These preferences appear in the three-line hamburger menu in the top corner of the bga menu (and also at the bottom on the page in the Options tab).  
+"Display game logs" and "Display tooltips" are baked-in by default, but you can extend this list as below. 
+</p><p><a class="image" href="/File:Century_preferences_menu.PNG" title="The user preferences menu for the game Century"><img alt="The user preferences menu for the game Century" decoding="async" height="461" src="/images/thumb/c/c1/Century_preferences_menu.PNG/400px-Century_preferences_menu.PNG" srcset="/images/thumb/c/c1/Century_preferences_menu.PNG/600px-Century_preferences_menu.PNG 1.5x, /images/c/c1/Century_preferences_menu.PNG 2x" width="400"/></a>
+</p><blockquote>
+<p><i>These preferences are a good place to put accessibility options - as Century did for its Colorblind Support.</i>
+</p>
+</blockquote><pre>{
+  "100": {
+    "name": "Colorblind Support",
+    "needReload": true,
+    "values": {
+      "1": {
+        "name": "None",
+        "cssPref": "colorblind_off"
+      },
+      "2": {
+        "name": "Numbers",
+        "cssPref": "colorblind_on"
+      },
+      "3": {
+        "name": "Shapes",
+        "cssPref": "colorblind_shapes"
+      }
+    },
+    "default": 1
+  }
+}
+</pre><p>There is two ways to check/apply this. In javascript
+</p><pre> if (this.bga.userPreferences.get(100) == 2) ...
+</pre><p>This checks if preferences 100 has selected value 2.
+</p><p>As user you have to select them from the Gear menu when game is started. On studio only dev0 account will have it actually working (bug?).
+</p><ul><li><b>name</b> - <b>mandatory</b>. The name of the preference. This string is marked for translation.</li>
+<li><b>needReload</b> - If set to true, the game interface will auto-reload after a change of the preference.</li>
+<li><b>values</b> - <b>mandatory</b>. The map of values with additional parameters per value.
+<ul><li><b>name</b> - <b>mandatory</b>. String representation of the numeric value.  This string is marked for translation.</li>
+<li><b>cssPref</b> - CSS class to add to the <b>&lt;html&gt;</b> tag. Currently it is added or removed only after a reload (see needReload).</li></ul></li>
+<li><b>default</b> - Indicates the default value to use for this preference (optional, if not present the first value listed is the default).</li></ul><h3><span class="mw-headline" id="Listening_for_preference_changes_and_updating_preference_from_code">Listening for preference changes and updating preference from code</span></h3><p>The BGA framework offers read/write and callback for user preference changes. See <a class="mw-redirect" href="/Game_interface_logic:_yourgamename.js#User_preferences" title="Game interface logic: yourgamename.js">Game interface logic: yourgamename.js#User preferences</a>
+</p><h3><span class="mw-headline" id="Accessing_User_Preferences_on_the_server">Accessing User Preferences on the server</span></h3><p>PHP has an object called <b>$this-&gt;userPreferences</b>, and you simply have to use its method get (<b>get($playerId, $prefId): ?$int</b>) to know the preference value of a specific player : 
+</p><pre>if ($this-&gt;userPreferences-&gt;get($playerId, $prefId) == $prefValue) {
+....
+}
+</pre><p>Note: it is stored in database table bga_user_preferences
+</p><h2><span class="mw-headline" id="Translations">Translations</span></h2><p>Note that any name or description values in these JSON files are automatically added to the translation system.
+</p><h2><span class="mw-headline" id="Migration">Migration</span></h2><p>Previously, options and preferences were specified in a single <code>gameoptions.inc.php</code> file.
+</p><p>The PHP format will continue to work for <i>existing</i> games, and although preferred, there is no need to migrate unless you want to. However, newly created games must use the new format.
+</p><p>If you want to migrate:
+</p><ul><li>Go to studio and press Reload game options configuration</li>
+<li>It will dump json on the log window - you can take this, format it and save into 2 files (if you have both). For gamepreference.json remove option "200" - this is default common option, it should not be in your file.</li></ul><p>Manual method:
+</p><ul><li>Remove all calls to <code>totranslate()</code>, and replace with the plain string</li>
+<li>Remove any references to BGA's PHP constants, such as GAMESTATE_RATING_MODE, and replace with the plain value (in this case, 201)</li>
+<li>You can populate <code>gameoptions.json</code> with the result of <code>json_encode($game_options, JSON_PRETTY_PRINT)</code></li>
+<li>You can populate <code>gamepreferences.json</code> with the result of <code>json_encode($game_preferences, JSON_PRETTY_PRINT)</code></li>
+<li>If you include gameoptions.inc.php directly, to read the values, then replace those calls with <code>$this-&gt;getTableOptions()</code> or <code>$this-&gt;getTablePreferences()</code> as appropriate which return arrays parsed from the JSON files</li></ul><blockquote><p><b>Game options change (Optional!)</b>
+</p><p><code>gameoptions.inc.php</code> is now considered legacy, and <code>gameoptions.json</code> and <code>gamepreferences.json</code> are recommended for new projects:
+</p>
+<ul><li>The wiki and the template project have been updated: <a href="/Options_and_preferences:_gameoptions.json,_gamepreferences.json#User_Preferences" title="Options and preferences: gameoptions.json, gamepreferences.json">https://en.doc.boardgamearena.com/Options_and_preferences:_gameoptions.json,_gamepreferences.json</a></li>
+<li>Any questions/problems can come to me, or can be asked here.</li>
+<li>The format of the json files matches the format of the old php files</li></ul>
+<p>We realise there are some drawbacks (sorry!):
+</p>
+<ul><li>No comments in the JSON file, meaning you have to check the wiki for examples</li>
+<li>No PHP constants in the JSON file, meaning magic numbers</li></ul>
+<p>However, we hope it's good for BGA because:
+</p>
+<ul><li>Simpler to parse (for robots and humans)</li>
+<li>Easier to check for errors (we could perhaps use an XSLT one day)</li>
+<li>No need to run game-specific PHP code on the metasite</li></ul>
+<p><b>NOTE</b>: Switching is totally optional, and the legacy files will still work for existing projects, and for those who know about them. </p></blockquote></div></body>
+</html>

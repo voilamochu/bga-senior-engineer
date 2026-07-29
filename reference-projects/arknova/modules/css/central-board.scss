@@ -1,0 +1,196 @@
+#arknova-main-container {
+    --arkNovaZooCardScale: 0.345;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: calc(var(--arkNovaLeftColumnScale) * 260px) auto auto;
+
+    [data-two-columns="1"] & {
+        display: flex;
+        flex-flow: column;
+        align-items: center;
+    }
+
+    #board-pool-resizable {
+        width: calc(var(--arkNovaLeftColumnScale) * 926px);
+        height: calc(var(--arkNovaLeftColumnScale) * 260px);
+        margin-left: -2px;
+        position: relative;
+        grid-row: 1 / span 1;
+
+        #board-pool {
+            transform: scale(var(--arkNovaLeftColumnScale));
+            transform-origin: top left;
+            width: 926px;
+            height: 260px;
+
+            #cards-pool {
+                padding: 0px 2px;
+                display: flex;
+
+                .card-pool-folder {
+                    width: 150px;
+                    background-image: url("img/central-board-folder.png");
+                    background-size: 100% auto;
+                    background-repeat: no-repeat;
+                    position: relative;
+
+                    .folder-name {
+                        font-size: 8px;
+                        height: 25px;
+                        margin: 0px 71px 0px 15px;
+                        width: 68px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        text-align: center;
+                        line-height: 26px;
+                        color: #624c0a;
+                        font-style: italic;
+                    }
+
+                    .folder-number {
+                        position: absolute;
+                        top: 6px;
+                        right: 19px;
+                        color: white;
+                        font-family: "MyriadPro-Bold";
+                        font-size: 17px;
+                        width: 15px;
+                        height: 20px;
+                        text-align: center;
+                    }
+
+                    .folder-cost {
+                        display: none;
+                        position: absolute;
+                        top: 5px;
+                        right: 12px;
+
+                        .icon-money {
+                            border: 1px solid white;
+                            width: 1.6em;
+                            height: 1.6em;
+                            line-height: 1.4em;
+                        }
+                    }
+
+                    .pool-slot-background {
+                        width: 129px;
+                        height: 180px;
+                        margin: 6px 5px 8px 9px;
+
+                        .pool-slot {
+                            width: 129px;
+                            height: 180px;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                        }
+                    }
+                }
+
+                &.showFolderCosts,
+                [data-folder-cost="1"] & {
+                    .card-pool-folder .folder-cost {
+                        display: block;
+                    }
+                }
+
+                [data-folder-cost="2"] & {
+                    .card-pool-folder .folder-cost {
+                        display: none;
+                    }
+                }
+            }
+
+            #reputation-track {
+                margin-top: -10px;
+                padding: 3px 0px;
+                box-shadow: 1px 1px 5px black;
+                display: grid;
+                grid-template-columns: repeat(37, 25px);
+                background-image: url("img/reputation-track.jpg");
+                background-size: 100% auto;
+                z-index: 2;
+                position: relative;
+
+                .badge-icon {
+                    position: absolute;
+                    width: 26px;
+                    height: 26px;
+                    left: 586px;
+                    top: 17px;
+                    border-radius: 50%;
+                    border: 1px solid white;
+                }
+
+                #max-reputation-bonus-holder {
+                    position: absolute;
+                    right: -6px;
+                    bottom: 32px;
+                    font-size: 14px;
+                }
+
+                .reputation-slot {
+                    height: 26px;
+                    position: relative;
+
+                    .reputation-holder {
+                        width: 100%;
+                        height: 100%;
+                        position: relative;
+
+                        .icon-cylinder {
+                            position: absolute;
+                            left: 0px;
+                            top: -1px;
+                            transition: top 0.3s;
+
+                            &:nth-of-type(2) {
+                                top: -1px;
+                                left: 24px;
+                            }
+
+                            &:nth-of-type(3) {
+                                top: -7px;
+                                left: 1px;
+                            }
+                        }
+                    }
+
+                    .arknova-bonus-container {
+                        position: absolute;
+                        font-size: 0.62em;
+                        top: 19px;
+                        left: 11px;
+                    }
+
+                    &#reputation-1 {
+                        .reputation-holder {
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            .icon-cylinder {
+                                position: initial;
+                            }
+                        }
+                    }
+                }
+
+                &:hover {
+                    .reputation-slot {
+                        .reputation-holder {
+                            .icon-cylinder {
+                                top: -16px;
+
+                                &:nth-of-type(3) {
+                                    top: -30px;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

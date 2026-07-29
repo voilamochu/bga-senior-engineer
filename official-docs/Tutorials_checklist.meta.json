@@ -1,0 +1,15 @@
+{
+  "title": "Tutorials checklist",
+  "source_html": "Tutorials_checklist.html",
+  "clean_html": "Tutorials_checklist.html",
+  "url": "https://en.doc.boardgamearena.com/Tutorials_checklist",
+  "depth": 1,
+  "sha256_raw": "782a94315e158acab011af8e3894111ff00104370c4dea133e3437582a72d57e",
+  "sha256_clean": "88cb4e42e3d946acc83e789e8c733faa4efa17cb2198bdae8c604174a2881b32",
+  "word_count": 589,
+  "code_block_count": 0,
+  "table_count": 0,
+  "image_count": 1,
+  "heading_count": 2,
+  "cleaned_at": "2026-07-06T06:38:20.161749+00:00"
+}

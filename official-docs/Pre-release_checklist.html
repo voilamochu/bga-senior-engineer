@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Pre-release checklist - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Pre-release_checklist rootpage-Pre-release_checklist action-view"><div class="article"><p><br/>
+</p><p>If you think your game is ready to be reviewed by by BGA admins and/or Publisher (aka go to Alpha stage) please consult this checklist first
+</p><h3><span class="mw-headline" id="Move_from_Dev_to_Alpha">Move from Dev to Alpha</span></h3><ol><li><b> License </b>
+<ol><li>BGA must have a license for the game for a project to be moved to production, even to alpha. If you don't have license yet you can continue checking other stuff from the list below, but at the end it cannot be moved until license situation is cleared.</li></ol></li>
+<li><b> Metadata and game assets </b>
+<ol><li><a href="/Game_meta-information:_gameinfos.jsonc" title="Game meta-information: gameinfos.jsonc">Game_meta-information: gameinfos.jsonc</a> has correct and up to date information about the game.</li>
+<li>Game box graphics is 3D version of the game box (if available) and publisher icon is correct (see <a href="/Game_art:_img_directory" title="Game art: img directory">Game art: img directory</a>). Space around the box has to be transparent, not white.</li>
+<li>You have added the requested images in the Game Metadata Manager to make the game page pretty</li>
+<li>There are no images in the img directory that are not needed anymore</li>
+<li>Multiple images (i.e. cards) are compressed in "Sprite" (see <a href="/Game_art:_img_directory" title="Game art: img directory">Game art: img directory</a>)</li>
+<li>Each image should not exceed 4Mb</li>
+<li>Total size should not exceed 15Mb, image compression should be used otherwise (it also helps a lot to re-encode images as indexed palette vs RBG). If you have legitimate reason to have more than 15Mb (i.e. expansions), you have to make a note of that when requesting move to alpha</li>
+<li>If you use extra fonts, they should be freeware (please include a .txt with the license information in addition to the font files). Fonts should be placed to "fonts" directory</li>
+<li>Sounds should be placed to "sounds" directory</li></ol></li>
+<li><b> Server side </b>
+<ol><li>When giving their turn to a player, you give them some extra time with the giveExtraTime() function</li>
+<li>Game progression is implemented (getGameProgression() in php)</li>
+<li>Zombie turn is implemented (zombieTurn() in php). For more details about how the Zombie code should work and be tested, see <a href="Zombie_Mode.html" title="Zombie Mode">Zombie mode</a>.</li>
+<li>You have defined and implemented some meaningful statistics for your game (i.e. total points, point from source A, B, C...)</li>
+<li>Game has meaningful notification messages (but don't overkill it, more user logs will slow down the loading)</li>
+<li>You implemented tiebreaking (using aux score field) and updated tiebreaker description in meta-data</li>
+<li>Database: make sure you do not programmatically manage transactions or call queries that change database schema or even TRUNCATE (queries that would cause implicit commit) during normal game opearations</li>
+<li>Database: make sure you DB schema would be sufficient to complete the game and good enough for possible expansions, changing db schema schema after the release even in alpha is very challenging (it is possible but much better if you don't need to deal with it)</li></ol></li>
+<li><b> Client side </b>
+<ol><li>Check that you use ajaxcall/bgaPerformAction only on player actions and never initiated programmatically. Otherwise, your code will very likely create race conditions resulting in deadlocks or other errors. This can also break replays and tutorials. <i>Exception: sometimes you can do no-op moves with timeouts (i.e. user has only one choice, but its unwise to reveal this information by skipping user turn), timeout has to be canceling itself if state transition happen automatically (i.e. during replay)</i></li></ol></li>
+<li><b> User Interface </b>
+<ol><li>Review BGA UI design Guidelines <a href="BGA_Studio_Guidelines.html" title="BGA Studio Guidelines">BGA_Studio_Guidelines</a></li>
+<li>Check all your English messages for proper use of punctuation, capitalization, usage of present tense in notification (not past) and gender neutrality. See <a href="Translations.html" title="Translations">Translations</a> for English rules.</li>
+<li>If the elements in your game zone don't occupy all the available horizontal space, <b>they should be centered</b>.</li>
+<li>If your game elements become blurry or pixelated when using the browser zoom, you may want to consider <a href="/Game_art:_img_directory#Use_background-size" title="Game art: img directory"> higher resolution images with background-size</a></li>
+<li>Non-self explanatory graphic elements should have tool tips</li>
+<li>Strings in your source code are ready for translation. See <a href="Translations.html" title="Translations">Translations</a>. You can generate dummy translations for checking that everything is ready for translation from your "Manage game" page.</li>
+<li>A prefix for example a trigram for your game that you prepend to all the css classes to avoid namespace conflicts, i.e. vla_selected vs selected</li>
+<li>If you are looking for advice on design and some 3rd party testing you can post a message on the developers forum, and ask other developers, there are a lot of people who will gladly do it.</li>
+<li>Test if the game is readable in dark mode. See <a href="/Game_interface_stylesheet:_yourgamename.css#Support_of_the_Dark_mode" title="Game interface stylesheet: yourgamename.css">Game interface stylesheet: yourgamename.css#Support of the Dark mode</a> for more details</li></ol></li>
+<li><b> Special testing </b>
+<ol><li>Click "Use minified JS" and "Use minified CSS" buttons on the game management page, then test your game.  This will prevent you from having a panic attack when the game releases in alpha and it is stuck in "Connecting to game".</li>
+<li>Game is tested with spectator (non player observer): click the red arrow next to Test spectator, under player panels. As a spectator, you should be able to see the game as if you were sitting beside of the players at a real table: all public information, no private information.</li>
+<li>Game is tested with in-game replay from last move feature (by clicking on notification log items).</li>
+<li>After finishing a game, it is possible to watch the replay (using the "Replay game" button on the table page) from game start to game end without errors.</li>
+<li>Game works in Chrome and Firefox browsers at least. Also very recommended to test in Edge and Safari.</li>
+<li>Game works on mobile device (if you don't have mobile device to test at least test in Chrome with smaller screen, they have a mode for that)</li>
+<li>Test your game in realtime mode. Usually people will run out of time if you use default times unless you add call giveExtraTime($active_player_id) before each turn</li>
+<li>Check your game against the waiting screen, otherwise game start can fail. See <a href="/Practical_debugging#Debugging_an_issue_with_the_waiting_screen" title="Practical debugging">Practical_debugging#Debugging_an_issue_with_the_waiting_screen</a></li></ol></li>
+<li><b> Cleanup </b>
+<ol><li>Remove all unnecessary console.log and other tracing from your js code (Note: technically it is removed by minimizer, but not console.error)</li>
+<li>Remove all unnecessary debug logging from your php code</li>
+<li>Copyright headers in all source files have your name</li>
+<li>Remove unnecessary files from main folder (can move some to misc folder)</li>
+<li>If using TypeScript and Scss - move them to "src" folder from "modules", if not there already (modules deployed to prod, only transposed files are needed)</li></ol></li>
+<li><b> Static Analysis </b>
+<ol><li>Some of the checks above are automated, to run them go to control panel, go to your project and select "Dry run build"</li>
+<li>There is also "Check project" button (it will open like a game table, and you can type your project and click on Start button to run analysis) - but it may be obsolete</li></ol></li></ol><h3><span class="mw-headline" id="Finally_move_to_Alpha_status">Finally move to Alpha status</span></h3><ol><li>We want the correct formal name of the game to be used for the project (i.e. <b>agricola</b>, not <b>myagricolaproject</b>).   If you DO NOT have the correct formal name of the game for your project, then
+<ol><li>If possible (meaning if there is not already a project with that name) copy your project to a new project <b>matching exactly the name of the game</b> (no prefix or suffix). If not possible move on to the next steps, admin will have to retrieve the other project and overwrite it. In this case, after you request the alpha deployment, please reply to the automatic reply with the correct name.</li>
+<li>If you DO have the correct formal name of the game for your project, or completed the above steps, create a build for your game from the "manage game" page (using the <b>Build a new release version</b> section) and check the log to make sure that everything builds fine (after a successful build, you should see a new version in "Versions available for production").</li></ol></li>
+<li>Are you really ready?
+<ol><li>Click on the <b>Request ALPHA status</b> button available above your just built version. You cannot deploy yourself from the "manage game" page until this first ALPHA deploy has been done by the admins. Clicking this button will file a request in the BGA ticketing system and you'll receive a confirmation email allowing to reply to add some information on the ticket if needed. Note: you can also ask for moving your project to "private Alpha" - in this case you will invite people manually rather than having your game immediately visible to the whole BGA reviewers community. When you press you button you should receive acknowledgement email, reply to this email with more details.</li></ol></li>
+<li>Reply to alpha request e-mail with following information
+<ol><li>Is this final project name or need renaming</li>
+<li>What is your production BGA user name</li>
+<li>If private alpha requested - BGA user names of other admins - usually publisher/designer</li>
+<li>If you have license or/and alpha approval, include approval email (form publisher)</li>
+<li>If you have exceptions for items from this checklist (i.e. size of assets, custom fonts, etc) add explanations</li></ol></li>
+<li>Wait
+<ol><li>When admins publish (push to alpha) they will send an email to the developer with all relevant information about the next steps. If you waiting for 2 weeks+ you can ping them again.</li></ol></li></ol><h3><span class="mw-headline" id="Move_from_Alpha_to_Beta">Move from Alpha to Beta</span></h3><ol><li>The implementation <b>must be approved by the publisher</b> (if not a public domain game)</li>
+<li>Generally it is recommended (but not essential) to have at least 10 approvals from reviewer with rank &gt; 3.5 and not too many bugs opened</li>
+<li>If the game is well-received (preferably game rating ≥4.5) and there are no pending issues the game may pass as administrative discretion without 10+ approvals</li>
+<li>Click on the <b>Request BETA status</b> button available above your latest build. Clicking this button will file a request in the BGA ticketing system and you'll receive a confirmation email allowing to reply to add some information on the ticket if needed.</li></ol></div></body>
+</html>

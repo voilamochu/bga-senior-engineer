@@ -1,0 +1,15 @@
+{
+  "title": "PlayerCounter and TableCounter",
+  "source_html": "PlayerCounter_and_TableCounter.html",
+  "clean_html": "PlayerCounter_and_TableCounter.html",
+  "url": "https://en.doc.boardgamearena.com/PlayerCounter_and_TableCounter",
+  "depth": 1,
+  "sha256_raw": "7ef784ae66e6e33dd596e87af6f3bca3eafb1b45aa3643c97cd65b197cf34b6a",
+  "sha256_clean": "f7bd52ac94c7bd06aaec4ed5283d07162cd59e1d90a1ef751c56d4c235d42808",
+  "word_count": 1253,
+  "code_block_count": 11,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 7,
+  "cleaned_at": "2026-07-06T06:38:19.457185+00:00"
+}

@@ -1,0 +1,83 @@
+<link href="../../agricola.css" rel="stylesheet" />
+<style type="text/css">
+  * {
+    box-sizing: border-box;
+  }
+
+
+  .container {
+    position: fixed;
+    top: 40%;
+    left: 20%;
+  }
+
+
+  .main {
+    background: white;
+    display: block;
+    padding: 5px;
+    position:relative;
+    z-index: 10;
+    box-shadow:0px 1px 3px black;
+  }
+
+  .main > div {
+    height: 40px;
+  }
+
+  .bk {
+     background: white;
+     position: absolute;
+     width: 80px;
+     bottom:-12px;
+     height:90%;
+  }
+
+  .bk::before {
+    content:'';
+    display:block;
+    width:35px;
+    height:100%;
+    background: #2f2f2f;
+    position:absolute;
+  }
+
+  .bk.l {
+    left: -45px;
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 30% 50%);
+  }
+
+  .bk.l::before {
+    right:0;
+    clip-path:polygon(100% 100%, 0% calc(100% - 12px), 100% 0%);
+  }
+
+  .bk.r {
+    right:-45px;
+    clip-path: polygon(0% 0%, 100% 0%, 70% 50%, 100% 100%, 0% 100%);
+  }
+
+  .bk.r::before {
+    left:0;
+    clip-path:polygon(0% 100%, 100% calc(100% - 12px), 0% 0%);
+  }
+
+
+</style>
+
+<div class="container">
+
+  <div class="container one">
+
+    <div class="bk l"></div>
+
+    <div class="main">
+      <div>Bonjour ça va bien ?</div>
+    </div>
+
+    <div class="bk r"></div>
+
+  </div>
+
+</div>
+</script>

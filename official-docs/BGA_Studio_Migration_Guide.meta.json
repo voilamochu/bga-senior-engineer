@@ -1,0 +1,15 @@
+{
+  "title": "BGA Studio Migration Guide",
+  "source_html": "BGA_Studio_Migration_Guide.html",
+  "clean_html": "BGA_Studio_Migration_Guide.html",
+  "url": "https://en.doc.boardgamearena.com/BGA_Studio_Migration_Guide",
+  "depth": 1,
+  "sha256_raw": "4ac0be8d18dec7a599817b4d10884fe6e35f9a65e68ca5fd856c64b564057dc2",
+  "sha256_clean": "38d1d1dca2c857b2e8541123816fdfca004496e1e88bf90f856e458bdb7b7e87",
+  "word_count": 2690,
+  "code_block_count": 11,
+  "table_count": 1,
+  "image_count": 0,
+  "heading_count": 58,
+  "cleaned_at": "2026-07-06T06:38:18.395234+00:00"
+}

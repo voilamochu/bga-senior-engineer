@@ -1,0 +1,452 @@
+.action-card-name-reference {
+  font-style: italic;
+}
+
+.player-board-resizable {
+  pointer-events: all;
+  margin: 0px 10px 10px;
+}
+
+.farmer-cluster {
+  display: inline-block;
+  vertical-align: middle;
+  white-space: nowrap;
+
+  .farmer-pip {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 0.08em;
+    margin-left: -0.6em;
+
+    &:first-child {
+      margin-left: 0;
+    }
+  }
+}
+
+.player-board-wrapper {
+  width: 660px;
+  transform: scale(var(--agricolaPlayerBoardScale));
+  transform-origin: top left;
+
+  &.harvest .player-board-holder .animals-counters .baby-counter {
+    display: inline-block;
+  }
+
+  .player-board-holder {
+    border: 1px dashed #7b776e;
+    border-radius: 10px;
+
+    .cards-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 5px;
+      //      min-height: var(--agricolaCardWidth);
+
+      .player-card {
+        /*
+        &.occupation {
+          order: 1;
+        }
+        &.minor {
+          order: 2;
+        }
+        &.major {
+          order: 3;
+        }
+        */
+      }
+    }
+
+    .animals-counters {
+      position: relative;
+      display: flex;
+      justify-content: flex-start;
+      font-size: 20px;
+      padding-left: 40px;
+
+      .player-resource {
+        margin: 0 10px;
+        background: rgba(255, 255, 255, 0.47);
+        padding: 3px 9px;
+        border-radius: 7px;
+        border: 1px solid black;
+        transition: opacity 0.5s;
+        opacity: 1;
+        position: relative;
+
+        &[data-n='0'] {
+          opacity: 0;
+        }
+
+        .reserve {
+          position: absolute;
+          top: 0%;
+          left: 0%;
+          width: 100%;
+          height: 100%;
+          & > div.agricola-meeple:not(.moving) {
+            display: none;
+          }
+        }
+      }
+
+      .baby-counter {
+        font-size: 0.75em;
+        vertical-align: middle;
+        display: none;
+      }
+    }
+
+    .player-board-name {
+      position: absolute;
+      top: -31px;
+      right: 20px;
+      font-size: 15px;
+      font-family: var(--agricola-font-family);
+      background-color: rgba(255, 255, 255, 0.5);
+      padding: 2px 1rem;
+      border-radius: 10px;
+      border: 1px solid black;
+    }
+    .resources-bar-holder.active .player-board-name {
+      border-bottom-right-radius: 0px;
+      border-bottom-left-radius: 0px;
+      background-color: rgb(236, 238, 175);
+      top: -28px;
+      right: 30px;
+      border-bottom: 1px solid black !important;
+      padding-left: 6px;
+
+      .farmer-cluster {
+        margin-right: 6px;
+        position: relative;
+        top: -2px;
+      }
+    }
+    // Hide the pill cluster when "resources near boards" is off
+    .resources-bar-holder:not(.active) .player-board-name .farmer-cluster {
+      display: none;
+    }
+
+    .agricola-player-board {
+      width: 658px;
+      height: 405px;
+      position: relative;
+
+      .player-board-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 18px 110px) 18px;
+        grid-template-rows: repeat(3, 18px 110px) 18px;
+        grid-gap: 0px;
+        position: relative;
+
+        .board-cell {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+
+          .stable-holder {
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 40%;
+            bottom: 40%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+
+          .node-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+
+            .empty-node {
+              width: 100%;
+              height: 100%;
+              background-image: url('img/empty_slots.png');
+              background-size: 700% 100%;
+            }
+          }
+          &[data-x='1'][data-y='1'] .empty-node {
+            background-position-x: 4 * 100% / 6;
+          }
+          &[data-x='3'][data-y='1'] .empty-node {
+            background-position-x: 0 * 100% / 6;
+          }
+          &[data-x='5'][data-y='1'] .empty-node {
+            background-position-x: 1 * 100% / 6;
+          }
+          &[data-x='7'][data-y='1'] .empty-node {
+            background-position-x: 2 * 100% / 6;
+          }
+          &[data-x='9'][data-y='1'] .empty-node {
+            background-position-x: 6 * 100% / 6;
+          }
+          &[data-x='3'][data-y='3'] .empty-node {
+            background-position-x: 1 * 100% / 6;
+          }
+          &[data-x='5'][data-y='3'] .empty-node {
+            background-position-x: 6 * 100% / 6;
+          }
+          &[data-x='7'][data-y='3'] .empty-node {
+            background-position-x: 5 * 100% / 6;
+          }
+          &[data-x='9'][data-y='3'] .empty-node {
+            background-position-x: 4 * 100% / 6;
+          }
+          &[data-x='3'][data-y='5'] .empty-node {
+            background-position-x: 3 * 100% / 6;
+          }
+          &[data-x='5'][data-y='5'] .empty-node {
+            background-position-x: 2 * 100% / 6;
+          }
+          &[data-x='7'][data-y='5'] .empty-node {
+            background-position-x: 1 * 100% / 6;
+          }
+          &[data-x='9'][data-y='5'] .empty-node {
+            background-position-x: 0 * 100% / 6;
+          }
+
+          #ebd-body:not(.help-mode) &.selectable {
+            cursor: pointer;
+            &:hover {
+              background-color: rgba(255, 0, 0, 0.3);
+            }
+          }
+
+          #ebd-body:not(.help-mode) &.selected {
+            background-color: rgba(0, 255, 0, 0.5);
+            &:hover {
+              background-color: rgba(0, 255, 0, 0.9);
+            }
+          }
+        }
+      }
+
+      @each $color, $layout in $roomLayouts {
+        @each $y, $row in $layout {
+          @for $i from 1 to 5 {
+            $x: 2 * $i - 1;
+            $k: nth($row, $i);
+            $kx: $k % 4;
+            $ky: ($k - ($k % 4)) / 4;
+            &[data-color='#{$color}'] .board-cell[data-x='#{$x}'][data-y='#{$y}'] {
+              .meeple-roomWood,
+              .meeple-roomClay,
+              .meeple-roomStone {
+                &::after {
+                  background-position: $kx * 100% / 3 $ky * 100% / 3;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+#action-cards-holder {
+  display: none;
+  pointer-events: all;
+  position: relative;
+  width: fit-content;
+  max-width: 95vw;
+  padding: 4px 5px;
+  margin-top: 4px;
+  left: calc(var(--agricolaCentralBoardScale) * 415px);
+  transform: translateX(-50%);
+
+  [data-players='3'] &,
+  [data-players='4'] &,
+  [data-additional='1'][data-players='2'] & {
+    left: calc(var(--agricolaCentralBoardScale) * 493px);
+  }
+
+  background: rgba(210, 205, 120, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 5px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+  --agricolaCardScale: calc(115 / #{$cardW / 1px} * var(--agricolaCentralBoardScale));
+  --agricolaCardWidth: calc(115px * var(--agricolaCentralBoardScale));
+  .action-cards-player-groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: stretch;
+  }
+
+  .action-cards-player-group {
+    &.empty {
+      display: none;
+    }
+
+    .action-cards-player-header {
+      margin-bottom: -1px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .action-cards-player-chip {
+      display: inline-block;
+      font-family: var(--agricola-font-family);
+      font-size: 11px;
+      padding: 1px 8px;
+      margin-left: 4px;
+      border-radius: 7px 7px 0 0;
+      line-height: 15px;
+      background-color: rgba(255, 255, 255, 0.5);
+      border: 1px solid black;
+      border-bottom: none;
+    }
+
+    .action-cards-player-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      padding: 3px 4px;
+      background: rgba(255, 255, 255, 0.22);
+      border-radius: 0 3px 3px 3px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+#player-boards {
+  pointer-events: none;
+  margin-top: calc(-1 * var(--agricolaCentralBoardScale) * 795px - var(--gfOffset, 0px));
+  min-height: calc(var(--agricolaCentralBoardScale) * 795px + var(--gfOffset, 0px));
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+
+  #player-boards-left-column {
+    pointer-events: none;
+    width: 980px;
+    float: left;
+
+    #hand-container {
+      pointer-events: all;
+    }
+    [data-players='2']:not([data-additional='1']) &,
+    [data-players='1'] & {
+      width: calc(var(--agricolaCentralBoardScale) * 829px);
+    }
+
+    #player-boards-shape-outside {
+      height: calc(var(--agricolaCentralBoardScale) * 795px + var(--gfOffset, 0px));
+    }
+  }
+
+  [data-additional='1'][data-players='4'] & {
+    min-height: calc(var(--agricolaCentralBoardScale) * 965px + var(--gfOffset, 0px));
+    margin-top: calc(-1 * var(--agricolaCentralBoardScale) * 965px - var(--gfOffset, 0px));
+    #player-boards-left-column #player-boards-shape-outside {
+      height: calc(var(--agricolaCentralBoardScale) * 965px + var(--gfOffset, 0px));
+    }
+  }
+  [data-additional='1'][data-players='3'] & {
+    min-height: calc(var(--agricolaCentralBoardScale) * 839px + var(--gfOffset, 0px));
+    margin-top: calc(-1 * var(--agricolaCentralBoardScale) * 839px - var(--gfOffset, 0px));
+    #player-boards-left-column #player-boards-shape-outside {
+      height: calc(var(--agricolaCentralBoardScale) * 839px + var(--gfOffset, 0px));
+    }
+  }
+}
+
+#player-boards:not(.player-boards-right) {
+  #player-boards-separator {
+    pointer-events: all;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    clear: both;
+    margin: 10px 0px;
+
+    #hand-container {
+      height: auto;
+      margin: 5px;
+      padding: 5px;
+      border: 1px solid black;
+      border-radius: 10px;
+      background: rgba(231, 226, 142, 0.66);
+    }
+
+    /*
+    #hand-container-minor,
+    #hand-container-occupation {
+      margin: 5px;
+      padding: 5px;
+      border: 1px solid black;
+      border-radius: 10px;
+      background: rgba(231, 226, 142, 0.66);
+    }
+    */
+  }
+}
+
+#player-boards.player-boards-right {
+  #player-boards-separator {
+    display: none;
+  }
+
+  padding-left: calc(var(--agricolaCentralBoardScale) * 980px);
+  [data-players='2']:not([data-additional='1']) &,
+  [data-players='1'] & {
+    padding-left: calc(var(--agricolaCentralBoardScale) * 829px);
+  }
+
+  #player-boards-left-column {
+    position: absolute;
+    left: 0;
+    top: calc(-1 * var(--gfOffset, 0px));
+    width: calc(var(--agricolaCentralBoardScale) * 980px);
+
+    [data-players='2']:not([data-additional='1']) &,
+    [data-players='1'] & {
+      width: calc(var(--agricolaCentralBoardScale) * 829px);
+    }
+
+    #hand-container {
+      pointer-events: all;
+      margin: 5px;
+      padding: 5px;
+      border: 1px solid black;
+      border-radius: 10px;
+      align-content: center;
+      background: rgba(231, 226, 142, 0.66);
+      box-sizing: border-box;
+    }
+  }
+}
+
+#alternative-hand-wrapper {
+  position: relative;
+  z-index: 1;
+
+  #hand-container {
+    margin: 5px;
+    padding: 5px;
+    border: 1px solid black;
+    border-radius: 10px;
+    background: rgba(231, 226, 142, 0.66);
+  }
+
+  &.align-left #hand-container {
+    justify-content: flex-start;
+    width: fit-content;
+
+    #hand-container-minor,
+    #hand-container-occupation {
+      justify-content: flex-start;
+    }
+  }
+}

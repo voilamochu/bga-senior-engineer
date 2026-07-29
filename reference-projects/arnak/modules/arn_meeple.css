@@ -1,0 +1,86 @@
+.meeple {
+    transition: left 1s, top 1s, transform 1s;;
+}
+
+.meeple.green {
+    width: 61px; height: 58px;
+    background: url('../img/meeple_css_sprite.png') -2px -2px;
+}
+
+.meeple.red {
+    width: 61px; height: 58px;
+    background: url('../img/meeple_css_sprite.png') -66px -2px;
+}
+
+.meeple.yellow {
+    width: 61px; height: 58px;
+    background: url('../img/meeple_css_sprite.png') -2px -64px;
+}
+
+.meeple.blue {
+    width: 61px; height: 58px;
+    background: url('../img/meeple_css_sprite.png') -66px -64px;
+}
+
+
+.arnak-board .meeple, .player-camp .meeple {
+    position: absolute;
+    z-index: 5;
+    bottom: 0;
+    right: 0;
+}
+.counter-wrap .meeple {
+    transform: scale(0.7);
+    margin: 0 -11px;
+}
+
+.meeple.green {
+    width: 339px; height: 323px;
+    background: url('../img/meeple2_sprite.png') -10px -10px;
+}
+
+.meeple.red {
+    width: 339px; height: 323px;
+    background: url('../img/meeple2_sprite.png') -369px -10px;
+}
+
+.meeple.yellow {
+    width: 339px; height: 323px;
+    background: url('../img/meeple2_sprite.png') -10px -353px;
+}
+
+.meeple.blue {
+    width: 339px; height: 323px;
+    background: url('../img/meeple2_sprite.png') -369px -353px;
+}
+
+
+.arnak-board .meeple, .player-camp .meeple {
+    position: absolute;
+    z-index: 5;
+    bottom: 0;
+    right: 0;
+    transform: scale(0.35);
+    filter: drop-shadow(0px 0px 18px rgba(255, 255, 255, 0.25));
+    pointer-events: none;
+}
+.arnak-board .meeple {
+    transform: scale(0.2);
+}
+
+.counter-wrap .meeple {
+    transform: scale(0.2);
+    margin: -141px -143px;
+}
+
+.player-camp .meeple.meeple-0 {
+    top: 144px;
+    left: 288px;
+}
+.player-camp .meeple.meeple-1 {
+    top: 156px;
+    left: 430px;
+}
+
+
+

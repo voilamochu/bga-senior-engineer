@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>BGA Studio Cookbook - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-BGA_Studio_Cookbook rootpage-BGA_Studio_Cookbook action-view"><div class="article"><p><br/>
+This page is a cookbook of design and implementation recipes for BGA Studio framework.
+For tooling and usage recipes see <a href="Tools_and_tips_of_BGA_Studio.html" title="Tools and tips of BGA Studio">Tools and tips of BGA Studio</a>.
+If you have your own recipes feel free to edit this page.
+</p><h2><span id="Visual_Effects.2C_Layout_and_Animation"></span><span class="mw-headline" id="Visual_Effects,_Layout_and_Animation">Visual Effects, Layout and Animation</span></h2><h3><span class="mw-headline" id="DOM_manipulations">DOM manipulations</span></h3><h4><span id="Create_pieces_dynamically_.28using_string_concatenation.29"></span><span class="mw-headline" id="Create_pieces_dynamically_(using_string_concatenation)">Create pieces dynamically (using string concatenation)</span></h4><p><b>Ingredients:</b> ggg.js
+</p><pre>  div = `&lt;div class='meeple_${color}'&gt;&lt;/div&gt;`;
+</pre><h4><span class="mw-headline" id="Create_all_pieces_statically">Create all pieces statically</span></h4><p><b>Ingredients:</b> ggg_ggg.tpl, ggg.css, ggg.view.php (optional) 
+</p><ul><li>Create ALL game pieces in html template (.tpl)</li>
+<li>ALL pieces should have unique id, and it should be meaningful, i.e. meeple_red_1</li>
+<li>Do not use inline styling</li>
+<li>Id of player's specific pieces should use some sort of 'color' identification, since player id cannot be used in static layout, you can use english color name, hex 6 char value, or color "number" (1,2,3...)</li>
+<li>Pieces should have separated class for its color, type, etc, so it can be easily styled in groups. In example below you now can style all meeples, all red meeples or all red tokens, or all "first" meeples</li></ul><p>ggg.tpl:
+</p><pre> 
+  &lt;div id="home_red" class="home_red home"&gt;
+     &lt;div id="meeple_red_1" class="meeple red n1"&gt;&lt;/div&gt;
+     &lt;div id="meeple_red_2" class="meeple red n2"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+</pre><p>ggg.css:
+</p><pre>.meeple {
+	width: 32px;
+	height: 39px;
+	background-image: url(img/78_64_stand_meeples.png);
+	background-size: 352px;
+}
+
+.meeple.red {
+	background-position: 30% 0%;
+}
+</pre><ul><li>There should be straight forward mapping between server id and js id (or 1:1)</li>
+<li>You place objects in different zones of the layout, and setup css to take care of layout</li></ul><pre>.home .meeple{
+   display: inline-block;
+}
+</pre><ul><li>If you need to have a temporary object that look like original you can use dojo.clone (and change id to some temp id)</li>
+<li>If there is lots of repetition or zone grid you can use template generator, but inject style declaration in css instead of inline style for flexibility</li></ul><p>Note:
+</p><ul><li>If you use this model you cannot use premade js components such as Stock and Zone</li>
+<li>You have to use alternative methods of animation (slightly altered) since default method will leave object with inline style attributes which you don't need</li></ul><h4><span class="mw-headline" id="Use_player_color_in_template">Use player color in template</span></h4><p>NOTE: view.php is deprecated, its best to generate html from .js
+</p><p>.view.php:
+</p><pre>    function build_page($viewArgs) {
+        // Get players &amp; players number
+        $players = $this-&gt;game-&gt;loadPlayersBasicInfos();
+        $players_nbr = count($players);
+        /**
+         * ********* Place your code below: ***********
+         */
+        
+        // Set PCOLOR to the current player color hex
+        $cplayer = $this-&gt;getCurrentPlayerId();
+        if (array_key_exists($cplayer, $players)) { // may be not set if spectator
+            $player_color = $players [$cplayer] ['player_color'];
+        } else {
+            $player_color = 'ffffff'; // spectator
+        }
+        $this-&gt;tpl ['PCOLOR'] = $player_color;
+</pre><h3><span class="mw-headline" id="Animation">Animation</span></h3><h4><span class="mw-headline" id="Attach_to_new_parent_without_destroying_the_object">Attach to new parent without destroying the object</span></h4><p>BGA function attachToNewParent for some reason destroys the original, if you want similar function that does not you can use this
+ggg.js
+</p><pre>        /**
+         * This method will attach mobile to a new_parent without destroying, unlike original attachToNewParent which destroys mobile and
+         * all its connectors (onClick, etc)
+         */
+        attachToNewParentNoDestroy: function (mobile_in, new_parent_in, relation, place_position) {
+
+            const mobile = $(mobile_in);
+            const new_parent = $(new_parent_in);
+
+            var src = dojo.position(mobile);
+            if (place_position)
+                mobile.style.position = place_position;
+            dojo.place(mobile, new_parent, relation);
+            mobile.offsetTop;//force re-flow
+            var tgt = dojo.position(mobile);
+            var box = dojo.marginBox(mobile);
+            var cbox = dojo.contentBox(mobile);
+            var left = box.l + src.x - tgt.x;
+            var top = box.t + src.y - tgt.y;
+
+            mobile.style.position = "absolute";
+            mobile.style.left = left + "px";
+            mobile.style.top = top + "px";
+            box.l += box.w - cbox.w;
+            box.t += box.h - cbox.h;
+            mobile.offsetTop;//force re-flow
+            return box;
+        },
+</pre><h4><span class="mw-headline" id="Animation_on_oversurface">Animation on oversurface</span></h4><p>If you use non-absolute position for your game elements (i.e you use layouts) - you cannot really use BGA animation functions. After years of fidding with different options I use
+techique which I call animation on oversurface that works when parents use different zoom, rotation, etc
+</p><ul><li>You need another layer on top of everything - oversurface</li>
+<li>We create copy of the object on oversurface - to move</li>
+<li>We move the real object on final position - but make it invisible for now</li>
+<li>We move the phantom to final position applying required zoom and rotation (using css animation), then destroy it</li>
+<li>When animation is done we make original object visible in new position</li></ul><p>The code is bit complex it can be found here
+</p><p>Game using it: century, ultimaterailroads
+</p><h4><span class="mw-headline" id="Scroll_element_into_view">Scroll element into view</span></h4><p>Ingredients: game.js
+</p><pre>    scrollIntoViewAfter: function (node, delay) {
+      if (this.instantaneousMode || this.inSetup) {
+        return;
+      }
+      if (typeof g_replayFrom != "undefined") {
+        $(node).scrollIntoView();
+        return;
+      }
+      if (!delay) delay = 0;
+      setTimeout(() =&gt; {
+        $(node).scrollIntoView({ behavior: "smooth", block: "center" });
+      }, delay);
+    },
+</pre><h3><span class="mw-headline" id="Logs">Logs</span></h3><h4><span class="mw-headline" id="Inject_images_and_styled_html_in_the_log">Inject images and styled html in the log</span></h4><div style="float:none;clear:both;display:flex;margin:8px;"><div class="mw-collapsible mw-" style="display:flex;flex-direction:column;min-width:;max-width:500px;border-radius:0.5rem;background:#c00;"><div class="mw-collapsible-toggle" style="padding:0.5rem;text-align:center;color:#fff;font-weight:bold;overflow-wrap:break-word;hyphens:auto;">Warning — Translation</div><div class="mw-collapsible-content" style="margin:0 0.25rem 0.25rem;padding:0.25rem;border-radius:calc(0.5rem - 0.25rem);background:#fffc;color:#202122;overflow-wrap:break-word;hyphens:auto;"><b>In order to prevent interference with the translation process, keep in mind that you must only apply modifications to the args object, and not try to substitute the keys (the <code>${player_name}</code> parts of your string) in the log string.</b></div></div></div><p>So you want nice pictures in the game log. What do you do? The first idea that comes to mind is to send html from php in notifications (see method above). 
+</p><ul><li>It's bad architecture. ui elements leak into the server, and now you have to manage the ui in multiple places.</li>
+<li>If you decided to change something in the ui in future version, replay logs for old games and tutorials may not work, since they use stored notifications.</li>
+<li>Log previews for old games become unreadable. (This is the log state before you enter the game replay, which is useful for troubleshooting and game analysis.)</li>
+<li>It's more data to transfer and store in the db.</li>
+<li>It's a nightmare for translators.</li></ul><p>So what else can you do? You can use client side log injection to intercept log arguments (which come from the server) and replace them with html on the client side. Here are three different method you can use to achieve this.
+</p><h5><span id="Define_this.bgaFormatText.28.29_method"></span><span class="mw-headline" id="Define_this.bgaFormatText()_method">Define <code>this.bgaFormatText()</code> method</span></h5><p><b>Ingredients:</b> ggg.js, ggg.game.php
+</p><div class="floatleft"><a class="image" href="/File:Clientloginjection.png"><img alt="Clientloginjection.png" decoding="async" height="710" src="/images/5/5e/Clientloginjection.png" width="265"/></a></div><p>ggg.js
+</p><pre> 
+
+        /** Declare this function to inject html into log items. */
+
+        bgaFormatText : function(log, args) {
+            try {
+                if (log &amp;&amp; args &amp;&amp; !args.processed) {
+                    args.processed = true;
+                    
+
+                    // list of special keys we want to replace with images
+                    const keys = ['place_name','token_name'];
+                    
+                  
+                    for (let i in keys) {
+                        const key = keys[i];
+                        if (args[key]) args[key] = this.getTokenDiv(key, args);                            
+
+                    }
+                }
+            } catch (e) {
+                console.error(log,args,"Exception thrown", e.stack);
+            }
+            return { log, args };
+        },
+</pre><p><br/>
+<b>Important:</b> In the <i>bgaFormatText</i> method, the 'args' parameter will only contain arguments passed to it from the notify method in Game.php (see below).
+</p><p><br/>
+</p><pre>        getTokenDiv : function(key, args) {
+            // ... implement whatever html you want here, example from sharedcode.js
+            var token_id = args[key];
+            var item_type = getPart(token_id,0);
+            var logid = "log" + (this.globalid++) + "_" + token_id;
+            switch (item_type) {
+                case 'wcube':
+                    var tokenDiv = this.format_block('jstpl_resource_log', {
+                        "id" : logid,
+                        "type" : "wcube",
+                        "color" : getPart(token_id,1),
+                    });
+                    return tokenDiv;
+             
+                case 'meeple':
+                    if ($(token_id)) {
+                        var clone = dojo.clone($(token_id));
+    
+                        dojo.attr(clone, "id", logid);
+                        this.stripPosition(clone);
+                        dojo.addClass(clone, "logitem");
+                        return clone.outerHTML;
+                    }
+                    break;
+     
+                default:
+                    break;
+            }
+
+            return "'" + this.clienttranslate_string(this.getTokenName(token_id)) + "'";
+       },
+       getTokenName : function(key) {
+           return this.gamedatas.token_types[key].name; // get name for the key, from static table for example
+       },
+</pre><p>Note that in this case the server simply injects token_id as a name, and the client substitutes it for the translated name or the picture.
+</p><pre>          $this-&gt;bga-&gt;notify-&gt;all('playerLog', clienttranslate('Game moves ${token_name}'), ['token_name'=&gt;$token_id]);
+</pre><p><b>Important:</b> As noted above, only arguments actually passed by this method are available to the args parameter received in the client-side <i>bgaFormatText</i> method.
+</p><pre>          $this-&gt;bga-&gt;notify-&gt;all('tokenPlaced', clienttranslate('Player placed ${token_name}'), array(
+             'token_name' =&gt; $token_id,
+             'zone_played' =&gt; $zone);
+</pre><p>This will output "Player placed ${token_name}" in the log, and if we subscribe to a notification method activated by the "tokenPlaced" event in the client-side code, that method can make use of the 'zone_played' argument. 
+</p><pre>           $this-&gt;bga-&gt;notify-&gt;all('tokenPlaced', clienttranslate('Player placed ${token_name}'), array(
+              'token_name' =&gt; $token_id,
+              'zone_played' =&gt; $zone,
+              'preserve' =&gt; [ 'zone_played' ]
+           );
+</pre><p>Now you can use zone_played in bgaFormatText even in historical logs.
+</p><h5><span class="mw-headline" id="Use_:formatFunction_option_provided_by_dojo.string.substitute">Use <code>:formatFunction</code> option provided by <code>dojo.string.substitute</code></span></h5><p><b>Ingredients:</b> ggg.js, ggg.game.php, ggg_ggg.tpl, ggg.css
+</p><p><b>WARNING:</b> using this method on an already advanced project will require you to go through all your notifications to change keys !
+</p><p>First of all, you need to define your formatting function in the ggg.js file:
+</p><pre>[[ggg.js]]
+        getTokenDiv : function(value, key) {
+            //This is only an example implementation, you need to write your own.
+            //The method should return HTML code
+            switch (key) {
+                case 'html_injected_argument1':
+                    return this.format_block('jstpl_HTMLLogElement1',{value: value});
+                case 'html_injected_argument2':
+                    return this.format_block('jstpl_HTMLLogElement2',{value: value});
+                ...
+            }
+       }
+</pre><p>Obviously you need to define the appropriate templates in the ggg_ggg.tpl file:
+</p><pre>[[ggg_ggg.tpl]]
+let jstpl_HTMLLogElement1 = '&lt;div class="log-element log-element-1-${value}"&gt;&lt;/div&gt;';
+let jstpl_HTMLLogElement2 = '&lt;div class="log-element log-element-2-${value}"&gt;&lt;/div&gt;';
+...
+</pre><p>And the appropriate classes in ggg.css.
+</p><pre>[[ggg.js]]
+define([
+    "dojo", "dojo/_base/declare",
+    <b><span style="color:green;">"dojo/aspect",</span>                 //MUST BE IN THIRD POSITION</b> (see <a href="#Including_your_own_JavaScript_module_(II)">below</a>)
+    "ebg/core/gamegui",
+    "ebg/counter",
+], function (dojo, declare, <span style="color:green;"><b>aspect</b></span>) {
+...
+</pre><p>And you also need to add the following code in your <code>contructor</code> method in the ggg.js:
+</p><pre>[[ggg.js]]
+        constructor: function(){
+</pre><pre>            // ... skipped code ...
+            let gameObject = this;            //Needed as the this object in aspect.before will not refer to the game object in which the formatting function resides
+            aspect.before(dojo.string, "substitute", function(template, map, transform) {      //This allows you to modify the arguments of the dojo.string.substitute method before they're actually passed to it
+                return [template, map, transform, gameObject];
+            });
+</pre><p>Now you're all set to inject HTML in your logs. To actually achieve this, you must specify the function name with the key like so:
+</p><pre>[[ggg.game.php]]
+$this-&gt;bga-&gt;notify-&gt;all("notificationName", clienttranslate("This log message contains ${plainTextArgument} and the following will receive HTML injection: ${html_injected_argument1:getTokenDiv}"), [
+    "plainTextArgument" =&gt; "some plain text here",
+    "html_injected_argument1" =&gt; "some value used by getTokenDiv",
+]);
+</pre><p>You're not limited writing only one function, you can write as many functions as you like, and have them each inject a specific type of HTML. You just need to specify the relevant function name after the column in the substitution key.
+</p><h5><span class="mw-headline" id="Use_transform_argument_of_dojo.string.substitute">Use <code>transform</code> argument of <code>dojo.string.substitute</code></span></h5><p><b>Ingredients:</b> ggg.js, ggg.game.php, ggg_ggg.tpl, ggg.css
+</p><p><b>WARNING:</b> This method will be applied to all strings that go through dojo.string.substitute. As such you must take extra care not to substitute keys that may be used by the framework (i.e. ${id}). In order to do so, a good practise would be to prefix all keys that need substitution with a trigram of the game name.
+</p><pre>[[ggg.js]]
+        getTokenDiv : function(value, key) {
+            //This is only an example implementation, you need to write your own.
+            //The method should return HTML code
+            switch (key) {
+                case 'html_injected_argument1':
+                    return this.format_block('jstpl_HTMLLogElement1',{value: value});
+                case 'html_injected_argument2':
+                    return this.format_block('jstpl_HTMLLogElement2',{value: value});
+                ...
+                default:
+                    return value; //Needed otherwise regular strings won't appear since since the value isn't returned by the function
+            }
+        }
+</pre><p>The templates must be defined in the ggg_ggg.tpl file and the corresponding CSS classes in the ggg.css file.
+</p><pre>[[ggg.js]]
+define([
+    "dojo", "dojo/_base/declare",
+    <b><span style="color:green;">"dojo/aspect",</span>                 //MUST BE IN THIRD POSITION</b> (see <a href="#Including_your_own_JavaScript_module_(II)">below</a>)
+    "ebg/core/gamegui",
+    "ebg/counter",
+], function (dojo, declare, <span style="color:green;"><b>aspect</b></span>) {
+...
+</pre><p>And the following code to the <code>constructor</code> method in ggg.js:
+</p><pre>[[ggg.js]]
+        constructor: function(){
+            // ... skipped code ...
+            let transformFunction = dojo.hitch(this, "getTokenDiv");          //Needed as the this object in aspect.before will not refer to the game object in which the formatting function resides
+            aspect.before(dojo.string, "substitute", function(template, map, transform) {
+                if (undefined === transform) {    //Check for a transform function presence, just in case
+                    return [template, map, transformFunction];
+                }
+            });
+</pre><p>Then you're all set for log injection, no need to change anything on the PHP side.
+</p><h4><span class="mw-headline" id="Processing_logs_on_re-loading">Processing logs on re-loading</span></h4><p>You rarely need to process logs when reloading, but if you want to do something fancy you may have to do it after logs are loaded. 
+Logs are loaded asyncronously so you have to listen for logs to be fully loaded.
+Unfortunately there is no direct way of doing it so this is the hack.
+</p><p><b>Ingredients:</b> ggg.js
+</p><pre>			/*
+  			* [Undocumented] Override BGA framework functions to call onLoadingLogsComplete when loading is done
+                        @Override
+   			*/
+			setLoader: function(image_progress, logs_progress) {
+				this.inherited(arguments); // required, this is "super()" call, do not remove
+				//console.log("loader", image_progress, logs_progress)
+				if (!this.isLoadingLogsComplete &amp;&amp; logs_progress &gt;= 100) {
+					this.isLoadingLogsComplete = true; // this is to prevent from calling this more then once
+					this.onLoadingLogsComplete();
+				}
+			},
+
+			onLoadingLogsComplete: function() {
+				console.log('Loading logs complete');
+				// do something here
+			},
+</pre><h4><span id="Overriding_format_string_recursive_to_inject_HTML_into_log.2C_including_adding_tooltips_to_log"></span><span class="mw-headline" id="Overriding_format_string_recursive_to_inject_HTML_into_log,_including_adding_tooltips_to_log">Overriding format_string_recursive to inject HTML into log, including adding tooltips to log</span></h4><p><b>Ingredients:</b> ggg.js
+</p><pre>return this.logInject(text);
+</pre><p>The purpose of logInject() is to catch pre-coded text from your notifications, siphon out the meaningful info so that you can manipulate it on the front end, and then replace that pre-coded text in the log with whatever html you desire, as well as adding a tooltip to the element you're injecting. Here is a simplified version of logInject():
+</p><pre>logInject: function (log_entry) {
+    const card_regex = /\[\w+-*\w* *\w*\(\d+\)\]/g;    // this will catch a card name in the log formatted like so: [card_name(card_type_arg)] -You may need to adjust the regex to catch your card names
+    const cards_to_replace = log_entry.matchAll(card_regex);
+    for (let card of cards_to_replace) {
+        const match = card[0];
+        const left_parenthesis = match.indexOf('(');
+        const card_type_arg = match.slice(left_parenthesis+1, match.length-2);
+        const card_span = this.getHTMLForLog(card_type_arg, 'card');
+        log_entry = log_entry.replace(match, card_span);
+    }
+    return log_entry;
+}
+</pre><p>getHTMLForLog() takes the card_type_arg and uses it to create the &lt;span&gt; to be injected into the log that you can then attach a tooltip to:
+</p><pre>getHTMLForLog: function (item, type) {   // in this example, item refers to the card_type_arg
+    switch(type) {
+        case 'card':
+            this.log_span_num++; // adds a unique num to the span id so that duplicate card names in the log have unique ids
+            const card_name = this.gamedatas['cards'][item]['description'];  // or wherever you store your translated card name
+            const item_type = 'card_tt';
+            return `&lt;span id="${this.log_span_num}_item_${item}" class="${item_type} item_tooltip"&gt;${card_name}&lt;/span&gt;`;
+    }
+}
+</pre><p>If you only want to add some HTML to your log and don't care about the tooltips, you can remove the item_tooltip class from the above and stop here. If you want tooltips, you'll need a function to add them:
+</p><pre>addTooltipsToLog: function() {
+    const item_elements = dojo.query('.item_tooltip:not(.tt_processed)');
+    Array.from(item_elements).forEach(ele =&gt; {
+        const ele_id = ele.id;
+        ele.classList.add('tt_processed');  // prevents tooltips being re-added to previous log entries
+        if (ele.classList.contains('card_tt')) {
+            const card_type_arg = ele_id.slice(-3).replace(/^\D+/g, '');  // extracts the card_type_arg from the span id
+            this.cardTooltip(ele_id, card_type_arg)
+        }
+    });
+}
+</pre><p>cardTooltip() is just however you want to create and add your tooltip. Mine is below:
+</p><pre>cardTooltip: function (ele, card_type_arg) {
+    const card = this.gamedatas.cards[card_type_arg];
+    const bg_pos = card['x_y'];
+    const skill = dojo.string.substitute("${skill}", { skill: card['skill'] });
+    const description = dojo.string.substitute("${description}", { description: card['description'] });
+    const html = `&lt;div style="margin-bottom: 5px; display: inline;"&gt;&lt;strong&gt;${description}&lt;/strong&gt;&lt;/div&gt;
+                  &lt;span style="font-size: 10px; margin-left: 5px;"&gt;${skill}&lt;/span&gt;
+                  &lt;div class="asset asset_tt" style="background-position: -${bg_pos[0]}% -${bg_pos[1]}%; margin-bottom: 5px;"&gt;&lt;/div&gt;`;
+    this.addTooltipHTML(ele, html, 1000);
+}
+</pre><p>And finally, you need to connect addTooltipsToLog. Using the new promise-based notifications you can supply the `onEnd` param like
+</p><pre>this.bgaSetupPromiseNotifications({ onEnd: this.addTooltipsToLog.bind(this) });
+</pre><p>Or, if you're not using them, you can attach to the notifqueue so it is called whenever the log is updated like
+</p><pre>dojo.connect(this.notifqueue, 'addToLog', () =&gt; {
+    this.addTooltipsToLog();
+});
+</pre><p>You can expand this to cover multiple types of tooltips. For example, I have it set up for cards: formatted in log as [card_name(card_type_arg)], hexes: formatted as {pitch_name(pitch_type_arg)}, objectives: formatted as ==objective_name(objective_type_arg)==, etc.
+</p><h3><span class="mw-headline" id="Images_and_Icons">Images and Icons</span></h3><h4><span class="mw-headline" id="Accessing_images_from_js">Accessing images from js</span></h4><p><b>Ingredients:</b> Game.js
+</p><pre> 
+     const my_img = `&lt;img src="${this.bga.images.getImgUrl('cards.jpg')}"/&gt;`;
+</pre><h4><span class="mw-headline" id="High-Definition_Graphics">High-Definition Graphics</span></h4><p>Some users will have screens which can display text and images at a greater resolution than the usual 72 dpi, e.g. the "Retina" screens on the 5k iMac, all iPads, and high-DPI screens on laptops from many manufacturers. If you can get art assets at this size, they will make your game look extra beautiful. You <i>could</i> just use large graphics and scale them down, but that would increase the download time and bandwidth for users who can't display them. Instead, a good way is to prepare a separate graphics file at exactly twice the size you would use otherwise, and add "@2x" at the end of the filename, e.g. if pieces.png is 240x320, then <a class="__cf_email__" data-cfemail="52223b3731372112602a7c223c35" href="/cdn-cgi/l/email-protection">[email protected]</a> is 480x640.
+</p><pre>.piece {
+    position: absolute;
+    background-image: url('img/pieces.png');
+    background-size:240px 320px;
+    z-index: 10;
+}
+@media (-webkit-min-device-pixel-ratio: 2), (min-device-pixel-ratio: 2), (min-resolution: 192dpi)
+{
+    .piece {
+        background-image: url('img/<a class="__cf_email__" data-cfemail="9feff6fafcfaecdfade7b1eff1f8" href="/cdn-cgi/l/email-protection">[email protected]</a>');
+    }
+}
+</pre><p>Secondly, in your setup function in javascript, you must ensure than only the appropriate one version of the file gets pre-loaded (otherwise you more than waste the bandwidth saved by maintaining the standard-resolution file). Note that the media query is the same in both cases:
+</p><pre>            var isRetina = "(-webkit-min-device-pixel-ratio: 2), (min-device-pixel-ratio: 2), (min-resolution: 192dpi)";
+            if (window.matchMedia(isRetina).matches)
+            {
+                this.dontPreloadImage( 'pieces.png' );
+                this.dontPreloadImage( 'board.jpg' );
+            }
+            else
+            {
+                this.dontPreloadImage( '<a class="__cf_email__" data-cfemail="4d3d24282e283e0d7f35633d232a" href="/cdn-cgi/l/email-protection">[email protected]</a>' );
+                this.dontPreloadImage( '<a class="__cf_email__" data-cfemail="6d0f020c1f092d5f1543071d0a" href="/cdn-cgi/l/email-protection">[email protected]</a>' );
+            }
+</pre><h4><span class="mw-headline" id="Using_CSS_to_create_different_colors_of_game_pieces_if_you_have_only_white_piece">Using CSS to create different colors of game pieces if you have only white piece</span></h4><pre>background-color: #${color}; 
+background-blend-mode: multiply;
+background-image: url( 'img/mypiece.png');
+mask: url('img/mypiece.png');
+-webkit-mask: url('img/mypiece.png');
+</pre><p>where ${color} - is color you want
+</p><h4><span class="mw-headline" id="Adding_Image_buttons">Adding Image buttons</span></h4><p>Its pretty trivial but just in case you need a working function:
+</p><pre>                addImageActionButton: function (id, div_html, handler) { // div_html is string not node
+                    this.statusBar.addActionButton(div_html, handler, { id }); 
+                    dojo.addClass(id, "bgaimagebutton"); // add css class to do more styling
+                    return $(id); // return node for chaining
+                },
+
+</pre><p>Example of usage:
+</p><pre>    this.addImageActionButton('button_coin',"&lt;div class='coin'&gt;&lt;/div&gt;", ()=&gt;{ alert('Ha!'); });
+</pre><h3><span class="mw-headline" id="Scale_to_fit_for_big_boards">Scale to fit for big boards</span></h3><p><b>Ingredients:</b> ggg_ggg.tpl, ggg.js
+</p><p>Lets say you have huge game board, and lets say you want it to be 1400px wide. Besides the board there will be side bar which is 240 and trim. 
+My display is 1920 wide so it fits, but there is big chance other people won't have that width. What do you do?
+</p><ul><li>If board does not fit you want scale whole thing down, the best way is probably use viewport (see <a class="external free" href="https://en.doc.boardgamearena.com/Your_game_mobile_version" rel="nofollow">https://en.doc.boardgamearena.com/Your_game_mobile_version</a>)</li>
+<li>You can leave the board as is and make sure it is scrollable horizonatally</li>
+<li>You add custom scale just for the board (can add user controls  - and hook to transform: scale())</li></ul><p>I tried to auto-scale but this just does work, too many variables - browser zoom, viewport, custom bga scaling, devicePixelRatio - all create some impossible coctail of zooming...
+Here is scaling functing for custom user scaling
+</p><pre>   &lt;div id="thething" class="thething"&gt;
+            ... everything else you declare ...
+   &lt;/div&gt;
+</pre><p>ggg.js:
+</p><pre>    onZoomPlus: function() {
+       this.setZoom(this.zoom + 0.1);
+    },
+    onZoomMinus: function() {
+       this.setZoom(this.zoom - 0.1);
+    },
+
+    setZoom: function (zoom) {
+      zoom = parseInt(zoom) || 0;
+      if (zoom === 0 || zoom &lt; 0.1 || zoom &gt; 10) {
+        zoom = 1;
+      }
+      this.zoom = zoom;
+      var inner = document.getElementById("thething");
+
+      if (zoom == 1) {
+        inner.style.removeProperty("transform");
+        inner.style.removeProperty("width");
+      } else {
+        inner.style.transform = "scale(" + zoom + ")";
+        inner.style.transformOrigin = "0 0";
+        inner.style.width = 100 / zoom + "%";
+      }
+      localStorage.setItem(`${this.game_name}_zoom`, "" + this.zoom);
+      this.onScreenWidthChange();
+    },
+</pre><h3><span class="mw-headline" id="Dynamic_tooltips">Dynamic tooltips</span></h3><p>If you really need a dynamic tooltip you can use this technique. (Only use it if the static tooltips provided by the BGA framework are not sufficient.)
+</p><pre>           new dijit.Tooltip({
+               connectId: ["divItemId"],
+               getContent: function(matchedNode){
+                   return "... calculated ..."; 
+               }
+           });
+</pre><p><br/>
+This is an out-of-the-box djit.Tooltip. It has a <i>getContent</i> method which is called dynamically.
+</p><p><a class="external text" href="https://dojotoolkit.org/reference-guide/1.10/dijit/Tooltip.html" rel="nofollow">dijit.Tooltip</a>
+</p><h3><span class="mw-headline" id="Cool_realistic_shadow_effect_with_CSS">Cool realistic shadow effect with CSS</span></h3><h4><span class="mw-headline" id="Rectangles_and_circles">Rectangles and circles</span></h4><p>It is often nice to have a drop shadow around tiles and tokens, to separate them from the table visually. It is very easy to add a shadow to rectangular elements, just add this to your css:
+</p><pre>.xxx-tile {
+    box-shadow: 3px 3px 3px #000000a0;
+}
+</pre><p>box-shadow obeys <b>border-radius</b> of the element, so it will look good for rounded rectangles, and hence also circles (if border-radius is set appropriately).
+</p><h4><span class="mw-headline" id="Irregular_Shapes">Irregular Shapes</span></h4><p>If you wish to make a shadow effect for game pieces that are not a rectangle, but your game pieces are drawn from rectangles in a PNG image, you can apply the shadow to the piece using any art package and save it inside the image. This usually will yield the best performance. Remember to account for the size of the shadow when you lay out images in the sprite sheet.
+</p><p>For instance:
+</p><pre>.xxx-token {
+    filter: drop-shadow(0px 0px 1px #000000);
+}
+</pre><p>Beware that some browsers still do not always draw drop-shadow correctly. In particular, Safari frequently leaves bits of shadow behind when objects move around the screen. In Chrome, shadows sometimes flicker badly if another element is animating close by. Some of these correctness issues can be solved by adding <b>isolation: isolate; will-change: filter;</b> to affected elements, but this significantly affects redraw performance.
+</p><p>gameoptions.inc.php
+</p><pre>100 =&gt; array(
+			'name' =&gt; totranslate('Shadows'),
+			'needReload' =&gt; true, // after user changes this preference game interface would auto-reload
+			'values' =&gt; array(
+					1 =&gt; array( 'name' =&gt; totranslate( 'Enabled' ), 'cssPref' =&gt; '' ),
+					2 =&gt; array( 'name' =&gt; totranslate( 'Disabled' ), 'cssPref' =&gt; 'no-shadow' )
+			)
+	),
+</pre><p>[game].css
+</p><pre>.no-shadow * {
+	filter: none !important; 
+} 
+</pre><h4><span class="mw-headline" id="Shadows_with_clip-path">Shadows with clip-path</span></h4><p>For some reason, a shadow will not work together with clip-path on one element. To use both clip-path (when for example using .svg to cut out cardboard components from your .jpg spritesheet) and drop-shadow, you need to wrap the element into another one, and apply drop-shadow to the outer one, and clip-path to the inner one.
+</p><pre>&lt;div class='my-token-wrap'&gt;
+  &lt;div class='my-token'&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</pre><pre>.my-token-wrap {
+    filter: drop-shadow(0px 0px 1px #000000);
+}
+.my-token-wrap .my-token {
+    clip-path: url(#my-token-path);
+}
+</pre><p><br/>
+</p><h3><span class="mw-headline" id="Using_the_CSS_classes_from_the_state_machine">Using the CSS classes from the state machine</span></h3><p>If you need to hide or show stuff depending on the state of your game, you can of course use javascript, but CSS is hand enough for that.  The #overall-content element does change class depending on the game state.  For instance, if you are in state <i>playerTurn</i>, it will have the class <i>gamestate_playerTurn</i>.
+</p><pre>#discard_pile { display: none }
+.gamestate_playerTurn #discard_pile { display: block }
+</pre><p>This can be used if you want to change sizing of elements, position, layout or visual appearance.
+</p><h2><span class="mw-headline" id="Game_Model_and_Database_design">Game Model and Database design</span></h2><h3><span class="mw-headline" id="Database_for_The_euro_game">Database for The euro game</span></h3><p>Lets say we have a game with workers, dice, tokens, board, resources, money and vp. Workers and dice can be placed in various zones on the board, and you can get resources, money, tokens and vp in your home zone. Also tokens can be flipped or not flipped.
+</p><p><br/>
+Now lets try to map it, we have
+</p><ul><li>(meeple,zone)</li>
+<li>(die, zone, sideup)</li>
+<li>(resource cube/money token/vp token,player home zone)</li>
+<li>(token, player home zone, flip state)</li></ul><p>We can notice that resource and money are uncountable, and don't need to be track individually so we can replace our mapping to
+</p><ul><li>(resource type/money,player home zone, count)</li></ul><p>And vp stored already for us in player table, so we can remove it from that list.
+</p><p>So the piece mapping for non-grid based games can be in most case represented by (string: token_key, string: token_location, int: token_state), example of such database schema can be found here: <a class="external text" href="https://github.com/elaskavaia/bga-sharedcode/blob/master/dbmodel.sql" rel="nofollow">dbmodel.sql</a> and class implementing access to it here <a class="external text" href="https://github.com/elaskavaia/bga-sharedcode/blob/master/modules/tokens.php" rel="nofollow">table.game.php</a>.
+</p><pre>CREATE TABLE IF NOT EXISTS `token` (
+ `token_key` varchar(32) NOT NULL,
+ `token_location` varchar(32) NOT NULL,
+ `token_state` int(10),
+ PRIMARY KEY (`token_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+</pre><p><br/>
+</p><table class="wikitable">
+<caption>token
+</caption>
+<tbody><tr>
+<th>token_key
+</th>
+<th>token_location
+</th>
+<th>token_state
+</th></tr>
+<tr>
+<td>meeple_red_1
+</td>
+<td>home_red
+</td>
+<td>0
+</td></tr>
+<tr>
+<td>dice_black_2
+</td>
+<td>board_guard
+</td>
+<td>1
+</td></tr>
+<tr>
+<td>dice_green_1
+</td>
+<td>board_action_mayor
+</td>
+<td>3
+</td></tr>
+<tr>
+<td>bread
+</td>
+<td>home_red
+</td>
+<td>5
+</td></tr></tbody></table><p>Now how we represent resource counters such as bread?
+Using same table from we simply add special counter token for bread and use state to indicate the count. Note to keep first column unique we have to add player identification for that counter, i.e. ff0000 is red player.
+</p><table class="wikitable">
+<caption>token
+</caption>
+<tbody><tr>
+<th>token_key
+</th>
+<th>token_location
+</th>
+<th>token_state
+</th></tr>
+<tr>
+<td>bread_ff0000
+</td>
+<td>tableau_ff0000
+</td>
+<td>5
+</td></tr></tbody></table><p><br/>
+See php module for this table here <a class="external free" href="https://github.com/elaskavaia/bga-sharedcode/blob/master/modules/tokens.php" rel="nofollow">https://github.com/elaskavaia/bga-sharedcode/blob/master/modules/tokens.php</a>
+</p><pre>CREATE TABLE IF NOT EXISTS `resource` (
+ `player_id` int(10) unsigned NOT NULL,
+ `resource_key` varchar(32) NOT NULL,
+ `resource_count` int(10) signed NOT NULL,
+ PRIMARY KEY (`player_id`,`resource_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+</pre><pre>ALTER TABLE resource ADD CONSTRAINT fk_player_id FOREIGN KEY (player_id) REFERENCES player(player_id);
+</pre><table class="wikitable">
+<caption>resource
+</caption>
+<tbody><tr>
+<th>player_id
+</th>
+<th>resource_key
+</th>
+<th>resource_count
+</th></tr>
+<tr>
+<td>123456
+</td>
+<td>bread
+</td>
+<td>5
+</td></tr></tbody></table><p><br/>
+</p><p>This version is similar to "card" table from hearts tutorial, you can also use exact cards database schema and Deck implementation for most purposes (even you not dealing with cards). 
+</p><pre>CREATE TABLE IF NOT EXISTS `token` (
+ `token_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+ `token_type` varchar(16) NOT NULL,
+ `token_arg` int(11) NOT NULL,
+ `token_location` varchar(32) NOT NULL,
+ `token_state` int(10),
+ PRIMARY KEY (`token_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+</pre><table class="wikitable">
+<caption>token
+</caption>
+<tbody><tr>
+<th>token_id
+</th>
+<th>token_type
+</th>
+<th>token_arg
+</th>
+<th>token_location
+</th>
+<th>token_state
+</th></tr>
+<tr>
+<td>22
+</td>
+<td>meeple
+</td>
+<td>123456
+</td>
+<td>home_123456
+</td>
+<td>0
+</td></tr>
+<tr>
+<td>23
+</td>
+<td>dice
+</td>
+<td>2
+</td>
+<td>board_guard
+</td>
+<td>1
+</td></tr>
+<tr>
+<td>26
+</td>
+<td>dice
+</td>
+<td>1
+</td>
+<td>board_action_mayor
+</td>
+<td>3
+</td></tr>
+<tr>
+<td>49
+</td>
+<td>bread
+</td>
+<td>0
+</td>
+<td>home_123456
+</td>
+<td>5
+</td></tr></tbody></table><p>Advantages of this would be is a bit more straightforward to do some queries in db, disadvantage its hard to read (as you can compare with previous example, you
+cannot just look at say, ah I know what it means). Another questionable advantage is it allows you to do id randomisation, so it hard to do crafted queries to 
+cheat, the down side of that you cannot understand it either, and handcraft db states for debugging or testing.
+</p><h3><span class="mw-headline" id="Database_for_The_card_game">Database for The card game</span></h3><p>Lets say you have a standard card game, player have hidden cards in hand, you can draw card from draw deck, play card on tableau and discard to discard pile.
+We have to design database for such game.
+</p><ul><li>Framework handles state machine transition, so you don't have to worry about database design for that (i.e. who's turn it is, what phase of the game we are at, you still have to design it but part of state machine step)</li>
+<li>Also framework supports basic player information, color, order around the table, basic scoring, etc, so you don't have to worry about it either</li>
+<li>The only thing you need in our database is state of the "board", which is "where each pieces is, and in what state", or (position,rotation) pair.</li></ul><p>Lets see what we have for that: 
+</p><ul><li>The card state is very simple, its usually "face up/face down", "tapped/untapped", "right side up/up side down"</li>
+<li>As position go we never need real coordinates x,y,z. We need to know what "zone" card was, and depending on the zone it may sometimes need an extra "z" or "x" as card order. The zone position usually static or irrelevant.</li>
+<li>So our model is: we have cards, which have some attributes, at any given point in time they belong to a "zone", and can also have order and state</li>
+<li>Now for mapping we should consider what information changes and what information is static, later is always candidate for material file</li>
+<li>For dynamic information we should try to reduce amount of fields we need
+<ul><li>we need at least a field for card, so its one</li>
+<li>we need to know what zone cards belong to, its 2</li>
+<li>and we have possibly few other fields, if you look closely at you game you may find out that most of the zone only need one attribute at a time, i.e. draw pile always have cards face down, hand always face up, also for hand and discard order does not matter at all (but for draw it does matter). So in majority of cases we can get away with one single extra integer field representing state or order</li></ul></li>
+<li>In real database both card and zone will be integers as primary keys referring to additional tables, but in our case its total overkill, so they can be strings as easily</li></ul><p>Variant 1: Minimalistic
+</p><pre>CREATE TABLE IF NOT EXISTS `card` (
+  `card_key` varchar(32) unsigned NOT NULL,
+  `card_location` varchar(32) NOT NULL,
+  `card_state` int(11) NOT NULL,
+  PRIMARY KEY (`card_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+</pre><p><br/>
+Variant 2: More normalised
+</p><pre>CREATE TABLE IF NOT EXISTS `card` (
+  `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `card_type` varchar(16) NOT NULL,
+  `card_type_arg` int(11) NOT NULL,
+  `card_location` varchar(16) NOT NULL,
+  `card_location_arg` int(11) NOT NULL,
+  PRIMARY KEY (`card_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+</pre><p>Note: if you using this schema, some zones/locations have special semantic. The 'hand' location is actually multiple locations - one per player, but player id is encoded as card_location_arg. If 'hand' in your game is ordered, visible or can have some other card states, you cannot use hand location (replacement is hand_&lt;player_id&gt; or hand_&lt;color_id&gt;)
+</p><h2><span class="mw-headline" id="Game_Elements">Game Elements</span></h2><h3><span class="mw-headline" id="Resource">Resource</span></h3><p>A game resource, such as "wood," is usually infinite and represented by a count allocated to a specific player or supply.
+</p><p>For a working example, you can check out: <a class="external text" href="https://codepen.io/VictoriaLa/pen/emYgLzR" rel="nofollow">CodePen Example</a> (ui only).
+</p><h4><span class="mw-headline" id="Representation_in_Database">Representation in Database</span></h4><p>In a minimalistic "tokens" database, it would look like this (e.g., the red player has 3 wood):
+</p><table class="wikitable">
+<caption>token
+</caption>
+<tbody><tr>
+<th>token_key
+</th>
+<th>token_location
+</th>
+<th>token_state
+</th></tr>
+<tr>
+<td>wood_ff0000
+</td>
+<td>
+</td>
+<td>3
+</td></tr>
+<tr>
+<td>wood_supply
+</td>
+<td>
+</td>
+<td>40
+</td></tr></tbody></table><p><br/>
+The second row you need to store the resource in the supply (if it's counted).
+</p><p>Its not recommened to extend player table to store this information.
+</p><h4><span id="Representation_in_Material_File_.28material.inc.php.29"></span><span class="mw-headline" id="Representation_in_Material_File_(material.inc.php)">Representation in Material File (material.inc.php)</span></h4><p>In the material file, you can define some information about resources. For instance, you can specify that it's of type "resource" and call it "Wood" in English, along with a tooltip:
+</p><pre>$this-&gt;token_types = [
+  ...
+  'wood' =&gt; [
+     'name' =&gt; clienttranslate('Wood'),
+     'tooltip' =&gt; clienttranslate('Game resource used for building houses'),
+     'type' =&gt; 'resource',
+     'max' =&gt; 40
+  ]
+];
+</pre><h4><span class="mw-headline" id="HTML_Representation">HTML Representation</span></h4><p>In HTML, this would look something like this within the player panel. Using the data attribute instead of a CDATA value is much more flexible:
+</p><pre>&lt;div id="wood_ff0000" class="resource wood" data-value="3"&gt;&lt;/div&gt;
+</pre><h4><span class="mw-headline" id="JavaScript_Handling">JavaScript Handling</span></h4><p>When you get the object from the server, one of the tokens will be sent in the array like this:
+</p><pre>token = {
+  key: 'wood_ff0000',
+  location: '-',
+  state: '3'
+}
+</pre><div>` in the `setup()` method of `game.js` as follows:
+<pre>const playerColor = token.key.split('_')[1];
+const resType = token.key.split('_')[0];
+const tokenInfo = this.gamedatas.token_types[resType]; // token_types is the structure from the material file sent to the client
+const div = `&lt;div id="${token.key}" class="${resType} ${tokenInfo.type} ${token.key}" data-value="${token.state}"&gt;&lt;/div&gt;`;
+
+if (playerColor != 'supply') {
+    document.querySelector(`#player_board_${this.getPlayerIdByColor(playerColor)} &gt; .player-board-game-specific-content`).insertAdjacentHTML('beforeend',div);
+    this.addTooltip(token.key, _(tokenInfo.name) + " " + _(tokenInfo.tooltip), "");
+}
+</pre>
+<p><br/>
+When you receive an update notification (assuming you get the same "token" object), you can simply update the `data-value`:
+</p>
+<pre>document.querySelector(`#${token.key}`).dataset.value = token.state;
+</pre>
+<p>To display the resource in the game log, you can format it like this:
+</p>
+<pre>Player gains &lt;div class="resource wood" data-value="1"&gt;&lt;/div&gt;
+</pre>
+<p>For more on injecting icon images in the log, see: <a href="/BGA_Studio_Cookbook#Inject_icon_images_in_the_log" title="BGA Studio Cookbook">BGA_Studio_Cookbook#Inject_icon_images_in_the_log</a>
+</p>
+<h4><span id="Graphic_Representation_.28.css.29"></span><span class="mw-headline" id="Graphic_Representation_(.css)">Graphic Representation (.css)</span></h4>
+<p>To properly display the resource image, it is preferable to use an image sprite that includes all resources, 
+usually it will be .png as these objects have shape. 
+This how will .css look like with horizontal sprite image:
+</p>
+<pre>.resource {
+  background-image: url(https://en.doc.boardgamearena.com/images/d/d3/Cubes.png);
+  background-repeat: no-repeat;
+  background-size: cover; /* auto-scale */
+  aspect-ratio: 1/1; /* that will keep heigh in sync */
+  width: 32px; /* default size, specific location should override */
+}
+
+.wood {
+  /* Since the sprite is a horizontal row of 11 cubes and 9 is the brown cube position */
+  background-position: calc(100% / (11 - 1) * 9) 0%;
+}
+</pre>
+<p><br/>
+To show a text overlay with the resource value, you can use the following CSS:
+</p>
+<pre>.resource[data-value]:after {
+  content: attr(data-value);
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  font-size: xx-large;
+  text-align: center;
+  text-shadow: 2px 0 2px #fff, 0 -2px 2px #fff, 0 2px 2px #fff, -2px 0 2px #fff;
+}
+</pre>
+<p><br/>
+This solution is fully scalable — you only need to specify the size where you want it displayed. 
+For example:
+</p>
+<pre>.player_board_content &gt; .resource {
+  width: 40px;
+  position: relative;
+}
+</pre>
+<p>Note: if you have that board that tracks the resource on resource tracker - you can show this IN ADDITION of showing resource on player panel.
+</p>
+<h4><span class="mw-headline" id="Selection_and_Actions">Selection and Actions</span></h4>
+<p>It is best to put buttons with resource images on the status bar, rather than having the player click on the player panel.
+</p><p>For animation:
+</p>
+<ul><li>Can use move animation to animate resourced gained or played from the board location to the player panel</li>
+<li>Can use "vapor" animation to show resource gained from the board</li></ul>
+<p><br/>
+</p>
+<h3><span class="mw-headline" id="Meeple">Meeple</span></h3>
+<p>A meeple is a game piece, typically representing a "worker," depicted as a human-shaped figure in a specific color assigned to a player.
+</p><p>The key distinction between meeples and traditional resources is that meeples are placed on locations and can exist 
+in at least two states — standing or lying down. 
+</p><p>This concept also applies to similar pieces like "houses," "animeeples," "ships," and others.
+</p><p><br/>
+</p>
+<h4><span class="mw-headline" id="Representation_in_Database_2">Representation in Database</span></h4>
+<p>In a simplified "tokens" database, it might be represented like this 
+(e.g., the red player's first meeple is on action spot 1, while the white meeple remains in supply):
+</p>
+<table class="wikitable">
+<caption>token
+</caption>
+<tbody><tr>
+<th>token_key
+</th>
+<th>token_location
+</th>
+<th>token_state
+</th></tr>
+<tr>
+<td>meeple_ff0000_1
+</td>
+<td>actionspot_1
+</td>
+<td>1
+</td></tr>
+<tr>
+<td>meeple_ffffff_1
+</td>
+<td>supply
+</td>
+<td>0
+</td></tr></tbody></table>
+<p><br/>
+</p>
+<h4><span id="Representation_in_Material_File_.28material.inc.php.29_2"></span><span class="mw-headline" id="Representation_in_Material_File_(material.inc.php)_2">Representation in Material File (material.inc.php)</span></h4>
+<p>Here we define some properties, for example name can be used in notification and as tooltip, type can be used to create the div by 
+javascript, 'create' - can be used by server to create 8 meeples of this type in database and set location to 'supply_ff0000'
+</p>
+<pre>$this-&gt;token_types = [
+  ...
+  'meeple_ff0000' =&gt; [
+     'name' =&gt; clienttranslate('Red Worker'),
+     'type' =&gt; 'meeple meeple_ff0000',
+     'create' =&gt; 8,
+     'location' =&gt; 'supply_ff0000'
+  ]
+];
+</pre>
+<h4><span class="mw-headline" id="HTML_Representation_2">HTML Representation</span></h4>
+<p>In HTML, this would look something like this. 
+</p>
+<pre>&lt;div id="meeple_ff0000_1" class="meeple meeple_ff0000" data-state="1"&gt;&lt;/div&gt;
+</pre>
+<h4><span class="mw-headline" id="JavaScript_Handling_2">JavaScript Handling</span></h4>
+<p>When you get the object from the server, each meeple object will be similar to this:
+</p>
+<pre>meeple = {
+  key: 'meeple_ff0000_1',
+  location: 'actionslot_1',
+  state: '1'
+}
+</pre>
+You can create a corresponding `<div>` in the `setup()` method of `game.js` as follows:
+<pre>const playerColor = token.key.split('_')[1];
+const resType = token.key.split('_')[0];
+const tokenInfo = this.gamedatas.token_types[resType]; // token_types is the structure from the material file sent to the client
+const div = `&lt;div id="${token.key}" class="${tokenInfo.type} ${token.key}" data-state="${token.state}"&gt;&lt;/div&gt;`;
+
+$(token.location).insertAdjacentHTML('beforeend',div);
+this.addTooltip(token.key, _(tokenInfo.name) + " " + _(tokenInfo.tooltip), "");
+$(token.key).addEventListener('onclick',(ev)=&gt;this.onMeepleClick(ev));
+
+</pre>
+<p><br/>
+When you receive an update notification (assuming you get the same "token" object), you either create it if not exists or animate:
+</p>
+<pre>if ($(token.key)) {
+  // exists
+  $(token.key).dataset.state = token.state; // update state
+  this.moveToken(token.key, token.location); // animate to new location (custom functon), see [[BGA_Studio_Cookbook#Animation]]
+  } else {
+  // crate meeple using code in previous section
+}
+
+</pre>
+<h4><span id="Graphic_Representation_.28.css.29_2"></span><span class="mw-headline" id="Graphic_Representation_(.css)_2">Graphic Representation (.css)</span></h4>
+<p>Use same sprite technique from Resource section above.
+</p><p>When placed on the board it will look good with shadow, but its not recommended on mobile
+</p>
+<pre> filter: drop-shadow(black 5px 5px 5px);
+</pre>
+<p><br/>
+To represent "laying down" meeple, you have to use a different sprite image, which you will apply based on data attribute
+</p>
+<pre>.meeple[data-state="1"] {
+   background-image: url(...);
+}
+</pre>
+<p>You can also rotate you div, but it will look lame.
+Other options include changing its shading, adding overlay (i.e. sad face) and so on. 
+</p><p><br/>
+</p>
+<h4><span class="mw-headline" id="Selection_and_Actions_2">Selection and Actions</span></h4>
+<p>To show user that meeple is active it best to use drop-shadow as image as non-square, however this may be very slow.
+For simplier case use box shadow.
+</p>
+<pre>.active_slot {
+  filter: drop-shadow(0px 0px 10px blue);
+  cursor: pointer;
+}
+
+/* draw a circle around game element for selection */
+.active_slot_simple:after {
+  content: " ";
+  width: 110%;
+  top: -5%;
+  left: -5%;
+  aspect-ratio: 1/1;
+  position: absolute;
+  border-radius: 50%;
+  box-shadow: 0px 0px 4px 3px #64b4ff;
+}
+
+</pre>
+<p>See code example at <a class="external free" href="https://codepen.io/VictoriaLa/pen/emYgLzR" rel="nofollow">https://codepen.io/VictoriaLa/pen/emYgLzR</a>
+</p><p>When a meeple is gained from the supply, you can display a meeple icon on the status bar button 
+instead of showing the supply on the board.
+</p>
+<h3><span class="mw-headline" id="Dice">Dice</span></h3>
+<p>The 2D dice can use similar handing as meeple but it has 6 states instead of 2.
+</p><p>IMPORTANT: Never roll dice using javascript. All dice rolling must be done using bga_rand() function in php.
+</p>
+<h4><span class="mw-headline" id="Representation_in_Database_3">Representation in Database</span></h4>
+<p>In a simplified "tokens" database, it might be represented like this 
+</p>
+<table class="wikitable">
+<caption>token
+</caption>
+<tbody><tr>
+<th>token_key
+</th>
+<th>token_location
+</th>
+<th>token_state
+</th></tr>
+<tr>
+<td>die_black
+</td>
+<td>actionspot_1
+</td>
+<td>1
+</td></tr>
+<tr>
+<td>die_red
+</td>
+<td>supply
+</td>
+<td>6
+</td></tr></tbody></table>
+<p><br/>
+</p>
+<h4><span id="Representation_in_Material_File_.28material.inc.php.29_3"></span><span class="mw-headline" id="Representation_in_Material_File_(material.inc.php)_3">Representation in Material File (material.inc.php)</span></h4>
+<p>Similar to resource and meeple above
+</p>
+<h4><span class="mw-headline" id="HTML_Representation_3">HTML Representation</span></h4>
+<pre>&lt;div id="die_black" class="die" data-state="1"&gt;&lt;/div&gt;
+</pre>
+<p><br/>
+</p>
+<h4><span id="JavaScript_Handling_.28.js.29"></span><span class="mw-headline" id="JavaScript_Handling_(.js)">JavaScript Handling (.js)</span></h4>
+<p>See meeple section
+</p>
+<h4><span id="Graphic_Representation_.28.css.29_3"></span><span class="mw-headline" id="Graphic_Representation_(.css)_3">Graphic Representation (.css)</span></h4>
+<p>For dice we would usually use N x 6 sprite, and since the sides are square - the .jpg format is better (it is smaller then png)
+</p>
+<pre>.die {  
+  background-image: url(https://en.doc.boardgamearena.com/images/c/c5/64_64_dice.jpg);
+  background-size: 600%;
+  background-repeat: no-repeat;
+  aspect-ratio: 1/1;
+  width: 64px;
+  border-radius: 5%; /* looks better with rounded corders */
+}
+.die[data-state="3"] {
+  background-position: calc(100% / 5 * 2) 0%;
+}
+</pre>
+<p>The 3D dice a bit tricker to create but its feasible, see <a class="external free" href="https://codepen.io/VictoriaLa/pen/QWBBbwz" rel="nofollow">https://codepen.io/VictoriaLa/pen/QWBBbwz</a> for an example.
+</p><p>Also multiple examples on N-sided dice can be found on <a href="BGA_Code_Sharing.html" title="BGA Code Sharing">BGA_Code_Sharing</a>
+</p>
+<h4><span class="mw-headline" id="Selection_and_Actions_3">Selection and Actions</span></h4>
+<p>Since it is a square its a lot easier to make a square selection highlight
+</p>
+<pre>.die.active_slot  {
+  box-shadow: 0px 0px 4px 4px blue;
+}
+</pre>
+<h3><span class="mw-headline" id="Card">Card</span></h3>
+<p>Cards are the most complex game resource, they can be located in various zones, stacked, tapped, put face down and can have arbitrary complete abilities.
+If you have square tiles - it can be treated the same as cards.
+</p>
+<h4><span class="mw-headline" id="Representation_in_Database_4">Representation in Database</span></h4>
+<p>In a simplified "tokens" database, it might be represented like this 
+</p>
+<table class="wikitable">
+<caption>token
+</caption>
+<tbody><tr>
+<th>token_key
+</th>
+<th>token_location
+</th>
+<th>token_state
+</th></tr>
+<tr>
+<td>card_project_123
+</td>
+<td>tableau_ff0000
+</td>
+<td>1
+</td></tr>
+<tr>
+<td>card_corp_p1
+</td>
+<td>deck_corp
+</td>
+<td>6
+</td></tr></tbody></table>
+<p>Means project card is player red tableau and state 1 means it has been used for example,
+and second card of corproration file in in deck at position 6 from the top.
+</p><p>When duplcates are in play you need to add extra unique disambigator in the key.
+</p><p>Usually cards will have numeric id associated with type, but it this number is per expansition, so leave the space for expansion identifier in there also.
+</p><p>Another option use <a href="Deck.html" title="Deck">Deck</a> component.
+</p><p><br/>
+</p>
+<h4><span class="mw-headline" id="Representation_in_Material">Representation in Material</span></h4>
+<p>All the card properties which do not change during the game can be put in material file (or its alternative)
+</p><p>This is example from terraforming mars
+</p>
+<pre> 'card_main_81' =&gt; [  //
+  'location' =&gt; 'deck_main',
+  'create' =&gt; 'single',
+  'num' =&gt; 81,
+  'name' =&gt; clienttranslate('Ganymede Colony'),
+  't' =&gt; 1,
+  'r' =&gt; "city('Ganymede Colony')",
+  'cost' =&gt; 20,
+  'tags' =&gt; 'Space City Jovian',
+  'vp' =&gt; 'tagJovian',
+  'deck' =&gt; 'Basic',
+  'text' =&gt; clienttranslate('Place a city tile ON THE RESERVED AREA [for Ganymede Colony].'),
+  'text_vp' =&gt; clienttranslate('1 VP per Jovian tag you have.'),
+],
+</pre>
+<h4><span class="mw-headline" id="HTML_Representation_4">HTML Representation</span></h4>
+<p>There is 2 main options:
+</p>
+<ul><li>Use exact cards images in english</li>
+<li>Use cards images WITHOUT text</li></ul>
+<p>The 3d option is completely redo the graphic layout that game designed did already, but I won't go there
+</p><p>The first option is very simple and similar to other resources and meeple
+</p>
+<pre>&lt;div id="card_project_123" class="card card_project card_project_123" data-state="1"&gt;&lt;/div&gt;
+</pre>
+<p>The second option means you can add translated text instead
+</p>
+<pre>&lt;div id="card_project_123" class="card card_project card_project_123" data-state="1" data-cost="22"&gt;
+   &lt;div class="card_name"&gt;Ganymede Colony&lt;/div&gt;
+   &lt;div class="card_text"&gt;Place a city tile ON THE RESERVED AREA [for Ganymede Colony].&lt;/div&gt;
+   &lt;div class="card_cost"&gt;&lt;/div&gt;
+&lt;/div&gt;
+</pre>
+<p>In the example above card_cost is also rendered as this can change during the game (even printed value is the same),
+it would be rendered using data-cost attribute.
+</p><p>Instead of using class you can also use state even if it is static
+</p>
+<div class="card" data-rank="10" data-suit="H" id="card_H_10"> </div>
+<p>Note: to make flip animation you effectively need to make a "3d" card and provide both faces with separate graphics,
+which makes more complex div. See examples at <a href="BgaCards.html" title="BgaCards">BgaCards</a>.
+</p><p>Note: you can also use <a href="Stock.html" title="Stock">Stock</a> component that handles html, js, css, layout and selection at the same time. If do that skip sections below.
+</p>
+<h4><span id="JavaScript_Handling_.28.js.29_2"></span><span class="mw-headline" id="JavaScript_Handling_(.js)_2">JavaScript Handling (.js)</span></h4>
+<p>You will get the server data which looks like this
+</p>
+<pre>card = {
+  key: 'card_project_123',
+  location: 'tableau_ff0000',
+  state: '1'
+}
+</pre>
+<p><br/>
+</p>
+<pre>  createCard(token: Token) {
+    // token_types is the structure from the material file sent to the client
+    const tokenInfo = this.gamedatas.token_types[token.key]; 
+    const div = `
+    &lt;div id="${token.key}" class="${tokenInfo.type} ${token.key}" data-state="${token.state}"&gt;
+       &lt;div class="card_name"&gt;${_(tokenInfo.name)}&lt;/div&gt;
+       &lt;div class="card_text"&gt;${_(tokenInfo.text)}&lt;/div&gt;
+    &lt;/div&gt;`;
+
+    $(token.location).insertAdjacentHTML('beforeend',div);
+    this.addTooltipHtml(token.key, this.getTooptipHtmlForToken(token));
+    $(token.key).addEventListener("onclick", (ev) =&gt; this.onCardClick(ev));
+  }
+</pre>
+<p>When you receive an update notification (assuming you get the same "token" object), you either create it if not exists or animate:
+</p>
+<pre>if ($(token.key)) {
+  // exists
+  $(token.key).dataset.state = token.state; // update state
+  $(token.key).dataset.cost = token.cost; // update cost (discounted cost)
+  this.moveCard(token.key, token.location); // animate to new location (custom functon), see [[BGA_Studio_Cookbook#Animation]]
+} else {
+  this.createCard(token);
+}
+</pre>
+<p><br/>
+</p>
+<h4><span id="Graphic_Representation_.28.css.29_4"></span><span class="mw-headline" id="Graphic_Representation_(.css)_4">Graphic Representation (.css)</span></h4>
+<p>For this html
+</p>
+<pre>&lt;div id="game" class="classic_deck"&gt;
+  &lt;div id="hand" class="hand"&gt;
+    &lt;div id="card_H_10" class="card" data-suit='H' data-rank="10"&gt; &lt;/div&gt;
+    &lt;div id="card_C_K" class="card" data-suit='C' data-rank="K"&gt; &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</pre>
+<p>This is example css using sprite image of playing cards
+</p>
+<pre>.card {
+   background-image: url('https://x.boardgamearena.net/data/others/cards/FULLREZ_CARDS_ORIGINAL_NORMAL.jpg');   /* don't do full url in your game, copy this file inside img folder */
+  
+   background-size: 1500% auto;  /* this mean size of background is 15 times bigger than size of card, because its sprite */
+   border-radius: 5%;
+   width: 10em;
+   height: 13.5em;
+   box-shadow: 0.1em 0.1em 0.2em 0.1em #555;
+}
+
+
+.card[data-rank="10"] { /* 10 is column number 10 - 2 because we start from 0 and first card is sprite is 2. The multiplier is (15 - 1) is because we have 15 columns. -1 is because % in CSS is weird like that. */
+   background-position-x: calc(100% / (15 - 1) * (10 - 2));
+}
+.card[data-rank="K"] { /* King will be number 13 in rank */
+   background-position-x: calc(100% / (15 - 1) * (13 - 2));
+}
+.card[data-suit="H"] { /* Hears row position is 1 (because we count from 0). Multiplier (4 - 1) is because we have 4 rows and -1 is because % in CSS is weird like that. */
+   background-position-y: calc(100% / (4 - 1) * (1));
+}
+.card[data-suit="C"] { /* Clubs row position is 2 */
+   background-position-y: calc(100% / (4 - 1) * (2));
+}
+</pre>
+<p>See code at <a class="external free" href="https://codepen.io/VictoriaLa/pen/mdMzRxa" rel="nofollow">https://codepen.io/VictoriaLa/pen/mdMzRxa</a>
+</p>
+<h4><span class="mw-headline" id="Selection_and_Actions_4">Selection and Actions</span></h4>
+<p>Since it is a square its a lot easier to make a square selection highlight
+</p>
+<pre>.card.active_slot  {
+  box-shadow: 0px 0px 4px 4px blue;
+}
+</pre>
+<h4><span class="mw-headline" id="Card_Layouts">Card Layouts</span></h4>
+<p>There are two options - you use <a href="Stock.html" title="Stock">Stock</a> component or don't, see <a href="Anti-Stock.html" title="Anti-Stock">Anti-Stock</a> for details on how to do your own layouts.
+</p><p>This is comprehensive example of various card layouts and animations
+<a class="external free" href="https://thoun.github.io/bga-cards/demo/index.html" rel="nofollow">https://thoun.github.io/bga-cards/demo/index.html</a>
+</p>
+<h3><span class="mw-headline" id="Hex_Tiles">Hex Tiles</span></h3>
+<p>From data perspective hex tiles exactly the same as cards.
+From visualization there is a small trick.
+</p><p>CSS:
+</p>
+<pre>.hex {
+  width: var(--hex-width);
+  aspect-ratio: 1 / 1.1193;
+  border-radius: 30%;
+  background-color: yellow; /* this is just for demo, use proper .png file for this */
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.hex.active_slot_simple {
+  background-color: rgba(86, 207, 110, 0.4);
+}
+.hex.active_slot {
+  filter: drop-shadow(0px 0px 10px blue);
+}
+</pre>
+<h3><span class="mw-headline" id="Tetris_Tiles">Tetris Tiles</span></h3>
+<p>You can use clip-path for actual shape and svg path for outline
+See example at <a class="external free" href="https://codepen.io/VictoriaLa/pen/OJmoZGw" rel="nofollow">https://codepen.io/VictoriaLa/pen/OJmoZGw</a>
+</p>
+<h3><span class="mw-headline" id="Track">Track</span></h3>
+<p>Tracker can be represented as "resource" in database - in this case its just number, or similar to "meeple" in which case
+the location will have the "number" associated with position on track
+</p><p>In a simplified "tokens" database, it might be represented like this 
+</p>
+<table class="wikitable">
+<caption>token
+</caption>
+<tbody><tr>
+<th>token_key
+</th>
+<th>token_location
+</th>
+<th>token_state
+</th></tr>
+<tr>
+<td>tracker_o
+</td>
+<td>scale_o_1
+</td>
+<td>0
+</td></tr>
+<tr>
+<td>tracker_t
+</td>
+<td>scale_t_10
+</td>
+<td>0
+</td></tr></tbody></table>
+<p><br/>  
+The tracker location in this case may have some properties in material file, for example to trigger game effect when we land on this spot
+</p>
+<pre>  'scale_t' =&gt; [
+    'index_start' =&gt; 0,
+    'max' =&gt; 20,
+    'value_start' =&gt; -30,
+    'value_step' =&gt; 2,
+    'slot_type' =&gt; 'slot slot_t'
+  ],
+  'scale_t_10' =&gt; [
+    'r' =&gt; 'ocean',
+    'param' =&gt; 't',
+    'tooltp' =&gt; clienttranslate('Place an ocean'),
+    'value' =&gt; 0
+  ],
+</pre>
+<p>The track in this case can be generated as series of slots (create in js)
+</p>
+<pre>    for(let i=trackInfo.index_start,value = trackInfo.value_start;i&lt;trackInfo.index_start+trackInfo.max;i++,value+=trackInfo.value_step) {
+      $(trackInfo.key).insertAdjacentHTML('beforeend',`&lt;div id="${trackInfo.key}_${i}" class="${trackInfo.slot_type} data-value=${value}"&gt;&lt;/div&gt;`);
+      this.addTooltip(`${trackInfo.key}_${i}`, _(tokenInfo.tooltip), "");
+    }
+</pre>
+<p>Then use regular move animation to move tracker into position on track.
+</p>
+<h2><span class="mw-headline" id="Code_Organization">Code Organization</span></h2>
+<h3><span class="mw-headline" id="Creating_a_test_class_to_run_PHP_locally">Creating a test class to run PHP locally</span></h3>
+<p>See <a class="external free" href="https://en.doc.boardgamearena.com/Testing_by_developer#PHP" rel="nofollow">https://en.doc.boardgamearena.com/Testing_by_developer#PHP</a>
+</p>
+<h3><span class="mw-headline" id="Avoiding_code_in_dojo_declare_style">Avoiding code in dojo declare style</span></h3>
+<p>Dojo class declarations are rather bizzare and do not work with most IDEs.
+If you want to write in plain JS with classes, you can stub all the dojo define/declare stuff
+and hook your class into that, so the classes are outside of this mess.
+</p><p>NOTE: this technique is for experienced developers, do not try it if you do not understand
+the consequences.
+</p><p>This is complete example of game .js class
+</p>
+<pre>  // Testla is game name is has to be changed
+class Testla {
+	constructor(game) {
+		console.log('game constructor');
+		this.game = game;
+		this.varfoo = new MyFoo(); // this example of class from custom module
+	}
+
+	setup(gamedatas) {
+		console.log("Starting game setup", this.varfoo);
+		this.gamedatas = gamedatas;
+		this.dojo.create("div", { class: 'whiteblock', innerHTML: _("hello") }, 'thething');
+		console.log("Ending game setup");
+	};
+	onEnteringState(stateName, args) {
+		console.log('onEnteringState : ' + stateName, args);
+		this.game.addActionButton('b1',_('Click Me'), (e)=&gt;this.onButtonClick(e));
+	};
+	onLeavingState(stateName) {
+		console.log('onLeavingState : ' + stateName, args);
+	};
+	onUpdateActionButtons(stateName, args) {
+		console.log('onUpdateActionButtons : ' + stateName, args);
+	};
+	onButtonClick(event) {
+		console.log('onButtonClick',event);
+	};
+};
+
+
+define([
+	"dojo", "dojo/_base/declare",
+	"ebg/core/gamegui",
+	"ebg/counter",
+	g_gamethemeurl + '/modules/foo.js' // custom module if needed
+],
+	function(dojo, declare) {
+                // testla is game name is has to be changed
+		return declare("bgagame.testla", ebg.core.gamegui, {
+			constructor: function() {
+				this.xapp = new Testla(this);
+				this.xapp.dojo = dojo;
+			},
+			setup: function(gamedatas) {
+				this.xapp.setup(gamedatas);
+			},
+			onEnteringState: function(stateName, args) {
+				this.xapp.onEnteringState(stateName, args?.args);
+			},
+			onLeavingState: function(stateName) {
+				this.xapp.onLeavingState(stateName, args);
+			},
+			onUpdateActionButtons: function(stateName, args) {
+				this.xapp.onUpdateActionButtons(stateName, args);
+			},
+		});
+	});
+
+</pre>
+<h3><span class="mw-headline" id="Frameworks_and_Preprocessors">Frameworks and Preprocessors</span></h3>
+<ul><li><a href="Using_Typescript_and_Scss.html" title="Using Typescript and Scss">Using Typescript and Scss</a> - How to auto-build Typescript and SCSS files to make your code cleaner</li>
+<li><a href="Using_Vue.html" title="Using Vue">Using Vue</a> - work-in-progress guide on using the modern framework Vue.js to create a game</li></ul>
+<h3><span class="mw-headline" id="PHP_Migration">PHP Migration</span></h3>
+<p><b>Ingredients:</b> */php, modules/*.php
+</p><p>BGA recently migrated to from 7.4 to 8.2 then 8.4.
+New php has new rules and deprecations.
+</p><p>There is a tool that can help you do the migration automation, which is php module called rector <a class="external free" href="https://getrector.com/" rel="nofollow">https://getrector.com/</a>.
+Below is the recipe that converts variables in strings like ${var} (which is deprecated) to {$var}.
+</p><p>1. Install the module
+</p>
+<pre>composer global require --dev rector/rector
+</pre>
+<p>2. Go to your project directory, commit your code first before this!
+</p><p>3. Create a rector.php file on top level with the following content:
+</p>
+<pre>&lt;?php
+
+use Rector\Config\RectorConfig;
+use Rector\Php82\Rector\Encapsed\VariableInStringInterpolationFixerRector;
+
+return RectorConfig::configure()
+    -&gt;withPaths([
+        __DIR__ 
+    ])
+    // A. whole set
+    //-&gt;withPreparedSets(typeDeclarations: true)
+    // B. or few rules
+    -&gt;withRules([
+        VariableInStringInterpolationFixerRector::class
+    ]);
+</pre>
+<p>4. Dry run (mine is on linux, not sure where global install on windows)
+</p>
+<pre> ~/.config/composer/vendor/bin/rector process --dry-run
+</pre>
+<p>5. If happy re-run without --dry-run
+</p><p>6. Can remove rector.php now (or can do different rules)
+</p>
+<h2><span class="mw-headline" id="Backend">Backend</span></h2>
+<h3><span class="mw-headline" id="Assigning_Player_Order">Assigning Player Order</span></h3>
+<p>Normally when game starts there is "natural" player order assigned randomly.
+</p><p>If you want to deliberatly assign player order at the start of the game (for example, in a game with teams options), you can do so by retrieving the initialization-only player attribute <b>player_table_order</b> and using it to assign values to <b>player_no</b> (which is normally assigned at the start of a game in the order in which players come to the table). (See <a class="external text" href="https://en.doc.boardgamearena.com/Game_database_model:_dbmodel.sql#The_player_table" rel="nofollow">Game database model</a> for more details.)
+</p><p><br/>
+</p>
+<div style="padding: 1em; background: #FFCDD2; color: #B71C1C">
+<p><b>WARNING:</b> To prevent unfair advantage (e.g. collusion), the random order must be the default option and <b>non-random options should be limited to friendly mode.</b>
+</p>
+</div>
+<p><br/>
+<b>Example:</b>
+</p>
+<pre>                // Retrieve inital player order ([0=&gt;playerId1, 1=&gt;playerId2, ...])
+		$playerInitialOrder = [];
+		foreach ($players as $playerId =&gt; $player) {
+			$playerInitialOrder[$player['player_table_order']] = $playerId;
+		}
+		ksort($playerInitialOrder);
+		$playerInitialOrder = array_flip(array_values($playerInitialOrder));
+
+		// Player order based on 'playerTeams' option
+		$playerOrder = [0, 1, 2, 3];
+		switch ($this-&gt;getGameStateValue('playerTeams')) {
+			case $this-&gt;TEAM_1_2:
+				$playerOrder = [0, 2, 1, 3];
+				break;
+			case $this-&gt;TEAM_1_4:
+				$playerOrder = [0, 1, 3, 2];
+				break;
+			case $this-&gt;TEAM_RANDOM:
+				shuffle($playerOrder);
+				break;
+			default:
+			case $this-&gt;TEAM_1_3:
+				// Default order
+				break;
+		}
+
+                // Create players
+		// Note: if you added some extra field on "player" table in the database (dbmodel.sql), you can initialize it there.
+		$sql =
+			'INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar, player_no) VALUES ';
+		$values = [];
+
+		foreach ($players as $playerId =&gt; $player) {
+			$color = array_shift($default_colors);
+			$values[] =
+				"('" .
+				$playerId .
+				"','$color','" .
+				$player['player_canal'] .
+				"','" .
+				addslashes($player['player_name']) .
+				"','" .
+				addslashes($player['player_avatar']) .
+				"','" .
+				$playerOrder[$playerInitialOrder[$playerId]] .
+				"')";
+		}
+		$sql .= implode(',', $values);
+		$this-&gt;DbQuery($sql);
+		$this-&gt;reattributeColorsBasedOnPreferences(
+			$players,
+			$gameinfos['player_colors']
+		);
+		$this-&gt;reloadPlayersBasicInfos();
+</pre>
+<h2><span class="mw-headline" id="Assorted_Stuff">Assorted Stuff</span></h2>
+<h3><span class="mw-headline" id="Out-of-turn_actions:_Un-pass">Out-of-turn actions: Un-pass</span></h3>
+<p><b>Ingredients:</b> ggg.js, ggg.game.php, ggg.action.php, states.inc.php
+</p><p>In multiplayer game sometimes players passes but than they think more and want to un-Pass and redo their choice. 
+To re-active a player who passes some trickery required.
+</p><p>Define a special action that does that and hook it up.
+</p><p><br/>
+In ggg.game.php add action handler
+</p>
+<pre>   function actCancel() {
+       $this-&gt;gamestate-&gt;setPlayersMultiactive(array ($this-&gt;getCurrentPlayerId() ), 'error', false);
+   }
+</pre>
+<p>Finally to call this in client ggg.js you would do something like:
+</p>
+<pre> onUpdateActionButtons:  function(stateName, args) {
+   if (this.bga.players.isCurrentPlayerActive()) { 
+     // ...
+   } else if (!this.bga.players.isCurrentPlayerSpectator()) { // player is NOT active but not spectator
+       switch (stateName) {
+          case 'playerTurnMultiPlayerState':
+		this.bga.statusBar.addActionButton(_('Oh no!'), () =&gt; this.bgaPerformAction("actCancel", null, { checkAction: false }), { color: 'secondary' });
+		break;
+	}
+   }
+ }
+</pre>
+<p>Note: same technique can be used to do other out-of-turn actions, such as re-arranging cards in hand, exchanging resources, etc (i.e. if permitted by rules, such as "at any time player can...")
+</p>
+<h3><span id="Multi_Step_Interactions:_Select_Worker.2FPlace_Worker_-_Using_Selection"></span><span class="mw-headline" id="Multi_Step_Interactions:_Select_Worker/Place_Worker_-_Using_Selection">Multi Step Interactions: Select Worker/Place Worker - Using Selection</span></h3>
+<p><b>Ingredients:</b> ggg.js
+</p><p>Simple way to implement something like that without extra states is to use "selection" mechanism. When user click on worker add some sort of class into that element i.e. 'selected' (which also have to have some indication by css i.e. outline).
+</p><p>Than user can click on placement zone, you can use dojo.query for "selected" element and use it along with zone id to send data to server. If proper worker is not selected yet can give a error message using this.showMessage(...) function.
+</p><p>Extra code required to properly cleanup selection between states.
+Also when you do that sometimes you want to change the state prompt, see below 'Change state prompt'
+</p>
+<h3><span id="Multi_Step_Interactions:_Select_Worker.2FPlace_Worker_-_Using_Client_States"></span><span class="mw-headline" id="Multi_Step_Interactions:_Select_Worker/Place_Worker_-_Using_Client_States">Multi Step Interactions: Select Worker/Place Worker - Using Client States</span></h3>
+<p><b>Ingredients:</b> ggg.js
+</p><p>I don't think its documented feature but there is a way to do client-only states, which is absolutely wonderful for few reasons
+</p>
+<ul><li>When player interaction is two step process, such as select worker, place worker, or place worker, pick one of two resources of your choice</li>
+<li>When multi-step process can result of impossible situation and has to be undone (by rules)</li>
+<li>When multi-step process is triggered from multiple states (such as you can do same thing as activated card action, pass action or main action)</li></ul>
+<p>So lets do Select Worker/Place Worker
+</p><p>Define your server state as usual, i.e. playerMainTurn -&gt; "You must pick up a worker".
+Now define a client state, we only need "name" and "descriptionmyturn", lets say "client_playerPicksLocation". Always prefix names of client state with "client_" to avoid confusion. Now we have to do the following:
+</p>
+<ul><li>Have a handler for onUpdateActionButtons for playerMainTurn to activate all possible workers he can pick</li>
+<li>When player clicks workers, remember the worker in one of the members of the main class, I usually use one called this.clientStateArgs.</li>
+<li>Transition to new client state</li></ul>
+<pre> onWorker: function(e) {
+     var id = event.currentTarget.id;
+     dojo.stopEvent(event);
+     ... // do validity checks
+     this.clientStateArgs.worker_id = id;
+     this.setClientState("client_playerPicksLocation", {
+                               descriptionmyturn : _("${you} must select location"),
+                           });
+  }
+</pre>
+<ul><li>Have a handler for onUpdateActionButtons for client_playerPicksLocation to activate all possible locations this worker can go AND add Cancel button (see below)</li>
+<li>Have a location handler which will eventually send a server request, using stored this.clientStateArgs.worker_id as worker id</li>
+<li>The cancel button should call a method to restore server state, also if you doing it for more than one state you can add this universally using this.on_client_state check</li></ul>
+<p><br/>
+</p>
+<pre>       if (this.isCurrentPlayerActive()) {
+         if (this.on_client_state &amp;&amp; !$('button_cancel')) {
+              this.addActionButton('button_cancel', _('Cancel'), dojo.hitch(this, function() {
+                                            this.restoreServerGameState();
+              }));
+         }
+       } 
+</pre>
+<p>Note: usually I call my own function call this.cancelLocalStateEffects() which will do more stuff first then call restoreServerGameState(), same function is usually needs to be called when server request has failed (i.e. invalid move)
+</p><p>Note: If you need more than 2 steps, you may have to do client side animation to reflect the new state, which gets trickier because you have to undo that also on cancellation.
+</p><p>Code is available here <a class="external text" href="https://github.com/elaskavaia/bga-sharedcode/blob/master/sharedcode.js" rel="nofollow">sharedcode.js</a> (its using playerTurnPlayCubes and client_selectCubeLocation).
+</p>
+<h3><span class="mw-headline" id="Action_Stack_-_Using_Client_States">Action Stack - Using Client States</span></h3>
+<p>Action stack required where game is very complex and use triggered effects that can "stack". It not always actual stack, it can be queue or random access.
+</p><p>Examples:
+</p>
+<ul><li>Magic the Gathering - classic card game where effects go on Stack, that allows to counter spell and counter spell of counter spell (not on bga - it just example of mechanics)</li>
+<li>Ultimate Railroads - action taking game where effects can be executed in any order</li>
+<li>Lewis and Clark - card game where actions executed as queue</li></ul>
+<p>There is two ways of implementing it - on the server or the client.
+For the server see article below.
+The requirement for client side stack implementation is - all action can be undone, which means
+</p>
+<ul><li>No dice rolls</li>
+<li>No card drawn</li>
+<li>No other players interaction</li></ul>
+<p>No snippets are here, as this will be too complex but basically flow is:
+</p>
+<ul><li>You have a action/effect stack (queue/list) as js object attached to "this", i.e. this.unprocessed_actions</li>
+<li>When player plays a card, worker, etc, you read the effect of that card from the material file (client copy), and place into stack</li>
+<li>Then we call dispatch method which pulls the next action from the stack and change client state accordinly, i.e. this.setClientState("client_playerGainsCubes")</li>
+<li>When players acts on it - the action is removed from the stack and added to "server action arguments" list, this is another object which be used to send ajax call, i.e. this.clientStateArgs</li>
+<li>If nothing left in stack we can submit the ajax call assembling parameters from collected arguments (that can include action name)</li>
+<li>This method allows cheap undo - by restoring server state you will wipe out all user actions (but if you need intermediate aninmation you have to handle it yourself)</li></ul>
+<p>Code can be found in Ultimate Railroads game (but it is random access list - so it a bit complex) and Lewis and Clark (complexity - user can always deny part of any effect)
+</p><p><br/>
+</p>
+<h3><span class="mw-headline" id="Action_Stack_-_Using_Server_States">Action Stack - Using Server States</span></h3>
+<p>See definition of Action Stack above.
+</p><p>To implement you usually need another db table that has the following fields: index of effect - which is used for sorted access, type - which is essense of the effect (i.e. collect resource), some extra arguments (i.e. resource type and resource count), and usually owner of the effect (i.e. player id)
+The flow is:
+</p>
+<ul><li>There is some initial player state, where player can play card for example</li>
+<li>Player main action - pushes the card effect on stack, which also can cause triggered effects which also go on stack</li>
+<li>After action processing is finished switch to game state which is "dispatcher"</li>
+<li>Dispatcher pulls the top effect (whatever definition of the top is), changes the active player and changes the state to appropriate player state to collect response. The "top" can be choice of multiple actions, in this case player has to chose one before resolving the effect.</li>
+<li>Player state knows about the stack and pulls arguments (argX) from the effect arguments of the db</li>
+<li>Player action should clear up the top effect, and can possibly add more effects, then switch to "dispatcher" state again</li>
+<li>If stack is empty, dispatcher can either pick next player itself or use another game state which responsible for picking next player</li></ul>
+<p>Code can be found in Tapestry and Terraforming Mars.
+</p>
+<h3><span id="Custom_error.2Fexception_handling_in_JavaScript"></span><span class="mw-headline" id="Custom_error/exception_handling_in_JavaScript">Custom error/exception handling in JavaScript</span></h3>
+<dl><dt>In ggg.php</dt></dl>
+<p>Throw \BgaUserException with some easy-to-identify prefix such as "!!!" and a custom error code. DO NOT TRANSLATE this message text. The exception will rollback database transaction and cancel all changes (including any notifications).
+</p>
+<pre>    function foo(bool $didConfirm = false): void
+    {
+        // do processing for the user's move
+        // afterwards, you determine this move will end the game
+        // so you want to rollback the transaction and require the user to confirm the move first
+
+        if ($gameIsEnding &amp;&amp; !$didConfirm) {
+            throw new \BgaUserException('!!!endGameConfirm', 9001);
+        }
+    }
+</pre>
+<dl><dt>In ggg.js</dt></dl>
+<p>Override framework function showMessage to suppress the red banner message and gamelog message when you detect the "!!!" prefix
+</p>
+<pre>    /* @Override */
+    showMessage: function (msg, type) {
+      if (type == "error" &amp;&amp; msg &amp;&amp; msg.startsWith("!!!")) {
+        return; // suppress red banner and gamelog message
+      }
+      this.inherited(arguments);
+    },
+</pre>
+<p>Deal with the error in your callback:
+</p>
+<pre>    fooAction: function (didConfirm) {
+      var data = {
+        foo: "bar",
+        didConfirm: !!didConfirm,
+      };
+      this.bgaPerformAction("fooAction", data).catch((error, errorMsg) =&gt; {
+        if (error &amp;&amp; errorMsg == "!!!endGameConfirm") {
+          // your custom error handling goes here
+          // for example, show a confirmation dialog and repeat the action with additional param
+          this.confirmationDialog(
+            _("Doing the foo action now will end the game"),
+            () =&gt; this.fooAction(true)
+          );
+        }
+      });
+    },
+</pre>
+<p>For custom global error handling, you could modify ajaxcallwrapper:
+</p>
+<pre>  ajaxcallwrapper: function (action, args, handler) {
+    if (!args) args = {};
+    args.lock = true;
+    args.version = this.gamedatas.version;
+    if (this.checkAction(action)) {
+      this.bgaPerformAction(
+        action,
+        args
+      ).catch((error, errorMsg, errorCode) =&gt; {
+          if (error &amp;&amp; errorMsg == "!!!checkVersion") {
+            this.infoDialog(
+              _("A new version of this game is now available"),
+              _("Reload Required"),
+              () =&gt; {
+                window.location.reload();
+              },
+              true
+            );
+          } else {
+            if (handler) handler(error, errorMsg, errorCode);
+          }
+        }
+      );
+    }
+  },
+</pre>
+<h3><span class="mw-headline" id="Force_players_to_refresh_after_new_deploy">Force players to refresh after new deploy</span></h3>
+<p>When you deploy a new version of your game, the PHP backend code is immediately updated but the JavaScript/HTML/CSS frontend code *does not update* for active players until they manually refresh the page (F5) in their browser. Obviously this is not ideal. In the best case, real-time tables don't see your shiny new enhancements. In the worst case, your old JS code isn't compatible with your new PHP code and the game breaks in strange ways (any bug reports filed will be false positives and unable to reproduce). To avoid any problems, you should force all players to immediately reload the page following a new deploy.
+</p><p>By throwing a "visible" exception (simplest solution), you'll get something like this which instructs the user to reload:
+</p><p><a class="image" href="/File:Force-refresh.png"><img alt="Force-refresh.png" decoding="async" height="69" src="/images/thumb/1/13/Force-refresh.png/950px-Force-refresh.png" srcset="/images/thumb/1/13/Force-refresh.png/1425px-Force-refresh.png 1.5x, /images/1/13/Force-refresh.png 2x" width="950"/></a>
+</p><p>Or, if you combine this technique with the above custom error handling technique, you could do something a bit nicer. You could show a dialog box and automatically refresh the page when the user clicks "OK":
+</p><p><a class="image" href="/File:Reload-required.png"><img alt="Reload-required.png" decoding="async" height="153" src="/images/thumb/f/f0/Reload-required.png/500px-Reload-required.png" srcset="/images/thumb/f/f0/Reload-required.png/750px-Reload-required.png 1.5x, /images/f/f0/Reload-required.png 2x" width="500"/></a>
+</p>
+<dl><dt>In ggg.php</dt></dl>
+<p>Transmit the server version number in <code>getAllDatas()</code>.
+</p>
+<pre>    protected function getAllDatas(): array
+    {
+        $players = $this-&gt;getCollectionFromDb("SELECT player_id id, player_score score FROM player");
+        return [
+            'players' =&gt; $players,
+            'version' =&gt; intval($this-&gt;gamestate-&gt;table_globals[300]), // &lt;-- ADD HERE
+            ...
+        ];
+    }
+</pre>
+<p>Create a helper function to fail if the client and server versions mismatch. Note the version check uses <code>!=</code> instead of <code>&lt;</code> so it can support rollback to a previous deploy as well. ;-)
+</p>
+<pre>    public function checkVersion(int $clientVersion): void
+    {
+        if ($clientVersion != intval($this-&gt;gamestate-&gt;table_globals[300])) {
+            // Simplest way is to throw a "visible" exception
+            // It's ugly but comes with a "click here" link to refresh
+            throw new BgaVisibleSystemException($this-&gt;_("A new version of this game is now available. Please reload the page (F5)."));
+
+            // For something prettier, throw a "user" exception and handle in JS
+            // (see BGA cookbook section above on custom error handling)
+            throw new \BgaUserException('!!!checkVersion');
+        }
+    }
+</pre>
+<p>Every action requires a parameter <code>int $version</code> and a call to <code>$this-&gt;checkVersion()</code> as the first line. The version check should happen before anything else, even before checking if the action is allowed (since possible actions could change between versions). If you are using auto-wired "act" action functions, modify each to start like this:
+</p>
+<pre>    #[CheckAction(false)]
+    public function actXxx(int $version, ...) {
+        $this-&gt;checkVersion($version);
+        $this-&gt;checkAction('actXxx'); // or $this-&gt;gamestate-&gt;checkPossibleAction('actXxx');
+        ...
+    }
+</pre>
+<dl><dt>In ggg.js</dt></dl>
+<p>Transmit the version (from gamedatas) as a parameter with every ajax call. For example, if you're already using a wrapper function for every ajax call, add it like this:
+</p>
+<pre>  ajaxcallwrapper: function (action, args) {
+    if (!args) args = {};
+    args.version = this.gamedatas.version; // &lt;-- ADD HERE
+    this.bgaPerformAction(action, args);
+  },
+</pre>
+<h3><span id="Disable_.2F_lock_table_creation_for_new_deploy"></span><span class="mw-headline" id="Disable_/_lock_table_creation_for_new_deploy">Disable / lock table creation for new deploy</span></h3>
+<p>If you are deploying a major new game version, especially if it involves upgrading production game databases, you may have a lot of angry players if you break their tables.  Depending on your changes, you may be able to restore the previous version and fix the tables easily.
+</p><p>However, if a new deploy turns out bad and players created turn-based tables while it was live, it may be quite difficult to fix those tables, since they were created from a bad deploy.
+</p><p>The solution?  You can announce in your game group that you are locking table creation, and then in your new version, add an impossible startcondition to an existing option.  
+Note: This only makes sense if you have a few games running in real time mode in the time of deployment, otherwise it won't achieve much, unless you wait at least a day for other turn based games to break (or not)
+</p><p>Here is an example of an option with only 2 values (if you don't have options at all you have to create a fake option to use this method, if you have more values - you have to list them all): 
+</p>
+<dl><dt>In gameoptions.json</dt></dl>
+<pre>        "startcondition": {
+            "0": [ { "type": "minplayers", "value": 32, "message": "Maintenance in progress.  Table creation is disabled." } ],
+            "1": [ { "type": "minplayers", "value": 32, "message": "Maintenance in progress.  Table creation is disabled." } ]
+        },
+</pre>
+<dl><dt>In gameoptions.inc.php (older method if you have it in php)</dt></dl>
+<pre>// TODO NEXT remove after testing deploy to upgrade, here 0 and 1 - replace with values of your option!
+'startcondition' =&gt; [
+   0 =&gt; [ [ 'type' =&gt; 'minplayers', 'value' =&gt; 32, 'message' =&gt; totranslate('Maintenance in progress.  Table creation is disabled.') ] ],
+   1 =&gt; [ [ 'type' =&gt; 'minplayers', 'value' =&gt; 32, 'message' =&gt; totranslate('Maintenance in progress.  Table creation is disabled.') ] ],
+],
+</pre>
+<ul><li>Be sure to click "Reload game options configuration" after making this change, then test in studio (test that you cannot create any table)</li>
+<li>Deploy to production</li>
+<li>Now, when a player attempts to create a new table, they will see a red error bar with your "Maintenance in progress" message.</li>
+<li>Wait for screaming (if you have real times games in progress waiting 15 min probably ok, if you have only turn based games, probably a day)</li>
+<li>Once you confirm the new deploy looks good, you can revert the change in gameoptions.inc.php and do another deploy.</li></ul>
+<h3><span class="mw-headline" id="Local_Storage">Local Storage</span></h3>
+<p>There is not much you can store in localStorage (<a class="external free" href="https://developer.mozilla.org/docs/Web/API/Window/localStorage" rel="nofollow">https://developer.mozilla.org/docs/Web/API/Window/localStorage</a>), since most stuff should be stored either in game db or in user prefrences,
+but some stuff makes sense to store there, for example "zoom" level (if you use custom zooming). This setting really affect this specific host and specific browser, setting it localStorage makes most sense.
+</p><p>game.js
+</p>
+<pre>   setup: function (gamedatas) {
+        let zoom = localStorage.getItem(`${this.game_name}_zoom`);
+        this.setZoom(zoom);
+...
+   },
+</pre>
+<p>In this case setZoom is custom function to actually set it.
+When zoom changed, for example when some buttons pressed, store current value (but sanitize it so it never so bad that game cannot be viewed
+</p><p><br/>
+</p>
+<pre>    setZoom: function (zoom) {
+      zoom = parseInt(zoom) || 0;
+      if (zoom === 0 || zoom &lt; 0.1 || zoom &gt; 10) {
+        zoom = 1;
+      }
+      this.zoom = zoom;
+      localStorage.setItem(`${this.game_name}_zoom`, "" + this.zoom);
+... do actual zooming stuff
+    },
+</pre>
+<h2><span class="mw-headline" id="Algorithms">Algorithms</span></h2>
+<h3><span class="mw-headline" id="Generate_permutations_in_lexicographic_order">Generate permutations in lexicographic order</span></h3>
+<p>Use this when you have an array like [1, 2, 3, 4] and need to loop over some/all 24 permutations of possible ordering. This type of <a class="external text" href="https://www.php.net/manual/en/language.generators.syntax.php" rel="nofollow">generator function</a> computes each possibility one at a time, making it vastly more efficient than either a normal iteration or recursive function that produce all possibilities up front.
+</p>
+<pre>function generatePermutations(array $array): Generator
+{
+    // https://en.wikipedia.org/wiki/Permutation#Generation_in_lexicographic_order
+    // Sort the array and this is the first permutation
+    sort($array);
+    yield $array;
+
+    $count = count($array);
+    do {
+        // Find the largest index k where a[k] &lt; a[k + 1]
+        // End when no such index exists
+        $found = false;
+        for ($k = $count - 2; $k &gt;= 0; $k--) {
+            $kvalue = $array[$k];
+            $knext = $array[$k + 1];
+            if ($kvalue &lt; $knext) {
+                // Find the largest index l greater than k where a[k] &lt; a[l]
+                for ($l = $count - 1; $l &gt; $k; $l--) {
+                    $lvalue = $array[$l];
+                    if ($kvalue &lt; $lvalue) {
+                        // Swap a[k] and a[l]
+                        [$array[$k], $array[$l]] = [$array[$l], $array[$k]];
+
+                        // Reverse the sequence from a[k + 1] up to and including the final element
+                        $reverse = array_reverse(array_slice($array, $k + 1));
+                        array_splice($array, $k + 1, $count, $reverse);
+                        yield $array;
+
+                        // Restart with the new array to find the next permutation
+                        $found = true;
+                        break 2;
+                    }
+                }
+            }
+        }
+    } while ($found);
+}
+</pre>
+<p>Usage:
+</p>
+<pre>$cash = [4, 1, 2, 3, 4];
+foreach ($this-&gt;generatePermutations($cash) as $p) {
+    // your code here to evaluate permutation $p
+    // first iteration: $p = [1, 2, 3, 4, 4]
+    // last (60th) iteration: $p = [4, 4, 3, 2, 1]
+    // break from loop once you achieve your goal
+}
+</pre></div></div></div></body>
+</html>

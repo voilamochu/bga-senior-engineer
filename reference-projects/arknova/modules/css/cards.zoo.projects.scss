@@ -1,0 +1,413 @@
+.ark-card.zoo-card.project-card {
+    .ark-card-wrapper {
+        background-position-x: #{5 * 100% / 6};
+
+        .ark-card-top {
+            width: 374px;
+            height: 264px;
+            background-image: url("img/projects.jpg");
+            background-size: 600% 700%;
+
+            .ark-card-top-left {
+                .project-card-top-left-icon {
+                    height: 102px;
+                    width: 101px;
+                    background: #528b43;
+                    border-top-left-radius: 8px;
+                    border-bottom-right-radius: 25px;
+                    box-shadow: 0px 2px 11px 4px #2f2f2f;
+                    padding-left: 7px;
+                    box-sizing: border-box;
+                    display: flex;
+                    // justify-content: center;
+                    align-items: center;
+                    font-size: 47px;
+
+                    &.wide {
+                        height: 174px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-evenly;
+                        align-items: center;
+
+                        .icon-release-animal {
+                            font-size: 0.8em;
+                        }
+
+                        .icon-partner-zoo {
+                            width: 72px;
+                            height: 72px;
+                            border-radius: 50%;
+                            border: 2px solid white;
+                            background-image: url("img/zoo-card-badges.jpg");
+                            background-size: 500% 700%;
+                            background-position-x: 0%;
+                            background-position-y: 50%;
+                        }
+                    }
+                }
+            }
+        }
+
+        .ark-card-middle {
+            height: 57px;
+            background: #4c7d39;
+            background: linear-gradient(90deg, #4c7d39 15%, #1e541d 50%, #4c7d39 85%);
+            color: white;
+
+            .ark-card-number {
+                height: 57px;
+            }
+
+            .ark-card-title-wrapper {
+                padding: 2px 20px;
+
+                .ark-card-title {
+                    color: white;
+                    height: 100%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+            }
+        }
+
+        .ark-card-bottom {
+            height: 176px;
+            padding: 6px 15px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+
+            .zoo-card-bonuses {
+                position: absolute;
+                bottom: 3px;
+                right: 10px;
+            }
+
+            .project-card-description {
+                padding: 0 15px;
+                text-align: center;
+                font-size: 19px;
+            }
+
+            .project-card-slots-container {
+                margin-top: 10px;
+                display: flex;
+                justify-content: space-evenly;
+                align-items: center;
+
+                &.release {
+                    padding-right: 30px;
+                }
+
+                .project-card-slot {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+
+                    .project-card-slot-indicator {
+                        margin-bottom: -23px;
+                        position: relative;
+                        z-index: 2;
+                        font-family: "MyriadPro-Bold";
+                        text-align: center;
+                        font-size: 40px;
+                        color: white;
+                        pointer-events: none;
+                        text-shadow:
+                            rgb(31, 92, 33) 3px 0px 0px,
+                            rgb(31, 92, 33) 2.83487px 0.981584px 0px,
+                            rgb(31, 92, 33) 2.35766px 1.85511px 0px,
+                            rgb(31, 92, 33) 1.62091px 2.52441px 0px,
+                            rgb(31, 92, 33) 0.705713px 2.91581px 0px,
+                            rgb(31, 92, 33) -0.287171px 2.98622px 0px,
+                            rgb(31, 92, 33) -1.24844px 2.72789px 0px,
+                            rgb(31, 92, 33) -2.07227px 2.16926px 0px,
+                            rgb(31, 92, 33) -2.66798px 1.37182px 0px,
+                            rgb(31, 92, 33) -2.96998px 0.42336px 0px,
+                            rgb(31, 92, 33) -2.94502px -0.571704px 0px,
+                            rgb(31, 92, 33) -2.59586px -1.50383px 0px,
+                            rgb(31, 92, 33) -1.96093px -2.27041px 0px,
+                            rgb(31, 92, 33) -1.11013px -2.78704px 0px,
+                            rgb(31, 92, 33) -0.137119px -2.99686px 0px,
+                            rgb(31, 92, 33) 0.850987px -2.87677px 0px,
+                            rgb(31, 92, 33) 1.74541px -2.43999px 0px,
+                            rgb(31, 92, 33) 2.44769px -1.73459px 0px,
+                            rgb(31, 92, 33) 2.88051px -0.838247px 0px;
+
+                        &.release {
+                            margin-bottom: -52px;
+                        }
+                    }
+
+                    .project-card-slot-cube-holder {
+                        width: 50px;
+                        height: 50px;
+                        border-radius: 5px;
+                        border: 3px solid #1f5c21;
+                        background-color: #528b43;
+                        font-size: 30px;
+                        .icon-token {
+                            z-index: 20;
+                            position: relative;
+                            margin: -4px 0px 0px -4px;
+                        }
+
+                        &.selectable {
+                            border-color: red;
+                            cursor: pointer;
+
+                            &:hover {
+                                transform: scale(1.1);
+                            }
+                        }
+
+                        &.selected {
+                            border-color: red;
+                            background: green !important;
+                        }
+
+                        &[data-type="all-animals"] {
+                            background-image: url("img/icons.png");
+                            background-repeat: no-repeat;
+                            background-position: 74.63692946058092% 68.89002036659878%;
+                            background-size: 1706.6666666666667%;
+                        }
+                        &[data-type="all-continents"] {
+                            background-image: url("img/icons.png");
+                            background-repeat: no-repeat;
+                            background-position: 81.89834024896265% 68.89002036659878%;
+                            background-size: 1706.6666666666667%;
+                        }
+                    }
+
+                    .project-card-slot-reward {
+                        position: relative;
+                        z-index: 3;
+                        margin-top: -15px;
+                        font-size: 40px;
+                        display: flex;
+                        justify-content: center;
+                        pointer-events: none;
+
+                        .icon-conservation {
+                            font-size: 0.85em;
+                            width: 1.5em;
+                            height: 1.5em;
+                            line-height: 1.4em;
+                        }
+
+                        .icon-container-reputation {
+                            margin-left: -0.3em;
+                            margin-top: -0.05em;
+                            margin-bottom: -0.1em;
+
+                            .icon-reputation {
+                                font-size: 0.85em;
+                                width: 1.7em;
+                                height: 1.7em;
+                                line-height: 1.7em;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    [data-card-desc="0"] &:not(.tooltip) {
+        .ark-card-wrapper {
+            .ark-card-middle {
+                margin-top: -10px;
+                margin-bottom: -10px;
+                height: 77px;
+                .ark-card-number {
+                    display: none;
+                }
+
+                .ark-card-title-wrapper {
+                    padding: 3px 20px 1px;
+
+                    .ark-card-title {
+                        font-size: 32px;
+                        line-height: 31px;
+                        height: 100%;
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+
+                    .ark-card-subtitle {
+                        display: none;
+                    }
+                }
+            }
+
+            .ark-card-bottom .project-card-description {
+                display: none;
+            }
+        }
+    }
+
+    // MW PROJECTS
+    &.project-plan {
+        .ark-card-wrapper {
+            .ark-card-top {
+                .ark-card-top-left {
+                    .icon-container ~ .icon-container {
+                        margin-top: -30%;
+                    }
+                }
+            }
+
+            .ark-card-bottom {
+                .project-card-description {
+                    line-height: 20px;
+                }
+                .project-card-slots-container {
+                    margin-right: 55px;
+
+                    .project-card-slot {
+                        width: 80px;
+                        padding-top: 7px;
+                        padding-bottom: 7px;
+                        &:nth-child(2n + 1) {
+                            background: rgba(255, 255, 255, 0.6);
+                        }
+                        &:nth-child(2) {
+                            width: 100px;
+                            .project-card-slot-reward {
+                                .project-other-gain {
+                                    width: 90px;
+                                }
+                            }
+                        }
+
+                        .project-card-slot-reward {
+                            flex-flow: column;
+                            align-items: center;
+                            margin-top: -35px;
+
+                            .project-other-gain {
+                                width: 50px;
+                                height: 50px;
+                                font-size: 35px;
+                                margin-top: 5px;
+
+                                .icon-container-clever {
+                                    font-size: 0.8em;
+                                }
+                                .icon-container-reputation-for-science {
+                                    margin-top: -7px;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@each $cId in $projectCards {
+    $i: index($projectCards, $cId) - 1;
+    .zoo-card.project-card[data-asset="#{$cId}"] .ark-card-top {
+        background-position-x: ($i % 6) * 100% / 5;
+        background-position-y: (($i - ($i % 6)) / 6) * 100% / 6;
+    }
+}
+
+#ebd-body[data-association-board-projects="1"] #association-board-container {
+    #projects-holder,
+    #base-projects-holder {
+        & > .icon-container {
+            top: 10px;
+        }
+
+        .project-holder {
+            height: 54px;
+        }
+    }
+}
+
+#ebd-body[data-association-board-projects="1"] #association-board-container #projects-holder,
+#ebd-body[data-association-board-projects="1"] #association-board-container #base-projects-holder,
+#customActions {
+    .ark-card.zoo-card.project-card {
+        height: calc(var(--arkNovaZooCardScale) * 155px);
+
+        .ark-card-wrapper {
+            height: 155px;
+
+            .ark-card-top {
+                width: 110px;
+                background: none;
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 100%;
+
+                .project-card-top-left-icon {
+                    width: 92px;
+                    height: 100%;
+                    font-size: 40px;
+                    border-bottom-right-radius: 0;
+                    border-bottom-left-radius: 8px;
+                    box-shadow: none;
+                    border-right: 2px solid #5f714d;
+                }
+            }
+
+            .ark-card-middle {
+                display: none;
+            }
+
+            .ark-card-bottom {
+                height: 146px;
+                padding: 3px 0px 3px 92px;
+                justify-content: center;
+
+                .zoo-card-bonuses {
+                    display: none;
+                }
+
+                .project-card-description {
+                    display: none;
+                }
+
+                .project-card-slot-indicator.breed ~ .project-card-slot-reward {
+                    font-size: 33px;
+                }
+                .project-card-slot-indicator.release ~ .project-card-slot-reward {
+                    font-size: 31px;
+                }
+
+                .project-card-slot {
+                    .project-card-slot-indicator:empty {
+                        margin: 0px;
+                    }
+                }
+
+                .project-card-slots-container.release {
+                    padding-right: 0px;
+                }
+                .project-card-slots-container.plan {
+                    margin-right: 0px;
+                    margin-top: 0px;
+                }
+            }
+        }
+    }
+}
+
+#customActions {
+    --arkNovaZooCardScale: 0.5;
+    .ark-card.zoo-card.project-card {
+        position: initial;
+        display: inline-block;
+        vertical-align: middle;
+        margin: 0px 10px;
+    }
+}

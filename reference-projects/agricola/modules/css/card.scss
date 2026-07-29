@@ -1,0 +1,1355 @@
+.player-card {
+  transition: transform 0.8s;
+  transform: scale(1);
+  width: var(--agricolaCardWidth);
+  height: var(--agricolaCardHeight);
+
+  .instant-speed & {
+    transition: none;
+  }
+
+  &.mini {
+    height: var(--agricolaCardWidth);
+  }
+
+  &.selectable {
+    cursor: pointer;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  &.selected {
+    transform: scale(1.1);
+    border: 10px dashed black;
+  }
+
+  &.unselectable {
+    cursor: not-allowed;
+  }
+
+  &.usable .player-card-inner::before,
+  &.shared-scoring .player-card-inner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 8.3/100 * $cardW;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  &.usable .player-card-inner::before {
+    box-shadow: inset 0 0 0 5px #144f91;
+  }
+
+  &.shared-scoring .player-card-inner::before {
+    box-shadow: inset 0 0 0 4px #8b2fc9, inset 0 0 0 5px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 0, 0, 0.7);
+  }
+
+  .shared-scoring-sash {
+    $sashSize: 35/100 * $cardW;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: $sashSize;
+    height: $sashSize;
+    overflow: hidden;
+    border-top-right-radius: 8.3/100 * $cardW;
+    z-index: 15;
+    pointer-events: none;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 ($sashSize + 2px) ($sashSize + 2px) 0;
+      border-color: transparent rgba(0, 0, 0, 0.7) transparent transparent;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 $sashSize $sashSize 0;
+      border-color: transparent rgba(139, 47, 201, 0.9) transparent transparent;
+      z-index: 1;
+    }
+
+    .shared-scoring-icon {
+      position: absolute;
+      z-index: 2;
+      width: 30px;
+      height: 30px;
+      background-image: url("img/meeples.png");
+      background-position: 45.5793% 21.7988%;
+      background-size: 2560%;
+      top: $sashSize / 3 - 17px;
+      right: $sashSize / 3 - 17px;
+    }
+  }
+
+  #ebd-body:not(.mobile_version) &.unselectable {
+    filter: grayscale(70%);
+  }
+
+  &.mini .player-card-resizable .player-card-inner {
+    height: $cardW;
+
+    .card-desc {
+      top: 95/100 * $cardW;
+      bottom: 8/100 * $cardW;
+    }
+  }
+
+  &.phantom {
+    visibility: hidden;
+  }
+
+  &.animalHolder {
+    z-index: 2;
+  }
+
+  .infobox {
+    position: absolute;
+    top: -7px;
+    font-size: 13px;
+    border-radius: 1px;
+    border: 1px solid black;
+    background-color: orange;
+    padding-left: 4px;
+    padding-right: 4px;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+  }
+
+  .player-card-stats {
+    position: absolute;
+    left: 200px;
+    top: 0px;
+    width: 140px;
+    background-image: url('img/action_frame_bg.jpg');
+    background-size: 100%;
+    border-radius: 15px;
+    border: 4px solid white;
+    font-family: var(--agricola-font-family);
+    font-size: 15px;
+    display: none;
+
+    &.active {
+      display: block;
+    }
+
+    .content {
+      padding: 5px;
+      padding-top: 0px;
+    }
+
+    h3 {
+      width: 100%;
+      font-size: 13px;
+      text-align: center;
+      border-bottom: 1px solid black;
+      padding: 0px 0px 0px 0px;
+    }
+  }
+
+  .player-card-field-cell {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    &.active {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 8.3/100 * $cardW;
+
+      #ebd-body:not(.help-mode) &.selectable {
+        cursor: pointer;
+
+        &:hover {
+          background-color: rgba(255, 0, 0, 0.3);
+        }
+      }
+
+      #ebd-body:not(.help-mode) &.selected {
+        background-color: rgba(0, 255, 0, 0.5);
+
+        &:hover {
+          background-color: rgba(0, 255, 0, 0.9);
+        }
+      }
+    }
+  }
+
+  .player-card-zoom {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 8.3/100 * $cardW;
+    justify-content: center;
+    align-items: center;
+    cursor: zoom-in;
+
+    svg {
+      width: 50%;
+      height: 50%;
+    }
+  }
+
+  &.mini:not(.phantom):not(.selectable) .player-card-resizable:hover .player-card-zoom {
+    display: flex;
+  }
+
+  .player-card-resizable {
+    transform: scale(var(--agricolaCardScale));
+    transform-origin: top left;
+    width: $cardW;
+
+    .player-card-inner {
+      width: $cardW;
+      height: $cardH;
+      background-size: 100%;
+      position: relative;
+      transition: height 0.8s;
+      transform-origin: top left;
+
+      .instant-speed & {
+        transition: none;
+      }
+
+      .card-icon,
+      .card-frame {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background-size: 100% 100%;
+      }
+
+      .card-frame {
+        background-image: url("img/card_frames.jpg");
+        background-size: 300% $cardH;
+        border-radius: 8.3/100 * $cardW;
+        box-shadow: 2px 2px 5px -1px black;
+        border: 5px solid white;
+        box-sizing: border-box;
+      }
+
+      .card-title {
+        position: absolute;
+        left: 29%;
+        right: 29%;
+        top: 4.4/100 * $cardW;
+        height: 18.5/100 * $cardW;
+        font-family: var(--agricola-font-family);
+        font-size: 16px;
+        line-height: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .card-numbering {
+        position: absolute;
+        left: 3.7%;
+        top: 39/100 * $cardW;
+        width: 10/100 * $cardW;
+        height: 5/100 * $cardW;
+        font-family: "Calibri";
+        font-size: 13px;
+        text-align: center;
+      }
+
+      .card-score {
+        position: absolute;
+        left: 4%;
+        top: 70/100 * $cardW;
+        width: 17/100 * $cardW;
+        height: 17/100 * $cardW;
+        font-weight: bold;
+        font-family: "CalibriB";
+        font-size: 27px;
+        background-image: url("img/meeples.png");
+        background-position: 53.3644% 15.0026%;
+        background-size: 1765.52%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .card-extra-score {
+        position: absolute;
+        left: 19.5%;
+        top: 80/100 * $cardW;
+        width: 10/100 * $cardW;
+        height: 10/100 * $cardW;
+        background-image: url("img/meeples.png");
+        background-position: 91.0282% 21.623%;
+        background-size: 3200%;
+      }
+
+      .card-deck {
+        position: absolute;
+        top: 67.5/100 * $cardW;
+        width: 15.25/100 * $cardW;
+        height: 15.25/100 * $cardW;
+        left: 81/100 * $cardW;
+        background-image: url("img/meeples.png");
+
+        &[data-deck="A"] {
+          background-position: 59.7624% 14.9793%;
+          background-size: 1828.57%;
+        }
+
+        &[data-deck='B'] {
+          background-position: 66.064% 14.9793%;
+          background-size: 1828.57%;
+        }
+
+        &[data-deck='C'] {
+          background-image: url('img/deckC/deckC.png');
+          background-size: contain;
+        }
+
+        &[data-deck='D'] {
+          background-image: url('img/deckD/deckD.png');
+          background-size: contain;
+        }
+
+        &[data-deck='E'] {
+          background-image: url('img/deckE/deckE.png');
+          background-size: contain;
+        }
+      }
+
+      .card-players {
+        position: absolute;
+        top: 68.5/100 * $cardW;
+        width: 15.25/100 * $cardW;
+        height: 15.25/100 * $cardW;
+        left: 4.5%;
+        background-image: url("img/meeples.png");
+
+        &[data-n="1+"] {
+          background-position: 99.3846% 0.512821%;
+          background-size: 2089.8%;
+        }
+
+        &[data-n='2+'] {
+          background-position: 86.8205% 14.8718%;
+          background-size: 2089.8%;
+        }
+
+        &[data-n='3+'] {
+          background-position: 92.359% 14.8718%;
+          background-size: 2089.8%;
+        }
+
+        &[data-n='4+'] {
+          background-position: 97.8974% 14.8718%;
+          background-size: 2089.8%;
+        }
+      }
+
+      .card-category {
+        position: absolute;
+        left: 71.5%;
+        top: 78/100 * $cardW;
+        width: 11/100 * $cardW;
+        height: 11/100 * $cardW;
+        background-image: url("img/card_categories.png");
+        background-size: 800% 100%;
+
+        $cardCategories: "BoosterCategory" "LivestockCategory" "ResourceCategory" "FarmCategory" "CropCategory" "FoodCategory" "GoodsCategory" "PointsCategory";
+        @each $id in $cardCategories {
+          $i: index($cardCategories, $id);
+          &[data-category="#{$id}"] {
+            background-position-x: ($i - 1) * 100% / 7;
+          }
+        }
+      }
+
+      .card-bonus-vp-counter {
+        position: absolute;
+        left: 78%;
+        top: 68/100 * $cardW;
+        width: 20/100 * $cardW;
+        height: 20/100 * $cardW;
+        font-weight: bold;
+        font-family: "CalibriB";
+        font-size: 25px;
+        background-image: url("img/meeples.png");
+        background-position: 53.3644% 15.0026%;
+        background-size: 1765.52%;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        display: flex;
+        visibility: hidden;
+
+        &:not(:empty) {
+          visibility: visible;
+
+          &:before {
+            content: "+";
+          }
+
+          & ~ .card-deck,
+          & ~ .card-category {
+            display: none;
+          }
+        }
+      }
+
+      .card-cost {
+        position: absolute;
+        left: 68%;
+        right: 3.5%;
+        top: 3.5/100 * $cardW;
+        height: 41/100 * $cardW;
+        text-align: right;
+        font-family: "CalibriB";
+        font-size: 26px;
+        text-shadow: -1px 0px 0px white, 0px -1px 0px white, 1px 0px 0px white, 0px 1px 0px white;
+        font-weight: bolder;
+
+        .card-cost-text {
+          height: 57%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          text-align: right;
+
+          padding: 2px 6px 2px 15px;
+          font-family: var(--agricola-font-family);
+          text-shadow: none;
+          font-size: 12px;
+          line-height: 13px;
+          font-weight: normal;
+        }
+
+        .card-cost-separator {
+          width: 100%;
+          height: 30%;
+          position: relative;
+
+          &::after {
+            content: "";
+            border-top: 2px solid black;
+            width: 75%;
+            display: block;
+            transform: rotate(-22deg);
+            position: absolute;
+            top: 46%;
+            left: 25%;
+          }
+        }
+
+        .card-cost-conditional {
+          text-align: right;
+          font-size: 25px;
+          padding: 0px;
+          line-height: 12px;
+        }
+
+        .card-cost-fee-separator {
+          text-align: center;
+          font-size: 20px;
+          padding: 0px;
+          line-height: 12px;
+        }
+      }
+
+      .card-prerequisite {
+        position: absolute;
+        right: 68%;
+        left: 3.5%;
+        top: 3.5/100 * $cardW;
+        height: 41/100 * $cardW;
+
+        background-image: url("img/meeples.png");
+        background-position: 89.6801% 0.526316%;
+        background-size: 1861.82%;
+
+        .prerequisite-text {
+          height: 86%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 2px 15px 2px 6px;
+          font-size: 12px;
+          line-height: 13px;
+          font-family: var(--agricola-font-family);
+          text-align: left;
+          word-wrap: anywhere;
+        }
+      }
+
+      .card-desc {
+        position: absolute;
+        top: 90/100 * $cardW;
+        bottom: 3.5/100 * $cardW;
+        left: 4%;
+        right: 4%;
+        padding: 0 0.5rem;
+
+        background-image: url("img/action_frame_bg.jpg");
+        background-size: 100%;
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        box-shadow: inset 0px 0px 1px 1px black, inset 0px 0px 5px 1px black;
+
+        display: flex;
+        flex-flow: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        font-family: var(--agricola-font-family);
+        font-size: 17px;
+        overflow: hidden;
+        transition: bottom 0.8s, top 0.8s, clip-path 0.8s;
+
+        .instant-speed & {
+          transition: none;
+        }
+
+        div.card-desc-scroller {
+          height: 70/100 * 86.5 / 100 * $cardW;
+          overflow-y: auto;
+          display: flex;
+          flex-flow: column;
+
+          & > div {
+            margin: auto;
+          }
+        }
+      }
+    }
+  }
+
+  &[data-cook="true"] .card-desc::before {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 29px;
+    height: 20px;
+    background-image: url("img/meeples.png");
+    background-position: 82.0225% 21.6886%;
+    background-size: 2275.56%;
+  }
+
+  &[data-cook="true"] .card-bottom-left-corner {
+    position: absolute;
+    bottom: 8px;
+    left: 9px;
+    width: 24px;
+    height: 17px;
+    background-image: url("img/meeples.png");
+    background-position: 13.3132% 26.2165%;
+    background-size: 3150.77%;
+  }
+
+  &[data-bread="true"] .card-desc::after {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 28px;
+    height: 20px;
+    background-image: url("img/meeples.png");
+    background-position: 87.1297% 21.6886%;
+    background-size: 2275.56%;
+  }
+
+  &[data-bread="true"] .card-bottom-right-corner {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    width: 21px;
+    height: 18px;
+    background-image: url("img/meeples.png");
+    background-position: 17.0266% 26.1905%;
+    background-size: 3592.98%;
+  }
+
+  &.major {
+    .player-card-resizable {
+      .card-icon {
+        width: 65/100 * $cardW;
+        height: 66/100 * $cardW;
+        top: 21/100 * $cardW;
+        left: 18/100 * $cardW;
+        background-image: url("img/majors_icons.jpg");
+        background-size: 500% 200%;
+        clip-path: polygon(0% 54.4%, 24% 11%, 74% 11%, 99% 55%, 74% 98%, 24% 98%, 0% 55%);
+      }
+
+      .card-frame {
+        background-position-x: 0%;
+      }
+
+      .card-category {
+        filter: invert(85%);
+      }
+
+      .card-cost-text {
+        background-image: url("img/meeples.png");
+        background-position: 76.3186% 0.52687%;
+        background-size: 1106.89% 1328%;
+      }
+    }
+
+    $majorsImp: 'Fireplace1' 'Fireplace2' 'CookingHearth1' 'CookingHearth2' 'ClayOven' 'StoneOven' 'Joinery' 'Pottery' 'Basket' 'Well';
+
+    @each $mId in $majorsImp {
+      $i: index($majorsImp, $mId);
+      &[data-id="Major_#{$mId}"] {
+        .card-icon {
+          background-position-x: (($i - 1) % 5) * 100% / 4;
+          background-position-y: (($i - 1 - ($i - 1) % 5) / 5) * 100%;
+        }
+      }
+    }
+  }
+
+  &.minor .player-card-resizable {
+    .card-frame {
+      background-position-x: 50%;
+    }
+
+    .card-icon {
+      width: 77.5 / 100 * $cardW;
+      height: 80.85 / 100 * $cardW;
+      top: 15.75 / 100 * $cardW;
+      left: 11.5%;
+    }
+
+    .card-frame-left-leaves,
+    .card-frame-right-leaves {
+      position: absolute;
+      top: 112px;
+      width: 53px;
+      height: 40px;
+      background-size: 100% 100%;
+    }
+
+    .card-frame-left-leaves {
+      background-position: 73.2741% 14.9254%;
+      background-size: 1505.88%;
+      background-image: url("img/meeples.png");
+      left: 1px;
+    }
+
+    .card-frame-right-leaves {
+      background-position: 80.91% 14.91%;
+      background-size: 1505.88%;
+      background-image: url("img/meeples.png");
+      right: 1px;
+    }
+
+    .card-desc {
+      line-height: 20px;
+    }
+
+    .card-cost {
+      .card-cost-text {
+        height: 97%;
+        background-image: url("img/meeples.png");
+        background-position: 83.4881% 0.526316%;
+        background-size: 1861.82%;
+      }
+    }
+  }
+
+  /* Minor/Major cards */
+  &[data-id='A60_OrientalFireplace'] .player-card-resizable,
+  &[data-id='D59_EarthOven'] .player-card-resizable,
+  &[data-id='D60_LargePottery'] .player-card-resizable {
+    .card-frame {
+      background-image: url("img/card_frame_major_minor.png");
+      background-size: 104%;
+    }
+
+    .card-icon {
+      width: 192px;
+      height: 192px;
+      top: 35px;
+      left: 9.4%;
+    }
+
+    .card-frame-left-leaves {
+      left: 1px;
+    }
+
+    .card-frame-right-leaves {
+      background-position: 99.5% 32.5%;
+      background-size: 430%;
+      background-image: url("img/card_frame_major_minor.png");
+      right: 1px;
+    }
+  }
+
+  &[data-id='A60_OrientalFireplace'] .card-category,
+  &[data-id='D59_EarthOven'] .card-category,
+  &[data-id='D60_LargePottery'] .card-category {
+    filter: invert(85%);
+    left: 73%;
+  }
+
+  &[data-id='A60_OrientalFireplace'][data-cook='true'],
+  &[data-id='D59_EarthOven'][data-cook='true'] {
+    .card-desc::before {
+      content: '';
+      display: block;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 29px;
+      height: 20px;
+      background-image: url("img/minor_left_corner.png");
+      background-position: 0% 0%;
+      background-size: 100%;
+    }
+  }
+
+  &[data-id='A60_OrientalFireplace'] .player-card-resizable .card-cost,
+  &[data-id='D59_EarthOven'] .player-card-resizable .card-cost {
+    height: 100px;
+
+    .card-cost-text {
+      background-image: url("img/minor_major_costtext.png");
+      background-position: 34% 0%;
+      background-size: 144% auto;
+    }
+  }
+
+  &[data-id='D64_BakingCourse'][data-bread='true'],
+  &[data-id='E63_IronOven'][data-bread='true'],
+  &[data-id='E64_SimpleOven'][data-bread='true'] {
+    .card-desc::after {
+      content: '';
+      display: block;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 29px;
+      height: 20px;
+      background-image: url("img/minor_right_corner.png");
+      background-position: 0% 0%;
+      background-size: 100%;
+    }
+  }
+
+  &[data-id='B56_Brook'] .player-card-resizable .card-cost {
+    .card-cost-text {
+      font-size: 11px;
+    }
+  }
+
+  &[data-id='B33_Mantlepiece'] .player-card-resizable,
+  &[data-id='B40_BreweryPond'] .player-card-resizable,
+  &[data-id='C83_EarlyCattle'] .player-card-resizable,
+  &[data-id='D40_Cesspit'] .player-card-resizable {
+    .card-score {
+      background-image: url('img/negativeVP.png');
+      background-position: 0 0;
+      background-size: 100%;
+      font-size: 26px;
+      color: beige;
+      display: flex;
+      overflow: hidden;
+    }
+  }
+
+  &[data-id='C35_LanternHouse'] .player-card-resizable,
+  &[data-id='D92_ChildOmbudsman'] .player-card-resizable {
+    .card-extra-score {
+      background-image: url('img/negativeBonus.png');
+      background-position: 0 0;
+      background-size: 100%;
+      top: 186px;
+      left: 19.4%;
+    }
+  }
+
+  &.occupation .player-card-resizable {
+    .card-frame {
+      background-position-x: 100%;
+    }
+
+    .card-icon {
+      width: 77 / 100 * $cardW;
+      height: 80.7 / 100 * $cardW;
+      top: 15.75 / 100 * $cardW;
+      left: 11.5%;
+    }
+
+    .card-title {
+      left: 10%;
+      right: 10%;
+      height: 20/100 * $cardW;
+    }
+
+    .card-desc {
+      line-height: 19px;
+    }
+  }
+
+  $deckA: 'A001', 'A002', 'A003', 'A004', 'A005', 'A006', 'A007', 'A008', 'A009', 'A010', 'A011', 'A012', 'A013', 'A014',
+  'A015', 'A016', 'A017', 'A018', 'A019', 'A020', 'A021', 'A022', 'A023', 'A024', 'A025', 'A026', 'A027', 'A028',
+  'A029', 'A030', 'A031', 'A032', 'A033', 'A034', 'A035', 'A036', 'A037', 'A038', 'A039', 'A040', 'A041', 'A042',
+  'A043', 'A044', 'A045', 'A046', 'A047', 'A048', 'A049', 'A050', 'A051', 'A052', 'A053', 'A054', 'A055', 'A056',
+  'A057', 'A058', 'A059', 'A060', 'A061', 'A062', 'A063', 'A064', 'A065', 'A066', 'A067', 'A068', 'A069', 'A070',
+  'A071', 'A072', 'A073', 'A074', 'A075', 'A076', 'A077', 'A078', 'A079', 'A080', 'A081', 'A082', 'A083', 'A084',
+  'A085', 'A086', 'A087', 'A088', 'A089', 'A090', 'A091', 'A092', 'A093', 'A094', 'A095', 'A096', 'A097', 'A098',
+  'A099', 'A100', 'A101', 'A102', 'A103', 'A104', 'A105', 'A106', 'A107', 'A108', 'A109', 'A110', 'A111', 'A112',
+  'A113', 'A114', 'A115', 'A116', 'A117', 'A118', 'A119', 'A120', 'A121', 'A122', 'A123', 'A124', 'A125', 'A126',
+  'A127', 'A128', 'A129', 'A130', 'A131', 'A132', 'A133', 'A134', 'A135', 'A136', 'A137', 'A138', 'A139', 'A140',
+  'A141', 'A142', 'A143', 'A144', 'A145', 'A146', 'A147', 'A148', 'A149', 'A150', 'A151', 'A152', 'A153', 'A154',
+  'A155', 'A156', 'A157', 'A158', 'A159', 'A160', 'A161', 'A162', 'A163', 'A164', 'A165', 'A166', 'A167', 'A168';
+  @each $cId in $deckA {
+    &[data-numbering='#{$cId}'] .card-icon {
+      background-image: url('img/deckA/#{$cId}.png');
+    }
+  }
+
+  $deckB: 'B001', 'B002', 'B003', 'B004', 'B005', 'B006', 'B007', 'B008', 'B009', 'B010', 'B011', 'B012', 'B013', 'B014',
+  'B015', 'B016', 'B017', 'B018', 'B019', 'B020', 'B021', 'B022', 'B023', 'B024', 'B025', 'B026', 'B027', 'B028',
+  'B029', 'B030', 'B031', 'B032', 'B033', 'B034', 'B035', 'B036', 'B037', 'B038', 'B039', 'B040', 'B041', 'B042',
+  'B043', 'B044', 'B045', 'B046', 'B047', 'B048', 'B049', 'B050', 'B051', 'B052', 'B053', 'B054', 'B055', 'B056',
+  'B057', 'B058', 'B059', 'B060', 'B061', 'B062', 'B063', 'B064', 'B065', 'B066', 'B067', 'B068', 'B069', 'B070',
+  'B071', 'B072', 'B073', 'B074', 'B075', 'B076', 'B077', 'B078', 'B079', 'B080', 'B081', 'B082', 'B083', 'B084',
+  'B085', 'B086', 'B087', 'B088', 'B089', 'B090', 'B091', 'B092', 'B093', 'B094', 'B095', 'B096', 'B097', 'B098',
+  'B099', 'B100', 'B101', 'B102', 'B103', 'B104', 'B105', 'B106', 'B107', 'B108', 'B109', 'B110', 'B111', 'B112',
+  'B113', 'B114', 'B115', 'B116', 'B117', 'B118', 'B119', 'B120', 'B121', 'B122', 'B123', 'B124', 'B125', 'B126',
+  'B127', 'B128', 'B129', 'B130', 'B131', 'B132', 'B133', 'B134', 'B135', 'B136', 'B137', 'B138', 'B139', 'B140',
+  'B141', 'B142', 'B143', 'B144', 'B145', 'B146', 'B147', 'B148', 'B149', 'B150', 'B151', 'B152', 'B153', 'B154',
+  'B155', 'B156', 'B157', 'B158', 'B159', 'B160', 'B161', 'B162', 'B163', 'B164', 'B165', 'B166', 'B167', 'B168';
+  @each $cId in $deckB {
+    &[data-numbering='#{$cId}'] .card-icon {
+      background-image: url('img/deckB/#{$cId}.png');
+    }
+  }
+
+  $deckC: 'C001', 'C002', 'C003', 'C004', 'C005', 'C006', 'C007', 'C008', 'C009', 'C010', 'C011', 'C012', 'C013', 'C014',
+  'C015', 'C016', 'C017', 'C018', 'C019', 'C020', 'C021', 'C022', 'C023', 'C024', 'C025', 'C026', 'C027', 'C028',
+  'C029', 'C030', 'C031', 'C032', 'C033', 'C034', 'C035', 'C036', 'C037', 'C038', 'C039', 'C040', 'C041', 'C042',
+  'C043', 'C044', 'C045', 'C046', 'C047', 'C048', 'C049', 'C050', 'C051', 'C052', 'C053', 'C054', 'C055', 'C056',
+  'C057', 'C058', 'C059', 'C060', 'C061', 'C062', 'C063', 'C064', 'C065', 'C066', 'C067', 'C068', 'C069', 'C070',
+  'C071', 'C072', 'C073', 'C074', 'C075', 'C076', 'C077', 'C078', 'C079', 'C080', 'C081', 'C082', 'C083', 'C084',
+  'C085', 'C086', 'C087', 'C088', 'C089', 'C090', 'C091', 'C092', 'C093', 'C094', 'C095', 'C096', 'C097', 'C098',
+  'C099', 'C100', 'C101', 'C102', 'C103', 'C104', 'C105', 'C106', 'C107', 'C108', 'C109', 'C110', 'C111', 'C112',
+  'C113', 'C114', 'C115', 'C116', 'C117', 'C118', 'C119', 'C120', 'C121', 'C122', 'C123', 'C124', 'C125', 'C126',
+  'C127', 'C128', 'C129', 'C130', 'C131', 'C132', 'C133', 'C134', 'C135', 'C136', 'C137', 'C138', 'C139', 'C140',
+  'C141', 'C142', 'C143', 'C144', 'C145', 'C146', 'C147', 'C148', 'C149', 'C150', 'C151', 'C152', 'C153', 'C154',
+  'C155', 'C156', 'C157', 'C158', 'C159', 'C160', 'C161', 'C162', 'C163', 'C164', 'C165', 'C166', 'C167', 'C168';
+  @each $cId in $deckC {
+    &[data-numbering='#{$cId}'] .card-icon {
+      background-image: url('img/deckC/#{$cId}.png');
+    }
+  }
+
+  $deckD: 'D001', 'D002', 'D003', 'D004', 'D005', 'D006', 'D007', 'D008', 'D009', 'D010', 'D011', 'D012', 'D013', 'D014',
+  'D015', 'D016', 'D017', 'D018', 'D019', 'D020', 'D021', 'D022', 'D023', 'D024', 'D025', 'D026', 'D027', 'D028',
+  'D029', 'D030', 'D031', 'D032', 'D033', 'D034', 'D035', 'D036', 'D037', 'D038', 'D039', 'D040', 'D041', 'D042',
+  'D043', 'D044', 'D045', 'D046', 'D047', 'D048', 'D049', 'D050', 'D051', 'D052', 'D053', 'D054', 'D055', 'D056',
+  'D057', 'D058', 'D059', 'D060', 'D061', 'D062', 'D063', 'D064', 'D065', 'D066', 'D067', 'D068', 'D069', 'D070',
+  'D071', 'D072', 'D073', 'D074', 'D075', 'D076', 'D077', 'D078', 'D079', 'D080', 'D081', 'D082', 'D083', 'D084',
+  'D085', 'D086', 'D087', 'D088', 'D089', 'D090', 'D091', 'D092', 'D093', 'D094', 'D095', 'D096', 'D097', 'D098',
+  'D099', 'D100', 'D101', 'D102', 'D103', 'D104', 'D105', 'D106', 'D107', 'D108', 'D109', 'D110', 'D111', 'D112',
+  'D113', 'D114', 'D115', 'D116', 'D117', 'D118', 'D119', 'D120', 'D121', 'D122', 'D123', 'D124', 'D125', 'D126',
+  'D127', 'D128', 'D129', 'D130', 'D131', 'D132', 'D133', 'D134', 'D135', 'D136', 'D137', 'D138', 'D139', 'D140',
+  'D141', 'D142', 'D143', 'D144', 'D145', 'D146', 'D147', 'D148', 'D149', 'D150', 'D151', 'D152', 'D153', 'D154',
+  'D155', 'D156', 'D157', 'D158', 'D159', 'D160', 'D161', 'D162', 'D163', 'D164', 'D165', 'D166', 'D167', 'D168';
+  @each $cId in $deckD {
+    &[data-numbering="#{$cId}"] .card-icon {
+      background-image: url("img/deckD/#{$cId}.png");
+    }
+  }
+
+  $deckE: "E001", "E002", "E003", "E004", "E005", "E006", "E007", "E008", "E009", "E010", "E011", "E012", "E013", "E014",
+  "E015", "E016", "E017", "E018", "E019", "E020", "E021", "E022", "E023", "E024", "E025", "E026", "E027", "E028",
+  "E029", "E030", "E031", "E032", "E033", "E034", "E035", "E036", "E037", "E038", "E039", "E040", "E041", "E042",
+  "E043", "E044", "E045", "E046", "E047", "E048", "E049", "E050", "E051", "E052", "E053", "E054", "E055", "E056",
+  "E057", "E058", "E059", "E060", "E061", "E062", "E063", "E064", "E065", "E066", "E067", "E068", "E069", "E070",
+  "E071", "E072", "E073", "E074", "E075", "E076", "E077", "E078", "E079", "E080", "E081", "E082", "E083", "E084",
+  "E085", "E086", "E087", "E088", "E089", "E090", "E091", "E092", "E093", "E094", "E095", "E096", "E097", "E098",
+  "E099", "E100", "E101", "E102", "E103", "E104", "E105", "E106", "E107", "E108", "E109", "E110", "E111", "E112",
+  "E113", "E114", "E115", "E116", "E117", "E118", "E119", "E120", "E121", "E122", "E123", "E124", "E125", "E126",
+  "E127", "E128", "E129", "E130", "E131", "E132", "E133", "E134", "E135", "E136", "E137", "E138", "E139", "E140",
+  "E141", "E142", "E143", "E144", "E145", "E146", "E147", "E148", "E149", "E150", "E151", "E152", "E153", "E154",
+  "E155", "E156", "E157", "E158", "E159", "E160", "E161", "E162", "E163", "E164", "E165", "E166", "E167", "E168";
+  @each $cId in $deckE {
+    &[data-numbering="#{$cId}"] .card-icon {
+      background-image: url("img/deckE/#{$cId}.png");
+    }
+  }
+
+  .resource-holder {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid black;
+    border-radius: 7px;
+    padding: 2px;
+    font-size: 1.5em;
+
+    &[data-n="0"] {
+      visibility: hidden;
+    }
+
+    .agricola-meeple {
+      margin: 4px;
+    }
+  }
+
+  &[data-id="B19_MoldboardPlow"] .resource-holder {
+    top: 23px;
+    left: 8px;
+  }
+
+  /* Cards with stacked resources */
+  &[data-id='A102_Grocer'] .resource-holder,
+  &[data-id='B21_HayloftBarn'] .resource-holder,
+  &[data-id='B83_MuddyPuddles'] .resource-holder,
+  &[data-id='C120_AgriculturalLabourer'] .resource-holder,
+  &[data-id='D126_FieldCultivator'] .resource-holder,
+  &[data-id='E40_BeeStatue'] .resource-holder,
+  &[data-id='E103_Wolf'] .resource-holder,
+  &[data-id='E123_ResourceHoarder'] .resource-holder {
+    top: 20px;
+    left: 8px;
+    display: flex;
+    flex-flow: column-reverse;
+    align-items: center;
+    font-size: 45px;
+
+    .agricola-meeple {
+      margin-top: -16px;
+
+      &:last-of-type {
+        margin-top: 4px;
+      }
+    }
+  }
+
+  &[data-id='C146_WorkshopAssistant'] .resource-holder {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+  }
+
+  &[data-id='C146_WorkshopAssistant'] .resource-holder.wa-pairs {
+    display: grid;
+    grid-template-columns: repeat(4, max-content);
+    column-gap: 10px;
+    row-gap: 10px;
+
+    background: none;
+    border: none;
+    padding: 0;
+  }
+
+  &[data-id='C146_WorkshopAssistant'] .resource-holder.wa-pairs .subholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    background-color: rgba(255, 255, 255, 0.75);
+    border: 1px solid black;
+    border-radius: 6px;
+    padding: 2px 3px;
+  }
+
+  &[data-id='C146_WorkshopAssistant']
+    .resource-holder.wa-pairs
+    .subholder
+    .agricola-meeple {
+    margin: 2px;
+  }
+
+  /* Field cards */
+  &[data-id='B68_Beanfield'] .resource-holder,
+  &[data-id='B113_PatchCaregiver'] .resource-holder,
+  &[data-id='B141_FieldCaretaker'] .resource-holder,
+  &[data-id='C70_LettucePatch'] .resource-holder,
+  &[data-id='E69_MelonPatch'] .resource-holder,
+  &[data-id='E70_CropRotationField'] .resource-holder,
+  &[data-id='E72_ArtichokeField'] .resource-holder {
+    top: 20px;
+    left: 8px;
+    display: flex;
+    flex-flow: column-reverse;
+    align-items: center;
+
+    .agricola-meeple {
+      margin-top: -16px;
+
+      &:last-of-type {
+        margin-top: 4px;
+      }
+    }
+  }
+
+  /* Cards that farmers grow onto */
+  &[data-id='A10_WoodenShed'] .farmer-holder,
+  &[data-id='A21_FamilyFriendHome'] .farmer-holder,
+  &[data-id='A22_Telegram'] .farmer-holder,
+  &[data-id='A85_Homekeeper'] .farmer-holder,
+  &[data-id='A93_BedMaker'] .farmer-holder,
+  &[data-id='A127_Lodger'] .farmer-holder,
+  &[data-id='B10_Caravan'] .farmer-holder,
+  &[data-id='B21_HayloftBarn'] .farmer-holder,
+  &[data-id='B22_WalkingBoots'] .farmer-holder,
+  &[data-id='B92_LittleStickKnitter'] .farmer-holder,
+  &[data-id='B127_Seducer'] .farmer-holder,
+  &[data-id='C10_BunkBeds'] .farmer-holder,
+  &[data-id='C21_HeartofStone'] .farmer-holder,
+  &[data-id='C22_BasketChair'] .farmer-holder,
+  &[data-id='C85_DenBuilder'] .farmer-holder,
+  &[data-id='C92_AutumnMother'] .farmer-holder,
+  &[data-id='C127_Lover'] .farmer-holder,
+  &[data-id='D21_Recruitment'] .farmer-holder,
+  &[data-id='D22_WorkPermit'] .farmer-holder,
+  &[data-id='D85_Reader'] .farmer-holder,
+  &[data-id='D92_ChildOmbudsman'] .farmer-holder,
+  &[data-id='E92_FieldDoctor'] .farmer-holder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    background: none;
+    border: none;
+
+    &:not([data-n="0"]) {
+      #ebd-body:not(.mobile_version) & ~ .action-card {
+        filter: grayscale(75%);
+      }
+    }
+
+    .agricola-meeple {
+      transform: scale(1.5);
+
+      &.child {
+        transform: scale(1);
+      }
+    }
+  }
+
+  &[data-id='A20_DoubleTurnPlow'] .card-cost {
+    .card-cost-conditional + div {
+      margin-bottom: -21%;
+      text-align: left;
+      font-size: 25px;
+      padding-left: 10px;
+    }
+  }
+
+  &[data-id='A64_BarleyMill'] .card-cost,
+  &[data-id='C44_ChickenCoop'] .card-cost,
+  &[data-id='E52_Cubbyhole'] .card-cost {
+    .card-cost-fee-separator + div {
+      margin-bottom: -21%;
+      text-align: left;
+      font-size: 20px;
+      padding-left: 10px;
+    }
+
+    .card-cost-separator + div {
+      margin-top: -17%;
+      font-size: 20px;
+    }
+  }
+
+  &[data-id='D22_WorkPermit'] .player-card-resizable .player-card-inner .card-prerequisite .prerequisite-text,
+  &[data-id='E3_TeaTime'] .player-card-resizable .player-card-inner .card-prerequisite .prerequisite-text,
+  &[data-id='E62_SourDough'] .player-card-resizable .player-card-inner .card-prerequisite .prerequisite-text {
+    font-size: 11px;
+  }
+
+  &[data-id='B65_GrainDepot'] .player-card-resizable .player-card-inner .card-cost .card-cost-separator {
+    width: 65%;
+    top: -8%;
+    right: -30%;
+    margin-bottom: -26%;
+    transform: rotate(10deg);
+  }
+
+  &[data-id='B65_GrainDepot'] .player-card-resizable .player-card-inner .card-cost {
+    font-size: 20px;
+  }
+
+  &[data-id='C30_HalfTimberedHouse'] .player-card-resizable .player-card-inner .card-cost {
+    font-size: 19px;
+  }
+
+  &[data-id='A9_YoungAnimalMarket'] .player-card-resizable .player-card-inner .card-title,
+  &[data-id='C9_AutomaticWaterTrough'] .player-card-resizable .player-card-inner .card-title,
+  &[data-id='C14_StrawThatchedRoof'] .player-card-resizable .player-card-inner .card-title,
+  &[data-id='C22_BasketChair'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C30_HalfTimberedHouse'] .player-card-resizable .player-card-inner .card-title,
+  &[data-id='C64_CornSchnappsDistillery'] .player-card-resizable .player-card-inner .card-title,
+  &[data-id='D16_WoodenWheyBucket'] .player-card-resizable .player-card-inner .card-title {
+    font-size: 15px;
+  }
+
+  &[data-id='A21_FamilyFriendHome'] .player-card-resizable .player-card-inner .card-title,
+  &[data-id='A45_FireProtectionPond'] .player-card-resizable .player-card-inner .card-title,
+  &[data-id='E13_StoneHouseReconstruction'] .player-card-resizable .player-card-inner .card-title,
+  &[data-id='E136_AnimalHusbandryWorker'] .player-card-resizable .player-card-inner .card-title,
+  &[data-id='E168_AnimalTamersApprentice'] .player-card-resizable .player-card-inner .card-title {
+    font-size: 14px;
+  }
+
+  &[data-id='A22_Telegram'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='A23_StoneCompany'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='A27_OvenSite'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='A35_SwimmingClass'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='A40_PottersYard'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='A58_AsparagusKnife'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='A72_CalciumFertilizers'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='A77_Hod'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='A81_InterimStorage'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='A136_DrudgeryReeve'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B11_Feedyard'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B14_Hawktower'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B15_CarpentersBench'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B18_GrasslandHarrow'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B21_HayloftBarn'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B22_WalkingBoots'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B24_Lasso'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B27_Toolbox'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B34_SpecialFood'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B49_Scales'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B52_GrowingFarm'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B60_BrewingWater'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B76_Ceilings'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B81_Handcart'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B146_Illusionist'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C21_HeartofStone'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C23_JobContract'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C27_Blueprint'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C35_LanternHouse'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C39_StudioBoat'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C42_RavenousHunger'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C51_FishingNet'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C56_FeedFence'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C60_SmallPottersOven'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C81_MaterialHub'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C93_InnerDistrictsDirector'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C130_OutskirtsDirector'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C135_Constable'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='D13_Trowel'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='D22_WorkPermit'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='D24_BrotherlyLove'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='D26_CarpentersYard'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='D29_MuckRake'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='D33_SummerHouse'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='D68_SmallBasket'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='D74_RoyalWood'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='D82_HuntingTrophy'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='D146_Porter'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='D151_SpinDoctor'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E10_StrawHat'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E11_PettingZoo'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E17_SkimmerPlow'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E22_GuestRoom'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E27_PiggyBank'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E31_Upholstery'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E38_RodCollection'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E51_WhaleOil'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E52_Cubbyhole'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E56_RomanPot'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E59_CombandCutter'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E82_Profiteering'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E97_Beneficiary'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E123_ResourceHoarder'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E134_Omnifarmer'] .player-card-resizable .player-card-inner .card-desc {
+    font-size: 16px;
+  }
+
+  &[data-id='A25_Bassinet'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='A130_MummysBoy'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B31_PotteryYard'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B48_ForestStone'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B72_LoveforAgriculture'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C146_WorkshopAssistant'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='B149_OpenAirFarmer'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C75_Firewood'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='C150_ParrotBreeder'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='D165_PigStalker'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E28_Bookmark'] .player-card-resizable .player-card-inner .card-desc,
+  &[data-id='E81_AlchemistsLab'] .player-card-resizable .player-card-inner .card-desc {
+    font-size: 15px;
+  }
+
+  &[data-id='D51_Archway'] .player-card-resizable .player-card-inner .card-desc {
+    line-height: 16px;
+    font-size: 15px;
+  }
+
+  &[data-id='D96_Furnisher'] .player-card-resizable .player-card-inner .card-desc {
+    line-height: 15px;
+    font-size: 13px;
+  }
+
+  &[data-id="D75_WoodField"] {
+    .player-card-field-cell {
+      flex-flow: column;
+      row-gap: 5px;
+    }
+
+    .resource-holder {
+      display: flex;
+      flex-flow: row;
+
+      .subholder {
+        display: flex;
+        flex-flow: column-reverse;
+        align-items: center;
+
+        .agricola-meeple {
+          margin-top: -16px;
+
+          &:last-of-type {
+            margin-top: 4px;
+          }
+        }
+      }
+    }
+  }
+
+  &[data-id="E80_RockGarden"] {
+    .player-card-field-cell {
+      flex-flow: column;
+      row-gap: 5px;
+    }
+
+    .resource-holder {
+      display: flex;
+      flex-flow: row;
+
+      .subholder {
+        display: flex;
+        flex-flow: column-reverse;
+        align-items: center;
+
+        .agricola-meeple {
+          margin-top: -16px;
+
+          &:last-of-type {
+            margin-top: 4px;
+          }
+        }
+      }
+    }
+  }
+
+  &[data-id="E68_CherryOrchard"] {
+    .player-card-field-cell {
+      flex-flow: column;
+      row-gap: 5px;
+    }
+
+    .resource-holder {
+      display: flex;
+      flex-flow: row;
+
+      .subholder {
+        display: flex;
+        flex-flow: column-reverse;
+        align-items: center;
+
+        .agricola-meeple {
+          margin-top: -16px;
+
+          &:last-of-type {
+            margin-top: 4px;
+          }
+        }
+      }
+    }
+  }
+
+  /** Animal holder cards **/
+  .animal-holder {
+    font-size: 20px;
+  }
+
+  .animals-control-wrapper .animals-control {
+    bottom: -36px;
+  }
+
+  /** rulings icon **/
+  .player-card.has-rulings .card-desc {
+    position: relative;
+  }
+
+  .player-card.has-rulings .card-desc-scroller {
+    padding-right: 20px;
+    padding-bottom: 18px;
+  }
+
+  .card-rulings-icon {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-weight: 900;
+    font-size: 14px;
+    line-height: 1;
+
+    border: 2px solid rgba(0, 0, 0, 0.85);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+
+    cursor: pointer;
+    z-index: 999;
+  }
+
+  .notouch-device .card-rulings-icon:hover {
+    transform: scale(1.03);
+  }
+}

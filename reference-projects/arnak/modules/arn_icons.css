@@ -1,0 +1,268 @@
+.icon.car {
+    width: 74px; height: 75px;
+    background: url('../img/icons_css_sprite.png') -733px -707px;
+}
+
+.icon.coins {
+    width: 112px; height: 114px;
+    background: url('../img/icons_css_sprite.png') -810px -550px;
+}
+
+.icon.compass {
+    width: 112px; height: 114px;
+    background: url('../img/icons_css_sprite.png') -669px -498px;
+}
+
+.icon.handsize.counter {
+    width: 125px;
+    height: 114px;
+    transform: scale(0.4);
+    background: url(../img/icons_css_sprite.png) -811px -687px;
+}
+
+.travel-costs {
+    display: inline-flex;
+    transform: translate(0px, 12px);  /* margin just does not want to cooperate in this case */
+}
+
+.travel-costs .icon {
+    transform: scale(0.5);
+    transform-origin: bottom;
+    margin: -34px -16px;
+}
+
+.research-token {
+    position: absolute;
+    transform: scale(0.14);
+    transform-origin: top left;
+    filter: drop-shadow(20px 25px 12px black);
+    transition: left 1s, top 1s;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.research-glass.blue {
+    width: 177px; height: 224px;
+    background: url('../img/icons_css_sprite.png') -10px -10px;
+}
+
+.research-glass.green {
+    width: 177px; height: 224px;
+    background: url('../img/icons_css_sprite.png') -207px -10px;
+}
+
+.research-glass.red {
+    width: 177px; height: 224px;
+    background: url('../img/icons_css_sprite.png') -404px -10px;
+}
+
+.research-glass.yellow {
+    width: 177px; height: 224px;
+    background: url('../img/icons_css_sprite.png') -10px -254px;
+}
+.research-book.blue {
+    width: 189px; height: 189px;
+    background: url('../img/icons_css_sprite.png') -207px -254px;
+}
+
+.research-book.green {
+    width: 189px; height: 189px;
+    background: url('../img/icons_css_sprite.png') -601px -10px;
+}
+
+.research-book.red {
+    width: 189px; height: 189px;
+    background: url('../img/icons_css_sprite.png') -601px -219px;
+}
+
+.research-book.yellow {
+    width: 189px; height: 189px;
+    background: url('../img/icons_css_sprite.png') -10px -498px;
+}
+
+.counter.icon.guardian {
+    width: 105px; height: 82px;
+    background: url('../img/icons_css_sprite.png') -417px -707px;
+}
+
+.icon.idol_slot {
+    width: 130px; height: 158px;
+    background: url('../img/icons_css_sprite.png') -10px -707px;
+}
+
+.idol.back, .counter.idol {
+    /* idol back */
+    width: 130px; height: 160px;
+    background: url('../img/icons_css_sprite.png') -416px -254px;
+    clip-path: url(#idol-path);
+}
+
+.arnak-board .idol, .player-camp .idol {
+    clip-path: url(#idol-path);
+    transform: scale(0.35);
+    position: absolute;
+    pointer-events: none;
+}
+.player-camp .idol-wrap {
+    position: absolute;
+    filter: drop-shadow(3px 3px 3px black);
+    transition: top .5s, left .5s;
+}
+
+.arnak-board .idol {
+    left: 21px;
+    top: 53px;
+    z-index: 3;
+}
+.player-camp .idol.back {
+    transform: scale(0.43);
+}
+
+.idol ~ .idol.back {
+    left: 47px;
+    z-index: 1;
+}
+
+
+.idol.coins {
+    width: 130px; height: 160px;
+    background: url('../img/icons_css_sprite.png') -219px -498px;
+}
+
+.idol.compass {
+    width: 130px; height: 160px;
+    background: url('../img/icons_css_sprite.png') -369px -498px;
+}
+
+.idol.exile {
+    width: 130px; height: 160px;
+    background: url('../img/icons_css_sprite.png') -519px -498px;
+}
+
+.idol.refresh {
+    width: 130px; height: 160px;
+    background: url('../img/icons_css_sprite.png') -810px -10px;
+}
+
+.idol.tablet {
+    width: 130px; height: 160px;
+    background: url('../img/icons_css_sprite.png') -810px -190px;
+}
+
+.idol.upgrade {
+    width: 130px; height: 160px;
+    background: url('../img/icons_css_sprite.png') -810px -370px;
+}
+
+.icon.item {
+    width: 86px; height: 99px;
+    background: url('../img/icons_css_sprite.png') -960px -283px;
+}
+.idon.handsize {
+    width: 76px; height: 75px;
+    background: url('../img/icons_css_sprite.png') -542px -707px;
+}
+
+.icon.jewel {
+    width: 109px; height: 105px;
+    background: url('../img/icons_css_sprite.png') -288px -707px;
+}
+
+.icon.location.base {
+    width: 34px; height: 43px;
+    background: url('../img/icons_css_sprite.png') -601px -428px;
+}
+
+.icon.location.big {
+    width: 86px; height: 97px;
+    background: url('../img/icons_css_sprite.png') -960px -402px;
+}
+
+.icon.location.small {
+    width: 75px; height: 95px;
+    background: url('../img/icons_css_sprite.png') -960px -519px;
+}
+
+.icon.ship {
+    width: 76px; height: 75px;
+    background: url('../img/icons_css_sprite.png') -960px -748px;
+}
+
+.icon.tablet {
+    width: 86px; height: 110px;
+    background: url('../img/icons_css_sprite.png') -960px -10px;
+}
+
+.icon.plane {
+    width: 76px; height: 75px;
+    background: url('../img/icons_css_sprite.png') -542px -707px;
+}
+
+.icon.arrowhead {
+    width: 73px; height: 123px;
+    background: url('../img/icons_css_sprite.png') -960px -140px;
+}
+
+.icon.artifact {
+    width: 108px; height: 108px;
+    background: url('../img/icons_css_sprite.png') -160px -707px;
+}
+
+.icon.assistant {
+    width: 65px; height: 94px;
+    background: url('../img/icons_css_sprite.png') -960px -634px;
+}
+
+
+
+.icon.boot {
+    width: 75px; height: 75px;
+    background: url('../img/icons_css_sprite.png') -638px -707px;
+}
+
+.fly-res {
+    width: 100px;
+    height: 100px;
+    background: red;
+    z-index: 300;
+}
+
+
+
+/***  START BUTTON ICONS  ***/
+
+.action-button div {
+    display: inline-block;
+}
+
+#generalactions .action-button {
+    display: inline-flex;
+    align-items: center;
+}
+
+.action-button .icon {
+    transform: scale(0.4);
+    margin: -33px;
+}
+
+.action-button .icon.coins {
+    transform: scale(0.4);
+    margin: -33px;
+}
+
+.action-button .icon.plane {
+    transform: scale(0.7);
+    margin: -11px;
+}
+
+.action-button .icon.arrowhead {
+    margin: -36px -18px;
+}
+
+.action-button .arrow {
+    font-size: 36px;
+}
+
+.action-button .icon.tablet {
+    margin: -30px -19px;
+}

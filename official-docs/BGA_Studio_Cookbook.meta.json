@@ -1,0 +1,15 @@
+{
+  "title": "BGA Studio Cookbook",
+  "source_html": "BGA_Studio_Cookbook.html",
+  "clean_html": "BGA_Studio_Cookbook.html",
+  "url": "https://en.doc.boardgamearena.com/BGA_Studio_Cookbook",
+  "depth": 1,
+  "sha256_raw": "1d71bc5d2290491cab3f245623eb47ef5beb3cb9b17198a6a8bdcc89618d3262",
+  "sha256_clean": "dfb9cb7338365b84c80a58e5c00b06285818dc00107ce517177453ef080e43a3",
+  "word_count": 10398,
+  "code_block_count": 106,
+  "table_count": 9,
+  "image_count": 3,
+  "heading_count": 83,
+  "cleaned_at": "2026-07-06T06:38:18.270957+00:00"
+}

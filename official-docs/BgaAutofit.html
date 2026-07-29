@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>BgaAutofit - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-BgaAutofit rootpage-BgaAutofit action-view"><div class="article"><p><br/>
+</p><p><br/>
+</p><h2><span class="mw-headline" id="Overview">Overview</span></h2><p><b>bga-autofit</b> is a javascript component that you can use in your game interface to make text fit some fixed-size boxes.
+</p><p>To see how its work and access examples of source code (via browser dev tools) see
+<b><a class="external text" href="https://x.boardgamearena.net/data/game-libs/bga-autofit/1.x/demo/index.html" rel="nofollow">Demo</a></b>
+</p><h2><span class="mw-headline" id="Usage">Usage</span></h2><p>Load the lib:
+</p><pre>const BgaAutofit = await importEsmLib('bga-autofit', '1.x');
+</pre><p>This line should be placed on top of the JS file, before any class declaration.
+</p><pre>define([
+    "dojo","dojo/_base/declare",
+    "ebg/core/gamegui",
+    "ebg/counter",
+    getLibUrl('bga-autofit', '1.x'),
+],
+function (dojo, declare, gamegui, counter, BgaAutofit) { // note that the index of `BgaAutofit` must match the index of the define array
+</pre><p>At the end of your game setup:
+</p><pre>    BgaAutofit.init();
+</pre><p>On any HTML element with fixed size that contain text to be fitted into:
+</p><pre>    &lt;div class="my-class-for-fixed-size bga-autofit"&gt;${text}&lt;/div&gt;
+</pre><h2><span class="mw-headline" id="Versioning">Versioning</span></h2><p>The lib is using semver, so you can require 1.x to be sure to have the last fixes without risking a breaking change. Any breaking change will be noted on the Changelog section.
+</p><h2><span class="mw-headline" id="Using_with_TypeScript">Using with TypeScript</span></h2><p>If you use TypeScript and this lib, you can download the <b><a class="external text" href="https://x.boardgamearena.net/data/game-libs/bga-autofit/1.x/dist/bga-autofit.d.ts" rel="nofollow">d.ts</a></b> file to put in on your game folder to benefit from auto-completion. Depending on the way you build, you might need to remove the last line (the export instruction) to be able to use it.
+</p><pre>define([
+        "dojo",
+        "dojo/_base/declare",
+        "ebg/core/gamegui",
+        "ebg/counter",
+        "ebg/stock",
+        getLibUrl('bga-autofit', '1.x'),
+    ],
+function (dojo, declare, gamegui, counter, stock, BgaAutofit) {
+    (window as any).BgaAutofit = BgaAutofit; //trick
+    return declare("bgagame.reforest", ebg.core.gamegui, new Reforest());
+});
+</pre><h2><span class="mw-headline" id="Changelog">Changelog</span></h2><p><b>1.0.1</b>: fix: apply again autofit when an element is made visible
+</p></div></body>
+</html>

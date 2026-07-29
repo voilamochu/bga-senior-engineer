@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Game fonts: fonts directory - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Game_fonts_fonts_directory rootpage-Game_fonts_fonts_directory action-view"><div class="article"><p><br/>
+</p><h2><span class="mw-headline" id="Game_fonts">Game fonts</span></h2><p>You must upload in a `fonts` directory all fonts that you will use in your game interface. 
+</p><p>The you can use them by setting a font-family with the filename (note the dashes will be replaced by spaces), without needing to declare a `@font-face`.
+</p><h2><span class="mw-headline" id="Example">Example</span></h2><p>With a `custom-font.woff2` in the `fonts` directory:
+</p><pre>  .element-with-custom-font {
+    font-family: 'custom font';
+  }
+</pre><p>With a `custom-font-bold.woff2` in the `fonts` directory:
+</p><pre>  .element-with-custom-font-bold-solution1 {
+    font-family: 'custom font';
+    font-weight: bold;
+  }
+  .element-with-custom-font-bold-solution2 {
+    font-family: 'custom font bold';
+  }
+</pre><h2><span class="mw-headline" id="Debugging">Debugging</span></h2><p>In the DevTool console, write <code>document.getElementById('bga-auto-declared-font-faces')</code> to list the fonts that are preloaded by the framework.
+</p></div></body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "title": "Testing by developer",
+  "source_html": "Testing_by_developer.html",
+  "clean_html": "Testing_by_developer.html",
+  "url": "https://en.doc.boardgamearena.com/Testing_by_developer",
+  "depth": 1,
+  "sha256_raw": "15d5f04866d5ffcf8b989f65865535d34a5b725b4e4188b4900c01bf8c3860d9",
+  "sha256_clean": "3fdc0f333ea3aac6abcf539aa9fa26caf3f571ef4c5434d885e672c661b9c3a0",
+  "word_count": 879,
+  "code_block_count": 10,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 10,
+  "cleaned_at": "2026-07-06T06:38:19.869286+00:00"
+}

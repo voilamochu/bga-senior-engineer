@@ -1,0 +1,280 @@
+.ark-card.zoo-card.animal-card {
+    // MARK
+    & > .icon-token {
+        position: absolute;
+        left: 50%;
+        top: 25%;
+        transform: translateX(-50%);
+        background-color: #fffd;
+        box-shadow: 0px 0px 3px 6px #fffd;
+        border-radius: 4px;
+    }
+
+    .ark-card-wrapper {
+        background-position-x: #{2 * 100% / 6};
+
+        .ark-card-top {
+            width: 373px;
+            height: 297px;
+            background-size: 100%;
+            // background-image: url("img/animals.jpg");
+            // background-size: 1100% 1200%;
+
+            & > .arknova-meeple {
+                position: absolute;
+                right: 20px;
+                top: 213px;
+                width: 70px;
+                height: 70px;
+            }
+
+            .ark-card-top-left {
+                .animal-card-enclosure-cost {
+                    height: 130px;
+                    .animal-card-enclosure {
+                        height: 68px;
+                        background: #878787;
+                        min-width: 77px;
+                        border-top-left-radius: 8px;
+                        box-shadow: 0px 2px 11px 4px #2f2f2f;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        padding-left: 7px;
+                        box-sizing: border-box;
+
+                        $enclosureHeight: 48px;
+                        & > div {
+                            height: $enclosureHeight;
+                            font-family: "MyriadPro-Bold";
+                            font-size: 35px;
+                            color: white;
+                            line-height: 45px;
+                            text-align: center;
+                            margin: 0px 5px;
+
+                            &.icon-enclosure-regular,
+                            &.icon-enclosure-not-regular {
+                                width: #{$enclosureHeight / 200 * 230};
+                            }
+
+                            &.icon-enclosure-regular-rock,
+                            &.icon-enclosure-regular-water,
+                            &.icon-enclosure-regular-water-water,
+                            &.icon-enclosure-regular-rock-rock,
+                            &.icon-enclosure-regular-rock-water,
+                            &.icon-enclosure-not-regular-rock {
+                                width: #{$enclosureHeight / 200 * 358};
+                                padding-right: #{$enclosureHeight / 200 * 131};
+                                box-sizing: border-box;
+                            }
+
+                            &.icon-enclosure-not-regular,
+                            &.icon-enclosure-not-regular-rock {
+                                color: rgb(77, 12, 12);
+                            }
+
+                            &.icon-enclosure-special-large-bird-aviary {
+                                width: #{$enclosureHeight / 200 * 175};
+                                font-size: 22px;
+                                line-height: 32px;
+                            }
+                            &.icon-enclosure-special-reptile-house {
+                                width: #{$enclosureHeight / 200 * 141};
+                                font-size: 24px;
+                                line-height: 45px;
+                            }
+                            &.icon-enclosure-special-petting-zoo {
+                                width: #{$enclosureHeight / 200 * 244};
+                                font-size: 32px;
+                                line-height: 40px;
+                                text-align: right;
+                                padding-right: 10px;
+                                box-sizing: border-box;
+                            }
+                            &.icon-enclosure-special-aquarium {
+                                width: #{$enclosureHeight / 200 * 176};
+                                font-size: 32px;
+                                line-height: 40px;
+                                padding-right: 10px;
+                            }
+                        }
+                    }
+                    .animal-card-cost {
+                        margin-top: -1px;
+                        height: 62px;
+                        background: #878787;
+                        width: 77px;
+                        border-bottom-right-radius: 8px;
+                        box-shadow: 0px 2px 11px 4px #2f2f2f;
+                        clip-path: polygon(0% 0%, 100% 0%, 100% -15%, 200% -15%, 200% 120%, 0% 120%);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        padding-left: 7px;
+                        box-sizing: border-box;
+
+                        .icon-money {
+                            width: 50px;
+                            height: 50px;
+                            border: 2px solid white;
+                            border-radius: 15px;
+                            box-sizing: border-box;
+                            font-family: "MyriadPro-Bold";
+                            font-size: 33px;
+                            color: white;
+                            line-height: 42px;
+                            text-align: center;
+                            letter-spacing: -1px;
+                            text-indent: -1px;
+                        }
+
+                        .reduced-cost {
+                            display: none;
+                        }
+
+                        [data-reduced-cost="1"] &.reduced {
+                            .original-cost {
+                                position: relative;
+                                &::before {
+                                    content: "";
+                                    position: absolute;
+                                    left: -2px;
+                                    bottom: -2px;
+                                    top: -2px;
+                                    right: -2px;
+                                    border-radius: 15px;
+                                    background: linear-gradient(
+                                        135deg,
+                                        rgba(0, 0, 0, 0.4) 0%,
+                                        rgba(0, 0, 0, 0.4) 48%,
+                                        #cacaca 48.1%,
+                                        #cacaca 51.9%,
+                                        rgba(0, 0, 0, 0.4) 52%,
+                                        rgba(0, 0, 0, 0.4) 100%
+                                    );
+                                }
+                            }
+
+                            .reduced-cost {
+                                position: absolute;
+                                left: 71px;
+                                background: #878787;
+                                width: 68px;
+                                box-shadow: 2px 2px 2px 1px #2f2f2f;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                border-radius: 0px 6px 6px 0px;
+                                height: 62px;
+                            }
+                        }
+                    }
+
+                    &.wide {
+                        .animal-card-enclosure {
+                            min-width: 110px;
+                            border-bottom-right-radius: 8px;
+                        }
+
+                        .animal-card-cost {
+                            clip-path: polygon(0% 0%, 250% 0%, 250% 120%, 0% 120%);
+                        }
+                    }
+                }
+            }
+        }
+
+        .ark-card-middle {
+            height: 50px;
+            background: rgb(235, 138, 0);
+            background: linear-gradient(
+                90deg,
+                rgba(235, 138, 0, 1) 15%,
+                rgba(252, 189, 26, 1) 50%,
+                rgba(235, 138, 0, 1) 85%
+            );
+        }
+
+        .ark-card-bottom {
+            height: 167px;
+            padding: 6px 15px 0px;
+
+            .zoo-card-bonuses {
+                height: 167px;
+            }
+
+            .animal-ability {
+                .animal-ability-title {
+                    font-family: "Espera";
+                    color: #070002;
+                    font-size: 19px;
+                }
+
+                .animal-ability-desc {
+                    font-family: "MyriadPro-Regular";
+                    font-size: 17px;
+                    margin: 4px 0px;
+
+                    .glide-icons {
+                        font-size: 22px;
+                    }
+                }
+            }
+        }
+    }
+
+    [data-card-desc="0"] &:not(.tooltip) {
+        .ark-card-wrapper {
+            .ark-card-middle {
+                margin-top: -10px;
+                margin-bottom: -10px;
+                height: 70px;
+                .ark-card-number {
+                    display: none;
+                }
+
+                .ark-card-title-wrapper {
+                    padding: 3px 20px 1px;
+
+                    .ark-card-title {
+                        font-size: 32px;
+                        line-height: 31px;
+                        height: 100%;
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+
+                    .ark-card-subtitle {
+                        display: none;
+                    }
+                }
+            }
+
+            .ark-card-bottom {
+                .ark-card-wave {
+                    margin-top: 0px;
+                }
+                .animal-ability {
+                    .animal-ability-title {
+                        font-size: 32px;
+                        margin-top: 10px;
+                    }
+
+                    .animal-ability-desc {
+                        display: none;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@each $cId in $animalCards {
+    $i: index($animalCards, $cId) - 1;
+    .zoo-card.animal-card[data-id="#{$cId}"] .ark-card-top {
+        background-image: url("img/animals/#{$cId}.jpg");
+    }
+}

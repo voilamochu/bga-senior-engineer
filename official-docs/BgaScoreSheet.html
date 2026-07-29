@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>BgaScoreSheet - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-BgaScoreSheet rootpage-BgaScoreSheet action-view"><div class="article"><p><br/>
+</p><h2><span class="mw-headline" id="Overview">Overview</span></h2><p><b>bga-score-sheet</b> is a javascript component to help you display an animated score sheet at the end of the game.
+</p><p>For comprehensive API docs see
+<b><a class="external text" href="https://x.boardgamearena.net/data/game-libs/bga-score-sheet/1.x/docs/index.html" rel="nofollow">Doc</a></b>
+</p><h2><span class="mw-headline" id="Usage">Usage</span></h2><p>Load the lib:
+</p><pre>const BgaScoreSheet = await importEsmLib('bga-score-sheet', '1.x');
+</pre><p>This line should be placed on top of the JS file, before any class declaration.
+</p><pre>define([
+    "dojo","dojo/_base/declare",
+    "ebg/core/gamegui",
+    "ebg/counter",
+    getLibUrl('bga-score-sheet', '1.x'),
+],
+function (dojo, declare, gamegui, counter, BgaScoreSheet) { // note that the index of `BgaScoreSheet` must match the index of the define array
+</pre><p>At the end of your game setup:
+</p><pre>this.scoreSheet = new BgaScoreSheet.ScoreSheet(
+    document.getElementById(`my-score-sheet`), // an empty div on your template to place the score sheet on
+    {
+      animationsActive: () =&gt; this.bga.gameui.bgaAnimationsActive(), // so the animation doesn't trigger on replay fast mode
+      playerNameWidth: 80,
+      playerNameHeight: 30,
+      entryLabelWidth: 120,
+      entryLabelHeight: 20,
+      classes: 'score-sheet-background',
+      players: gamedatas.players,
+      entries: [
+        {
+          property: 'conquest-cards',
+          label: _('Conquest cards'),
+          labelClasses: 'entries-label',
+        },
+        {
+          property: 'politics-cards',
+          label: _('Politics cards'),
+          labelClasses: 'entries-label',
+        },
+        {
+          property: 'diplomacy-cards',
+          label: _('Diplomacy cards'),
+          labelClasses: 'entries-label',
+        },
+        {
+          property: 'total',
+          label: _('Total'),
+          labelClasses: 'entries-label',
+          scoresClasses: 'total',
+          width: 80,
+          height: 40,
+        },
+      ],
+      scores: gamedatas.endScores, // to defined if the game state is 99, else null, so the score displays directly on reload when the game is ended. If unset, the score sheet will be hidden by default.
+      onScoreDisplayed: (property, playerId, score) =&gt; { // if you want to do something when a score is revealed
+        if (property === 'total') {
+          this.bga.playerPanels.getScoreCounter[playerId].setValue(score);
+        }
+      },
+    }
+  );    
+</pre><p>On the notification sending the end score details (supposing you use bgaSetupPromiseNotifications for async notifs) :
+</p><pre>    async notif_endScores(args: NotifEndScoresArgs) {
+        // setting scores will make the score sheet visible if it isn't already
+        await this.scoreSheet.setScores(args.endScores, {
+            startBy: this.bga.players.getCurrentPlayerId()
+        });
+    }
+</pre><p>The endScores object sent on the notification should look like this :
+</p><pre>function getEndScores(): array {
+  // this would be filled dynamically on your game, but should have the shape of this static example
+  $endScores = [
+    156463 =&gt; [ // key is player id
+      'conquest-cards' =&gt; 18, // the score code must match the entry name
+      'politics-cards' =&gt; 4,
+      'diplomacy-cards' =&gt; 12,
+      'total' =&gt; 34
+    ],
+    278971 =&gt; [
+      'conquest-cards' =&gt; 31,
+      'politics-cards' =&gt; 7,
+      'diplomacy-cards' =&gt; 5,
+      'total'=&gt; 41
+    ],
+  ];
+  return $endScores;
+}
+
+// on your end score state
+function stEndScore(): void {
+  $this-&gt;bga-&gt;notify-&gt;all('endScores', '', [ 'endScores' =&gt; $this-&gt;getEndScores() ]);
+}
+
+// to display the end scores on refresh, when the game is already over
+function getAllDatas(): array {
+  // all your setup here
+
+  $isEndScore = intval($this-&gt;gamestate-&gt;state_id()) &gt;= ST_END_SCORE;
+  $result['endScores'] = $isEndScore ? $this-&gt;getEndScores() : null;
+}
+</pre><h2><span class="mw-headline" id="Versioning">Versioning</span></h2><p>The lib is using semver, so you can require 1.x to be sure to have the last fixes without risking a breaking change. Any breaking change will be noted on the Changelog section.
+</p><h2><span class="mw-headline" id="Using_with_TypeScript">Using with TypeScript</span></h2><p>If you use TypeScript and this lib, you can download the <b><a class="external text" href="https://x.boardgamearena.net/data/game-libs/bga-score-sheet/1.x/dist/bga-score-sheet.d.ts" rel="nofollow">d.ts</a></b> file to put in on your game folder to benefit from auto-completion. Depending on the way you build, you might need to remove the last line (the export instruction) to be able to use it.
+</p><h2><span class="mw-headline" id="Changelog">Changelog</span></h2><p><b>1.0.0</b>: Initial version
+</p></div></body>
+</html>

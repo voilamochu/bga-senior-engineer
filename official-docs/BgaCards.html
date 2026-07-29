@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>BgaCards - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-BgaCards rootpage-BgaCards action-view"><div class="article"><p><br/>
+</p><p><br/>
+</p><h2><span class="mw-headline" id="Overview">Overview</span></h2><p><b>bga-cards</b> is a javascript component to display cards.
+</p><p>The game Frenchtarot is an example of usage (with JS), or Verso (with TypeScript).
+</p><p>To see how its work and access examples of source code (via browser dev tools) see
+<b><a class="external text" href="https://x.boardgamearena.net/data/game-libs/bga-cards/1.x/demo/index.html" rel="nofollow">Demo</a></b>
+</p><h2><span class="mw-headline" id="Usage">Usage</span></h2><p>Load the library:
+</p><pre>const BgaAnimations = await importEsmLib('bga-animations', '1.x'); // the library uses bga-animations so this is required!
+const BgaCards = await importEsmLib('bga-cards', '1.x');
+</pre><p>This line should be placed on top of the JS file, before any class declaration.
+</p><pre>define([
+    "dojo","dojo/_base/declare",
+    "ebg/core/gamegui",
+    "ebg/counter",
+    getLibUrl('bga-animations', '1.x'), // the library uses bga-animations so this is required!
+    getLibUrl('bga-cards', '1.x'),
+],
+function (dojo, declare, gamegui, counter, BgaAnimations, BgaCards) { // note that the index of `BgaAnimations` must match the index of the define array
+</pre><p>In your game setup:
+</p><pre>        // create the animation manager, and bind it to the `gameui.bgaAnimationsActive()` function
+        this.animationManager = new BgaAnimations.Manager({
+            animationsActive: () =&gt; this.bga.gameui.bgaAnimationsActive(),
+        });
+
+        // create the card manager
+        this.cardsManager = new BgaCards.Manager({
+            animationManager: this.animationManager,
+            type: 'mygame-card',
+            getId: (card) =&gt; card.id,
+            setupFrontDiv: (card, div) =&gt; {
+                div.style.background = 'blue';
+                this.bga.gameui.addTooltipHtml(div.id, `tooltip of ${card.type}`);
+            },
+        });
+</pre><p>Only set up an animation manager if you don't already have one, otherwise re-use the same one.
+</p><pre>    setup: function (gamedatas) {
+        // ...
+
+        // create the stock, in the game setup
+        this.cardStock = new BgaCards.LineStock(this.cardsManager, document.getElementById('card-stock'));
+        this.cardStock.addCards(gamedatas.cards); // cards should be something like [{ id: 1, type: 3, type_arg: 2, location: 'table', location_arg: 0 }] 
+      
+   }
+   notif_revealNewCards: async function(args) {
+        await this.cardStock.addCards(args.newCards); // similar form as above
+   }
+
+</pre><p>Look at the demo page and the demo source code for a list of all possibilities!
+</p><p><br/>
+</p><h2><span class="mw-headline" id="Random_Observations">Random Observations</span></h2><h3><span class="mw-headline" id="Sprite_Markup">Sprite Markup</span></h3><p>If you use the stock component, the card images won't work out of the box, you have to add sprite markup manually, it can be done easily in the card manager constructor:
+</p><pre>       setupFrontDiv: (card, div) =&gt; {
+          // ...
+         div.style.backgroundPositionX = `calc(100% / 14 * (${card.type_arg} - 2))`; // 14 is the number of columns in stock image minus 1
+         div.style.backgroundPositionY = `calc(100% / 3 * (${card.type} - 1))`; // 3 is the number of rows in stock image minus 1
+</pre><p>If you prefer to use your own CSS, you can mark it up with data attributes instead (and do the positioning using CSS):
+</p><pre>       setupFrontDiv: (card, div) =&gt; {
+         div.dataset.type = card.type; // suit 1..4
+         div.dataset.typeArg = card.type_arg; // value 2..14
+</pre><h3><span class="mw-headline" id="Card_faces">Card faces</span></h3><p>This component supports two-faced cards, so you can do flip animations (mostly). To take advantage of that you have to define the card back also using setupBackDiv in the manager.
+Beware that the function that defines what face is up is actually called isCardVisible (which is not confusing at all), and you redefine it to return a function which determines the side dynamically.
+By default this function is defined as: 
+</p><pre>  isCardVisible: (card) =&gt; card.type
+</pre><p>which is also super non-intuitive. I suggest always defining a custom function for this (which will likely just be isCardVisible: () =&gt; true), except for something like BgaCards.Deck.
+</p><h3><span class="mw-headline" id="Void_Stock">Void Stock</span></h3><p>As of 1.0.7 VoidStock still lacks some animations such as shrink and fadeOut, however the same can be achieved without VoidStock by just providing animation settings in removeCards methods, i.e.:
+</p><pre>     await this.lineStock.removeCards(cards, {
+       fadeOut: true,
+       slideTo: $(`otherhand_${playerId}`),
+     });
+</pre><h3><span class="mw-headline" id="Type_casting_from_PHP_Deck">Type casting from PHP Deck</span></h3><p>You would think you can just use the database method to get cards from Deck and send this to the UI and use it in bga-cards? No, it's not that easy.
+</p><p>1) The default db accessor creates a map object rather than an array, which does not work with addCards. 
+Let's say you do this in getAllDatas in PHP:
+</p><pre>       // Cards in player hand
+       $result['hand'] = $this-&gt;cards-&gt;getCardsInLocation('hand', $current_player_id);
+</pre><p>In .js you have to convert this to an array, i.e.:
+</p><pre>     this.handStock.addCards(Object.values(this.gamedatas.hand));
+</pre><p>OR you can do thi in PHP instead (don't need both):
+</p><pre>     $result['hand'] =  array_values($this-&gt;cards-&gt;getCardsInLocation('hand', $current_player_id));
+</pre><p>2) Some of the bga-cards methods, most notably BgaCards.sort, assume fields (such as 'type') are integers, but if sent by PHP, like in the example above, they are strings (even worse, sometimes strings and sometimes integers).
+If this is the ONLY problem (i.e. sort) you can get away by making your own sort function, otherwise you would have to make an object converter and apply it to all objects sent from notifications and getAllDatas.
+See the hearts tutorial for helper method examples (i.e. find the method remapToBgaCard).
+</p><h3><span class="mw-headline" id="Asynchronicity">Asynchronicity</span></h3><p>It's not immediately obvious but many functions that add or remove cards are async (i.e. return Promise), that means not only do you have to wait (or chain) them if running one after another, you also have
+to be aware of residual effects of promises when using these methods in setup(), onEnteringState() and so on.
+For example addCards is async while setSelectableCards is not. So if you add cards to your "hand" in the setup method, and try to set what is selectable in onEnteringState - that won't work properly, 
+unless you also promisify the call to setSelectableCards using setTimeout.
+</p><h2><span class="mw-headline" id="Versioning">Versioning</span></h2><p>The library is using semver, so you can require 1.x to be sure to have the latest fixes without risking a breaking change. Any breaking change will be noted in the Changelog section.
+</p><h2><span class="mw-headline" id="Using_with_TypeScript">Using with TypeScript</span></h2><p>If you use TypeScript and this library, you can download the <b><a class="external text" href="https://x.boardgamearena.net/data/game-libs/bga-cards/1.x/dist/bga-cards.d.ts" rel="nofollow">d.ts</a></b> file to put in your game folder to benefit from auto-completion. Depending on the way you build, you might need to remove the last line (the export instruction) to be able to use it.
+</p><pre>define([
+        "dojo",
+        "dojo/_base/declare",
+        "ebg/core/gamegui",
+        getLibUrl('bga-animations', '1.x'),
+        getLibUrl('bga-cards', '1.x'),
+    ],
+function (dojo, declare, gamegui, BgaAnimations, BgaCards) {
+    (window as any).BgaAnimations = BgaAnimations; //trick
+    (window as any).BgaCards = BgaCards; 
+    return declare("bgagame.reforest", ebg.core.gamegui, new Reforest());
+});
+</pre><h2><span class="mw-headline" id="Changelog">Changelog</span></h2><p><b>1.0.14</b>: more logs for card element not matching a card / accept keyed objects in addition to arrays on inputs
+</p><p><b>1.0.12</b>: fix duplication when adding a card to another slot of the same stock
+</p><p><b>1.0.10</b>: remove wrong required settings from GridStockSettings / demo of moving a card inside a slot stock with addCard / prevent selecting multiple times the same card programmatically / fix getLastPlayedCardStyle reading settings?.selectedCardStyle
+</p><p><b>1.0.8</b>: fix slot &amp; card selection override
+</p><p><b>1.0.6</b>: fix autoPlace with VoidStock
+</p><p><b>1.0.4</b>: fix error on emptyHandMessage not defined
+</p><p><b>1.0.2</b>: fix selection style override
+</p><p><b>1.0.0</b>: Initial version
+</p></div></body>
+</html>

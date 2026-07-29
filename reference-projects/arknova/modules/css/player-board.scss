@@ -1,0 +1,1215 @@
+$cellWidth: 22.6px;
+$cellHeight: 1.732050808 * $cellWidth;
+$zooMapWidth: 28 * $cellWidth;
+$zooMapHeight: 14 * $cellHeight;
+$zooMapSheetMargin: 15px;
+$zooMapGrassMargin: 15px;
+$zooMapGrassInnerMargin: 14px;
+
+[data-player-boards-layout="0"] #arknova-main-container {
+    .ark-player-board-resizable:not(.active),
+    .player-board-cards:not(.active),
+    .player-board-action-cards-resizable:not(.active) {
+        display: none;
+    }
+}
+
+.worker-counter-container {
+    font-family: "MyriadPro-Bold";
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+
+    span::after {
+        content: " x ";
+        margin-right: 3px;
+    }
+}
+
+.kept-bonus-container {
+    font-size: 12px;
+    &:not(:empty) {
+        margin-top: 5px;
+        border-top: 1px solid black;
+        display: flex;
+        justify-content: center;
+        padding-top: 5px;
+    }
+}
+
+.ark-player-board-resizable {
+    position: relative;
+    grid-row-end: span 2;
+    width: calc(var(--arkNovaLeftColumnScale) * 926px);
+    height: calc(var(--arkNovaLeftColumnScale) * 648px);
+
+    [data-player-boards-layout="1"] & ~ .ark-player-board-resizable {
+        margin-top: 20px;
+    }
+
+    .ark-player-board {
+        width: 926px;
+        height: 648px;
+        transform: scale(var(--arkNovaLeftColumnScale));
+        transform-origin: top left;
+
+        padding: 5px;
+        display: flex;
+        flex-flow: row wrap;
+
+        .zoo-map {
+            display: flex;
+            position: relative;
+
+            .map-infos {
+                position: absolute;
+                z-index: 3;
+                top: -10px;
+                left: -5px;
+                width: 162px;
+                height: 167px;
+                background-image: url("img/notebook.png");
+                background-size: 100% auto;
+                background-repeat: no-repeat;
+                font-family: "Permanent Marker", cursive;
+                box-sizing: border-box;
+
+                .player-infos {
+                    height: 106px;
+                    padding: 18px 0px 0px 0px;
+                    width: 160px;
+                    text-align: center;
+                    display: flex;
+                    flex-flow: column;
+
+                    .player-board-name {
+                        margin: 0px 15px;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+
+                        [data-player-boards-layout="1"] & {
+                            margin: 0px;
+                        }
+                    }
+                }
+
+                .prev-player-board,
+                .next-player-board {
+                    position: absolute;
+                    width: 26px;
+                    cursor: pointer;
+                    top: 0;
+                    height: 55px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-weight: bold;
+                    font-size: 20px;
+
+                    [data-player-boards-layout="1"] & {
+                        display: none;
+                    }
+                }
+
+                .next-player-board {
+                    right: 0px;
+                }
+
+                .map-desc {
+                    font-family: "Caveat";
+                    font-size: 17px;
+                    color: #1f49ac;
+                    font-weight: bold;
+                    flex-grow: 1;
+                    display: flex;
+                    justify-content: space-around;
+                    align-items: end;
+
+                    .icon-container-tower {
+                        font-size: 0.8em;
+                    }
+                    .icon-container-gates {
+                        font-size: 0.9em;
+                    }
+                    .icon-container-lake {
+                        font-size: 1.2em;
+                    }
+                    .icon-container-harbor {
+                        font-size: 0.8em;
+                    }
+                    .icon-container-restaurant {
+                        font-size: 0.8em;
+                    }
+                    .icon-container-institute {
+                        font-size: 0.8em;
+                    }
+                    .icon-container-hollywood {
+                        font-size: 1em;
+                    }
+                }
+
+                .map-name {
+                    height: 22px;
+                    font-family: "MyriadPro-Bold";
+                    margin-left: 11px;
+                    font-size: 16px;
+                    color: #313131;
+                    padding: 4px 4px 2px;
+                }
+
+                .player-reserve {
+                    display: flex;
+                }
+
+                & > .help-marker {
+                    background: rgba(117, 117, 117, 0.8);
+                    border-radius: 50%;
+                    position: absolute;
+                    left: auto;
+                    top: auto;
+                    right: 6px;
+                    bottom: 18px;
+                    opacity: 1 !important;
+                    width: 18px;
+                    height: 18px;
+
+                    svg {
+                        width: 18px;
+                        height: 18px;
+                    }
+                }
+            }
+
+            .zoo-map-bonus-spaces {
+                width: 120px;
+                background-color: #eee4d3;
+                background-image:
+                    linear-gradient(#918884 0.05rem, transparent 0.05rem),
+                    linear-gradient(90deg, #918884 0.05rem, transparent 0.05rem);
+                background-size: 1rem 1rem;
+                background-position: -0.2rem -0.5rem;
+                position: relative;
+                z-index: 2;
+                margin: 130px -14px 6px 0px;
+                padding: 0px 10px;
+                padding-top: 20px;
+                box-shadow: 1px 1px 6px black;
+
+                .bonus-spaces-income,
+                .bonus-spaces-immediate {
+                    padding: 2px 5px;
+                    background: rgba(255, 255, 255, 0.8);
+                    border: 2px solid black;
+                    border-radius: 8px;
+                    position: relative;
+                    margin-right: 9px;
+                    // display: flex;
+                    // flex-flow: column;
+                    // align-items: center;
+
+                    & > .arknova-icon {
+                        position: absolute;
+                        width: 34px;
+                        height: 72px;
+                        right: -17px;
+                        top: calc(50% - 36px);
+                    }
+
+                    .bonus-space {
+                        margin: 4px 2px;
+                        display: flex;
+
+                        .cube-holder {
+                            border: 3px solid transparent;
+                            border-radius: 8px 0 0 8px;
+                            flex-shrink: 0;
+                            width: 26px;
+                            height: 28px;
+                            margin-top: 5px;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                        }
+
+                        .arknova-bonus-container {
+                            display: block;
+                        }
+                    }
+
+                    &.preview .bonus-space {
+                        .cube-holder {
+                            background: #bda2c5;
+                            border: 3px solid #714078;
+                            border-right: none;
+                        }
+                    }
+                }
+
+                .icon-place-cube {
+                    width: 39px;
+                    height: 47px;
+                    float: right;
+                    z-index: 3;
+                    position: relative;
+                    margin-top: -19px;
+                    margin-right: -4px;
+                }
+
+                .bonus-spaces-immediate {
+                    margin-top: 8px;
+
+                    & > .arknova-icon {
+                        height: 36px;
+                        top: calc(50% - 18px);
+                    }
+
+                    .bonus-space {
+                        .cube-holder {
+                            border: 3px solid transparent;
+                            border-radius: 9px;
+                            width: 28px;
+                            margin-top: 6px;
+                        }
+                    }
+
+                    &.preview .bonus-space {
+                        .cube-holder {
+                            border: 3px solid #4f4c4c;
+                            background: #fff64c;
+                            margin-right: -7px;
+                        }
+                    }
+                }
+
+                .zoo-map-workers {
+                    padding: 3px 1px;
+                    background: rgba(242, 136, 136, 0.8);
+                    border: 2px solid black;
+                    border-radius: 8px;
+                    position: relative;
+                    display: flex;
+                    margin: 5px 0px;
+
+                    .worker-space {
+                        width: 40px;
+                        height: 42px;
+                        position: relative;
+                        display: flex;
+                        justify-content: center;
+                        align-items: flex-end;
+                        font-size: 0.5em;
+
+                        .icon-bordered-worker.icon-background {
+                            position: absolute;
+                            left: 1px;
+                            top: -4px;
+                            width: 35px;
+                            height: 40px;
+                            opacity: 0.6;
+                        }
+
+                        .space-counter {
+                            width: 10px;
+                            height: 10px;
+                            background: white;
+                            border-radius: 50%;
+                            position: absolute;
+                            left: 14px;
+                            top: 3px;
+                            font-family: "MyriadPro-Bold";
+                            text-align: center;
+                            font-size: 1em;
+                            line-height: 1.4em;
+                        }
+
+                        .worker-holder {
+                            position: absolute;
+                            left: 1px;
+                            top: 0px;
+                            width: 36px;
+                            height: 36px;
+                            font-size: 18px;
+                            transition: top 0.5s;
+                        }
+                    }
+
+                    &:hover {
+                        .worker-space .worker-holder {
+                            top: -20px;
+                        }
+                    }
+                }
+            }
+
+            .zoo-map-association {
+                // background-color: #eee4d3;
+                // background-image: linear-gradient(#918884 0.05rem, transparent 0.05rem),
+                //     linear-gradient(90deg, #918884 0.05rem, transparent 0.05rem);
+                // background-size: 1rem 1rem;
+                background-image: url("img/association-player-board.jpg");
+                background-size: 100%;
+                position: relative;
+                z-index: 2;
+                margin: 10px 0px 6px -17px;
+                padding: 8px 9px;
+                box-shadow: 1px 1px 6px black;
+
+                &::before {
+                    content: "";
+                    display: block;
+                    width: 15px;
+                    height: 13px;
+                    background: #ac9e89;
+                    position: absolute;
+                    top: 1px;
+                    left: -2px;
+                    transform: rotate(-4deg) skewX(7deg);
+                    clip-path: polygon(0% 0%, 100% 0%, 0% 100%);
+                }
+
+                .zoo-map-partner-zoos,
+                .zoo-map-universities {
+                    padding: 4px 7px;
+                    // background: rgba(124, 207, 239, 0.8);
+                    // border: 2px solid black;
+                    // border-radius: 8px;
+                    position: relative;
+                }
+
+                .zoo-map-partner-zoos {
+                    // background: linear-gradient(rgba(212, 159, 197, 0.8) 50%, rgba(124, 207, 239, 0.8) 50%);
+                    // background-size: 100% 100%;
+
+                    .partner-zoo-space {
+                        width: 85px;
+                        height: 60px;
+                        padding-bottom: 9px;
+                        position: relative;
+                        display: flex;
+                        justify-content: center;
+                        align-items: flex-end;
+                        font-size: 0.7em;
+                        margin: 10px 0px;
+                        &:first-child {
+                            margin-top: 1px;
+                        }
+                        &:last-child {
+                            margin-bottom: 1px;
+                        }
+
+                        .partner-zoo-holder {
+                            position: absolute;
+                            left: -2px;
+                            top: -3px;
+                            font-size: 20px;
+                        }
+
+                        .icon-partner-zoo.icon-background {
+                            display: none;
+                            // position: absolute;
+                            // left: 0;
+                            // top: 0;
+                            // width: 85px;
+                            // height: 70px;
+                            // filter: brightness(60%);
+                            // opacity: 0.4;
+                        }
+
+                        .space-counter {
+                            display: none;
+                            // width: 12px;
+                            // height: 12px;
+                            // background: white;
+                            // border-radius: 50%;
+                            // position: absolute;
+                            // left: 37px;
+                            // top: 14px;
+                            // font-family: "MyriadPro-Bold";
+                            // line-height: 11px;
+                            // text-align: center;
+                        }
+                    }
+                }
+
+                .zoo-map-universities {
+                    margin-top: 10px;
+                    .fac-space {
+                        width: 85px;
+                        height: 65px;
+                        padding-bottom: 5px;
+                        position: relative;
+                        display: flex;
+                        justify-content: center;
+                        align-items: flex-end;
+                        font-size: 0.7em;
+                        margin: 8px 0px;
+
+                        .fac-holder {
+                            position: absolute;
+                            left: -12px;
+                            top: -7px;
+                            font-size: 22px;
+                        }
+
+                        .icon-fac.icon-background {
+                            display: none;
+                            // position: absolute;
+                            // left: 1px;
+                            // top: 0;
+                            // width: 83px;
+                            // height: 70px;
+                            // filter: brightness(40%);
+                            // opacity: 0.4;
+                        }
+
+                        .space-counter {
+                            display: none;
+                            // width: 12px;
+                            // height: 12px;
+                            // background: white;
+                            // border-radius: 50%;
+                            // position: absolute;
+                            // left: 37px;
+                            // top: 10px;
+                            // font-family: "MyriadPro-Bold";
+                            // line-height: 11px;
+                            // text-align: center;
+                        }
+                    }
+                }
+
+                .bonus-link {
+                    &.fulfilled {
+                        display: none;
+                    }
+
+                    position: absolute;
+                    width: 64px;
+                    height: 250px;
+                    border-radius: 50%;
+                    border: 3px solid #251d57;
+                    clip-path: polygon(-50% -2%, 35px -2%, 35px 102%, -50% 102%);
+                    left: 0px;
+                    display: flex;
+                    justify-content: flex-start;
+                    align-items: center;
+                    pointer-events: none;
+                    &::before,
+                    &::after {
+                        content: "";
+                        display: block;
+                        position: absolute;
+                        width: 6px;
+                        height: 6px;
+                        background: #251d57;
+                        left: 26px;
+                        top: -4px;
+                        border-radius: 50%;
+                    }
+                    &::after {
+                        top: 248px;
+                    }
+
+                    .arknova-bonus-container {
+                        margin-left: -21px;
+                        font-size: 0.8em;
+                        pointer-events: all;
+                    }
+
+                    &.link-1 {
+                        bottom: 60px;
+                    }
+
+                    &.link-2 {
+                        bottom: 142px;
+                        clip-path: polygon(150% -2%, 32px -2%, 32px 102%, 150% 102%);
+                        justify-content: flex-end;
+                        left: 47px;
+                        &::before,
+                        &::after {
+                            left: 29px;
+                        }
+                        .arknova-bonus-container {
+                            margin-right: -16px;
+                        }
+                    }
+
+                    &.link-3 {
+                        bottom: 220px;
+                    }
+                }
+            }
+
+            .zoo-map-board {
+                width: $zooMapWidth + 2 * ($zooMapSheetMargin + $zooMapGrassMargin);
+                height: $zooMapHeight + 2 * ($zooMapSheetMargin + $zooMapGrassMargin);
+                padding: 5px;
+                box-sizing: border-box;
+                background-image: url("img/sheet_background.jpg");
+                background-size: cover;
+                box-shadow: 1px 1px 13px -1px black;
+
+                .full-map-bonus {
+                    position: absolute;
+                    right: 114px;
+                    bottom: 10px;
+                    background: #d0cdcde5;
+                    padding: 4px 6px;
+                    border-radius: 12px 0px 0px 12px;
+                    border: 2px solid black;
+                    font-size: 13px;
+                }
+
+                .buildings-helper {
+                    position: absolute;
+                    width: 100px;
+                    height: 581px;
+                    box-shadow: 1px 1px 5px -1px black;
+                    background-image: url("img/buildings-help.jpg");
+                    background-size: 100% auto;
+                    border: 2px solid black;
+                    border-radius: 7px;
+                    border-top-left-radius: 0px;
+
+                    top: 13px;
+                    right: 8px;
+                    z-index: 0;
+
+                    [data-marine="1"] & {
+                        background-image: url("img/buildings-help-marine.jpg");
+                    }
+
+                    &.closedAnim {
+                        animation-duration: 0.8s;
+                        animation-name: slideout;
+                        animation-fill-mode: forwards;
+                        @keyframes slideout {
+                            0% {
+                                right: 8px;
+                                z-index: 14;
+                            }
+                            49% {
+                                z-index: 14;
+                            }
+                            50% {
+                                right: 120px;
+                                z-index: 0;
+                            }
+                            100% {
+                                right: 8px;
+                                z-index: 0;
+                            }
+                        }
+                    }
+
+                    &.open {
+                        animation-duration: 0.8s;
+                        animation-name: slidein;
+                        animation-fill-mode: forwards;
+
+                        @keyframes slidein {
+                            0% {
+                                right: 8px;
+                                z-index: 0;
+                            }
+                            49% {
+                                z-index: 0;
+                            }
+                            50% {
+                                right: 120px;
+                                z-index: 14;
+                            }
+
+                            100% {
+                                right: 8px;
+                                z-index: 14;
+                            }
+                        }
+                    }
+
+                    .buildings-helper-toggle {
+                        position: absolute;
+                        left: -50px;
+                        top: -2px;
+                        background: #d0cdcde5;
+                        padding: 5px 6px 5px;
+                        border-radius: 12px 0px 0px 12px;
+                        border: 2px solid black;
+                        font-size: 17px;
+                        cursor: pointer;
+                    }
+
+                    &:not(.open) .buildings-helper-toggle:hover {
+                        padding-right: 10px;
+                        left: -54px;
+                    }
+                }
+
+                .zoo-map-board-border {
+                    border: dashed 5px #666246;
+                    border-image-slice: 10;
+                    border-image-width: 5px;
+                    border-image-outset: 0px;
+                    border-image-repeat: round;
+                    border-image-source: url("img/map-border.png");
+                    padding: $zooMapSheetMargin - 10px;
+
+                    .zoo-map-board-background {
+                        width: $zooMapWidth + 2 * $zooMapGrassMargin;
+                        height: $zooMapHeight + 2 * $zooMapGrassMargin;
+                        padding: $zooMapGrassInnerMargin;
+                        box-sizing: border-box;
+                        background-color: #55a832;
+
+                        $zooMaps: 0, 1, 2, 3, 4, 5, 6, 7, 8, A, 9, 10, 1a, 2a, 3a, 5a, 7a, 8a, 11, 12, 13, 14, T1;
+                        @each $id in $zooMaps {
+                            $i: index($zooMaps, $id) - 1;
+                            &[data-map="#{$id}"] {
+                                background-image: url("img/maps/map-#{$id}.jpg");
+                                background-size: 100%;
+                            }
+                        }
+
+                        .zoo-board {
+                            position: relative;
+                            display: grid;
+                            grid-template-columns: repeat(28, $cellWidth);
+                            grid-template-rows: repeat(14, $cellHeight);
+                            width: $zooMapWidth;
+                            height: $zooMapHeight;
+
+                            [data-state="increaseSize"] & .building-container {
+                                pointer-events: none;
+                            }
+
+                            .zoo-map-cell {
+                                // background: #a86a46;
+                                clip-path: polygon(
+                                    26.249999999999996% 2.500000000000002%,
+                                    73.75% 2.500000000000002%,
+                                    97.50000000000001% 50%,
+                                    73.75% 97.5%,
+                                    26.249999999999996% 97.5%,
+                                    2.500000000000002% 50%,
+                                    26.249999999999996% 2.500000000000002%
+                                );
+                                -webkit-clip-path: polygon(
+                                    26.249999999999996% 2.500000000000002%,
+                                    73.75% 2.500000000000002%,
+                                    97.50000000000001% 50%,
+                                    73.75% 97.5%,
+                                    26.249999999999996% 97.5%,
+                                    2.500000000000002% 50%,
+                                    26.249999999999996% 2.500000000000002%
+                                );
+                                text-align: center;
+
+                                // &.rock {
+                                //     background: #55311d77;
+                                // }
+                                // &.water {
+                                //     background: #0d85ca77;
+                                // }
+                                &.upgradeNeeded {
+                                    .upgradeNeeded-marker {
+                                        width: 70%;
+                                        height: 48%;
+                                        background: #dd5749;
+                                        border: 1px solid white;
+                                        border-top-right-radius: 22px;
+                                        border-bottom-right-radius: 22px;
+                                        position: relative;
+                                        margin-top: 1px;
+
+                                        &::before {
+                                            content: "";
+                                            display: block;
+                                            width: 59%;
+                                            height: 100%;
+                                            border: 1px solid white;
+                                            border-radius: 50%;
+                                            background-image: url("img/zoo-card-badges.jpg");
+                                            background-size: 500% 700%;
+                                            background-position: 75% 0;
+                                            position: absolute;
+                                            right: -1px;
+                                            top: 0;
+                                            box-sizing: border-box;
+                                        }
+                                    }
+                                }
+
+                                &.bonus {
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    flex-flow: column;
+
+                                    &.upgradeNeeded {
+                                        position: relative;
+                                        .upgradeNeeded-marker {
+                                            position: absolute;
+                                            top: 0;
+                                            left: 0;
+                                        }
+                                        .arknova-bonus-container {
+                                            font-size: 0.75em;
+                                            position: relative;
+                                            top: 16px;
+                                            left: 12px;
+                                        }
+                                    }
+                                }
+                            }
+
+                            &.upgraded .zoo-map-cell.upgradeNeeded {
+                                .upgradeNeeded-marker {
+                                    display: none;
+                                }
+                            }
+
+                            .continent-area {
+                                position: absolute;
+                                display: flex;
+
+                                .continent-area-slot {
+                                    width: 23px;
+                                    height: 23px;
+                                    border: 3px solid #4f4c4c;
+                                    border-radius: 9px;
+                                    margin-right: -10px;
+                                    font-size: 14px;
+                                    .arknova-meeple {
+                                        margin-top: -5px;
+                                        margin-left: -2px;
+                                    }
+                                }
+
+                                &[data-continent="africa"] {
+                                    top: 521px;
+                                    left: 156px;
+                                    .continent-area-slot {
+                                        background: #fdf202;
+                                    }
+                                }
+                                &[data-continent="europe"] {
+                                    top: 0px;
+                                    left: 292px;
+                                    .continent-area-slot {
+                                        background: #8fdcfa;
+                                    }
+                                }
+                                &[data-continent="asia"] {
+                                    top: 327px;
+                                    left: 614px;
+                                    flex-flow: column;
+                                    align-items: center;
+                                    .continent-area-slot {
+                                        background: #b1e3ae;
+                                        margin-right: 1px;
+                                        margin-bottom: -6px;
+                                    }
+                                }
+                                &[data-continent="americas"] {
+                                    top: 170px;
+                                    left: -12px;
+                                    flex-flow: column;
+                                    align-items: center;
+                                    .continent-area-slot {
+                                        background: #f4a33b;
+                                        margin-right: 1px;
+                                        margin-bottom: -6px;
+                                    }
+                                }
+                                &[data-continent="australia"] {
+                                    top: 521px;
+                                    left: 426px;
+                                    .continent-area-slot {
+                                        background: #f03c55;
+                                    }
+                                }
+                                .continent-icon {
+                                    background: #4f4c4c;
+                                    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%, 25% 0%);
+                                    -webkit-clip-path: polygon(
+                                        25% 0%,
+                                        75% 0%,
+                                        100% 50%,
+                                        75% 100%,
+                                        25% 100%,
+                                        0% 50%,
+                                        25% 0%
+                                    );
+                                    padding: 2.5px 2px;
+
+                                    .badge-icon {
+                                        border-radius: 0;
+                                        border: none;
+                                        width: 1.66em;
+                                        clip-path: polygon(
+                                            26.249999999999996% 2.500000000000002%,
+                                            73.75% 2.500000000000002%,
+                                            97.50000000000001% 50%,
+                                            73.75% 97.5%,
+                                            26.249999999999996% 97.5%,
+                                            2.500000000000002% 50%,
+                                            26.249999999999996% 2.500000000000002%
+                                        );
+                                        -webkit-clip-path: polygon(
+                                            26.249999999999996% 2.500000000000002%,
+                                            73.75% 2.500000000000002%,
+                                            97.50000000000001% 50%,
+                                            73.75% 97.5%,
+                                            26.249999999999996% 97.5%,
+                                            2.500000000000002% 50%,
+                                            26.249999999999996% 2.500000000000002%
+                                        );
+                                    }
+                                }
+                            }
+
+                            .icon-map-13-slot {
+                                position: absolute;
+                                width: 34px;
+                                height: 35px;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                font-size: 19px;
+
+                                .quarter-area-slot {
+                                    position: absolute;
+                                    top: 0px;
+                                    left: 0px;
+                                    width: 23px;
+                                    height: 23px;
+                                    font-size: 14px;
+                                    .arknova-meeple {
+                                        margin-top: -5px;
+                                        margin-left: -2px;
+                                    }
+                                }
+
+                                &[data-quarter="0"] {
+                                    top: -2px;
+                                    left: 299px;
+                                }
+                                &[data-quarter="1"] {
+                                    top: 257px;
+                                    left: 611px;
+                                }
+                                &[data-quarter="2"] {
+                                    top: 518px;
+                                    left: 299px;
+                                }
+                                &[data-quarter="3"] {
+                                    top: 257px;
+                                    left: -12px;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.player-board-action-cards-resizable {
+    margin-top: 10px;
+
+    width: calc(var(--arkNovaLeftColumnScale) * 926px);
+    height: calc(var(--arkNovaLeftColumnScale) * 225px);
+
+    .player-board-action-cards {
+        width: 926px;
+        height: 225px;
+        transform: scale(var(--arkNovaLeftColumnScale));
+        transform-origin: top left;
+
+        display: flex;
+        justify-content: space-evenly;
+        background-image: url("img/sheet_background.jpg");
+        background-size: cover;
+        box-shadow: 1px 1px 5px black;
+        grid-row-end: span 1;
+
+        --arkNovaActionCardScale: 0.4;
+        .action-card-slot {
+            width: calc(var(--arkNovaActionCardScale) * 375px + 10px);
+            height: calc(var(--arkNovaActionCardScale) * 522px + 10px);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            .action-card-slot-strength {
+                width: 40px;
+                height: 69px;
+                position: absolute;
+                background-image: url("img/paperclip.png");
+                z-index: 10;
+                background-size: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                padding-top: 2px;
+                box-sizing: border-box;
+                font-family: "MyriadPro-Bold";
+                color: white;
+                top: -5px;
+                left: 61px;
+                background-repeat: no-repeat;
+                font-size: 19px;
+                line-height: 19px;
+                pointer-events: none;
+            }
+
+            .action-card {
+                transition:
+                    top 0.5s,
+                    box-shadow 0.5s;
+            }
+
+            .action-card[data-status="1"] {
+                z-index: 10;
+                top: -13px;
+                box-shadow: 0px 0px 7px 2px red;
+                border-radius: 8px;
+                border: 1px solid black;
+            }
+
+            // MAP 12
+            &.slot-6 {
+                width: calc(var(--arkNovaActionCardScale) * 70px + 10px);
+                .action-card-slot-strength {
+                    left: 0px;
+                }
+            }
+        }
+    }
+
+    &[data-bonus-strength="1"] {
+        .slot-1 .action-card-slot-strength {
+            color: transparent;
+        }
+    }
+    &[data-bonus-strength="2"] {
+        .slot-1,
+        .slot-2 {
+            .action-card-slot-strength {
+                color: transparent;
+            }
+        }
+    }
+    &[data-bonus-strength="3"] {
+        .slot-1,
+        .slot-2,
+        .slot-4 {
+            .action-card-slot-strength {
+                color: transparent;
+            }
+        }
+    }
+    &[data-bonus-strength="4"] {
+        .slot-1,
+        .slot-2,
+        .slot-4,
+        .slot-5 {
+            .action-card-slot-strength {
+                color: transparent;
+            }
+        }
+    }
+}
+
+.player-board-cards {
+    grid-row-end: span 2;
+    [data-player-boards-layout="1"] & ~ .player-board-cards {
+        grid-row-end: span 3;
+        margin-top: 25px;
+    }
+    grid-column: 2;
+    background-image: url("img/sheet_background.jpg");
+    background-size: cover;
+    box-shadow: 1px 1px 5px black;
+    margin-left: -10px;
+    padding: 10px;
+    padding-left: 20px;
+
+    :not(#floating-hand) & {
+        --arkNovaZooCardScale: 0.4;
+    }
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+
+    .player-board-inPlay-animals {
+        order: 2;
+    }
+    .player-board-inPlay-sponsors {
+        order: 3;
+    }
+    .player-board-scoring-hand {
+        order: 5;
+    }
+
+    .player-board-hand,
+    .player-board-scoring-hand,
+    .player-board-stored-hand {
+        margin: 5px;
+        flex-basis: 100%;
+        border: 1px solid black;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 8px;
+        padding: 2px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+    }
+    .player-board-scoring-hand:empty {
+        display: none;
+    }
+
+    .player-board-stored-hand {
+        min-height: calc(var(--arkNovaZooCardScale) * 522px);
+        position: relative;
+        .icon-container-stored {
+            position: absolute;
+            top: -12px;
+            background: rgba(255, 255, 255, 0.911);
+            border: 1px solid black;
+            padding: 3px;
+            border-radius: 3px;
+
+            .icon-stored {
+                width: 35px;
+                height: 33px;
+            }
+        }
+    }
+
+    .player-board-inPlay-animals,
+    .player-board-inPlay-sponsors {
+        margin: 30px 5px 5px;
+        border: 1px solid black;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 8px;
+        position: relative;
+
+        width: calc(2 * var(--arkNovaZooCardScale) * 375px + 12px);
+        min-height: calc(var(--arkNovaZooCardScale) * 522px);
+        padding: 2px;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: baseline;
+
+        .rescueStation-holder {
+            width: calc(var(--arkNovaZooCardScale) * 375px);
+            height: calc(var(--arkNovaZooCardScale) * 111px);
+            margin: 2px;
+            border: 1px solid black;
+            border-radius: calc(var(--arkNovaZooCardScale) * 11px);
+            background: #d1d1d1be;
+            overflow: hidden;
+            position: relative;
+            &::before {
+                content: "\f062";
+                width: 40px;
+                height: 20px;
+                position: absolute;
+                bottom: 0;
+                left: calc(50% - 20px);
+                background: #b98357db;
+                z-index: 10;
+                font: normal normal normal 18px/1 FontAwesome;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border: 1px solid black;
+                border-bottom: none;
+                border-top-left-radius: 5px;
+                border-top-right-radius: 5px;
+                color: #19d519;
+                text-shadow:
+                    0px 0px 2px black,
+                    0px 0px 2px black;
+            }
+
+            .ark-card {
+                margin: 0px;
+            }
+        }
+
+        .ark-card {
+            margin: 3px;
+            &.selected {
+                margin: 1px;
+            }
+        }
+        .rescueStation-holder ~ .ark-card ~ .ark-card {
+            margin-top: calc(var(--arkNovaZooCardScale) * -405px);
+        }
+        .ark-card ~ .ark-card ~ .ark-card {
+            margin-top: calc(var(--arkNovaZooCardScale) * -440px);
+        }
+
+        .ark-card.double-margin ~ .ark-card ~ .ark-card {
+            margin-top: calc(var(--arkNovaZooCardScale) * -390px);
+
+            & ~ .ark-card {
+                margin-top: calc(var(--arkNovaZooCardScale) * -440px);
+            }
+        }
+
+        & > .icon-container {
+            position: absolute;
+            top: -34px;
+            left: 142px;
+        }
+    }
+
+    .player-board-inPlay-animals {
+        & > .icon-container {
+            position: absolute;
+            top: -34px;
+            left: 102px;
+        }
+
+        .player-board-sizes-counters {
+            position: absolute;
+            top: -35px;
+            left: 173px;
+            width: 142px;
+            height: 28px;
+            background: #f0e9c8;
+            border: 1px solid black;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+            font-size: 19px;
+            overflow: hidden;
+
+            span {
+                font-family: "MyriadPro-SemiBold";
+                font-size: 20px;
+                text-align: center;
+                letter-spacing: -1px;
+                text-indent: -1px;
+            }
+
+            .icon-container {
+                margin-top: 11px;
+            }
+        }
+    }
+}
+
+.player-board-hand {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    --arkNovaZooCardScale: 0.4;
+}

@@ -1,0 +1,15 @@
+{
+  "title": "Counter",
+  "source_html": "Counter.html",
+  "clean_html": "Counter.html",
+  "url": "https://en.doc.boardgamearena.com/Counter",
+  "depth": 1,
+  "sha256_raw": "f9ed55df2e6291941a48b2144b257bf60a96da1b835f5adb059adb583c0d434f",
+  "sha256_clean": "3d651e9b42bfac4864b0c31fc087700db4445552c16c07a661ce3f3a688773e2",
+  "word_count": 434,
+  "code_block_count": 4,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 5,
+  "cleaned_at": "2026-07-06T06:38:18.666581+00:00"
+}

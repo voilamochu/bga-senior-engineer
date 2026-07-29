@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>BgaAnimations - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-BgaAnimations rootpage-BgaAnimations action-view"><div class="article"><p><br/>
+</p><h2><span class="mw-headline" id="Overview">Overview</span></h2><p><b>bga-animations</b> is a javascript component to handle different type of animations.
+</p><p>The game Reversi is an example of usage.
+</p><p>For comprehensive API docs see
+<b><big><a class="external text" href="https://x.boardgamearena.net/data/game-libs/bga-animations/1.x/docs/index.html" rel="nofollow">Doc</a></big></b>
+</p><h2><span class="mw-headline" id="Usage">Usage</span></h2><p>Load the lib:
+</p><pre>const BgaAnimations = await importEsmLib('bga-animations', '1.x');
+</pre><p>This line should be placed on top of the JS file, before any class declaration.
+</p><pre>define([
+    "dojo","dojo/_base/declare",
+    "ebg/core/gamegui",
+    "ebg/counter",
+    getLibUrl('bga-animations', '1.x'),
+],
+function (dojo, declare, gamegui, counter, BgaAnimations) { // note that the index of `BgaAnimations` must match the index of the define array
+</pre><p>In your game setup:
+</p><pre>        // create the animation manager, and bind it to the `gameui.bgaAnimationsActive()` function
+        this.animationManager = new BgaAnimations.Manager({
+            animationsActive: () =&gt; this.bga.gameui.bgaAnimationsActive(),
+        });
+</pre><p>Example of usage:
+</p><pre>async notif_moveMeeple(args) {
+    const meepleDiv = document.getElementById(`player-meeple-${args.playerId}`);
+    const destinationDiv = document.getElementById(`table-slot-${args.slot}`);
+    await this.animationManager.slideAndAttach(meepleDiv, destinationDiv);
+}
+
+async notif_scoreMeeple(args) {
+    const meepleDiv = document.getElementById(`player-meeple-${args.playerId}`);
+    await this.animationManager.displayScoring(meepleDiv, args.score, this.gamedatas.players[args.playerId].color);
+}
+</pre><p>Look at the demo page and the demo source code for a list of all possibilities!
+</p><h2><span class="mw-headline" id="Versioning">Versioning</span></h2><p>The lib is using semver, so you can require 1.x to be sure to have the last fixes without risking a breaking change. Any breaking change will be noted on the Changelog section.
+</p><h2><span class="mw-headline" id="Using_with_TypeScript">Using with TypeScript</span></h2><p>If you use TypeScript and this lib, you can download the <b><a class="external text" href="https://x.boardgamearena.net/data/game-libs/bga-animations/1.x/dist/bga-animations.d.ts" rel="nofollow">d.ts</a></b> file to put in on your game folder to benefit from auto-completion. Depending on the way you build, you might need to remove the last line (the export instruction) to be able to use it.
+</p><pre>define([
+        "dojo",
+        "dojo/_base/declare",
+        "ebg/core/gamegui",
+        "ebg/counter",
+        "ebg/stock",
+        getLibUrl('bga-animations', '1.x'),
+    ],
+function (dojo, declare, gamegui, counter, stock, BgaAnimations) {
+    (window as any).BgaAnimations = BgaAnimations; //trick
+    return declare("bgagame.reforest", ebg.core.gamegui, new Reforest());
+});
+</pre><h2><span class="mw-headline" id="Developer_notes">Developer notes</span></h2><p>For all elements which will be animated, it is recommended to use CSS class selectors to style them (not, e.g., ID or parent-based selectors). This is because the animations typically clone the element to animate (giving it a new ID), and the DOM parentage may change as well. Symptoms that this address are things like <code>slideOutAndDestroy</code> simply causing the element to disappear, or <code>slideAndAttach</code> causing the element to "jump" to the destination.
+</p><h2><span class="mw-headline" id="Changelog">Changelog</span></h2><p><b>1.0.2</b>: fix error when a parallelAnimation is null
+</p><p><b>1.0.0</b>: Initial version
+</p></div></body>
+</html>

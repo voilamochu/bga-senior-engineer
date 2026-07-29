@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>BGA Studio Guidelines - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-BGA_Studio_Guidelines rootpage-BGA_Studio_Guidelines action-view"><div class="article"><h1><span id="BGA_Studio_Guidelines_.28UX.2FUI.29"></span><span class="mw-headline" id="BGA_Studio_Guidelines_(UX/UI)">BGA Studio Guidelines (UX/UI)</span></h1><p>This page covers UX guidelines for games on Board Game Arena. Read the <a class="internal" href="/images/5/57/Guidelines_UX_new_compressed.pdf" title="Guidelines UX new compressed.pdf">official PDF</a> or <a class="external text" href="https://bga.li/mRdx" rel="nofollow">bga.li/mRdx</a> first. This page is an unofficial summary.
+</p><p>Use this page to validate UX before switching your game from <b>ALPHA → BETA → RELEASE</b>.
+</p><h2><span id="A_.E2.80.94_Layouts"></span><span class="mw-headline" id="A_—_Layouts">A — Layouts</span></h2><h3><span class="mw-headline" id="A.1_Layout_arrangement">A.1 Layout arrangement</span></h3><p>Game should fit a square ratio and show everything the active player needs. Use vertical scroll for secondary info (other players' progress, secondary boards).
+</p><ul><li>Center the play area on all devices.</li>
+<li>Leave a "no action" margin around the board (deselect, scroll on mobile).</li>
+<li>Use HTML anchors to jump between distant sections.</li>
+<li>Use spacers / transparent whiteblocks to group pieces clearly.</li>
+<li>Keep score, turn order, and objectives <b>accessible</b> (button/tab/panel), not always visible.</li>
+<li>Tuck rare abilities into tooltips.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not hide game components behind popups — you should see everything you'd see on a real table.</li>
+<li>Do not place "always accessible" info permanently on the player panels.</li>
+<li>Do not add in-game logos or branding that isn't part of the actual game.</li>
+<li>Do not scatter related info (e.g. resources) across three corners.</li></ul><p>Note: <b>Layout mantra:</b> Central = shared actions. Top/Bottom = global info. Panels = private resources. 
+</p><p><br/>
+</p><h3><span class="mw-headline" id="A.2_Action_Bar">A.2 Action Bar</span></h3><p>The Action Bar always shows the current state: turn in progress, who we're waiting for, or what the player can do.
+</p><p><b>✔️ Do</b>
+</p><ul><li>Center <b>main awaited actions</b> (Play card, End turn, Confirm move).</li>
+<li>Place secondary/greyed-out actions next to them.</li>
+<li>Put <b>cancel / undo / remove</b> on the right, visually separated from forward actions.</li>
+<li>Use the Action Bar for: actions targeting another player, Pass/End turn/time-related actions, auction phases, and small resource exchanges without dedicated board space.</li>
+<li>Keep it to <b>max 4 buttons + context</b> so it doesn't overflow on mobile.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not replace board-component actions with Action Bar buttons — players should act on the board like in real life.</li>
+<li>Do not stick custom buttons next to BGA's built-in buttons (replay controls, etc.).</li>
+<li>Do not let cancel actions visually compete with main actions.</li>
+<li>Do not show "Round in progress" text inside the bar — display it on the table or as flavor text of the current action.</li></ul><p><i>Example: Wingspan shows the current round as flavor text under the action bar.</i>
+</p><p>→ See <a href="#C.3_Button_colors_and_styling">C.3</a> for button colors.
+</p><h3><span class="mw-headline" id="A.3_Player_panels">A.3 Player panels</span></h3><p>Player panels let anyone glance at: who's playing, color, score, turn order, and resources gained.
+</p><ul><li>Keep panels compact — a 4-player game on mobile must not occupy more than <b>¼ of the screen</b>.</li>
+<li>Offer HTML anchor shortcuts to jump to a player's main components.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not put settings, titles, round numbers, or other redundant info in panels.</li>
+<li>Do not put always-accessible info (score, objectives) <i>only</i> on player panels.</li></ul><p><a class="image" href="/File:Ux-04-player-panel.jpg"><img alt="Ux-04-player-panel.jpg" decoding="async" height="901" src="/images/0/01/Ux-04-player-panel.jpg" width="763"/></a>
+</p><h3><span class="mw-headline" id="A.4_Popups">A.4 Popups</span></h3><p><b>✔️ Do</b>
+</p><ul><li>Reserve automatic popups for <b>tutorials only</b>.</li>
+<li>Make any required popup skippable on click/touch/timer.</li>
+<li>Use the game wiki for rules, hints, scoring tips, helpers.</li></ul><p><a class="image" href="/File:Ux-06-wiki.jpg"><img alt="Ux-06-wiki.jpg" decoding="async" height="172" src="/images/6/67/Ux-06-wiki.jpg" width="901"/></a>
+</p><ul><li>Do not block game flow with popups (forbidden).</li>
+<li>Do not use popups mid-game — only allowed for between-round/stage scoring.</li></ul><p>Example: area around popup clickable - should be used to close it
+</p><p><br/>
+→ See <a href="#B.1_Tooltips">B.1</a> for non-blocking alternatives.
+</p><h3><span id="A.5_Clarity_.26_Zoom"></span><span class="mw-headline" id="A.5_Clarity_&amp;_Zoom">A.5 Clarity &amp; Zoom</span></h3><p>Use vertical space and good layout instead of zoom controls.
+</p><ul><li>Design so the core game is fully playable at <b>100% scale</b>.</li>
+<li>Trust browser zoom: Ctrl+wheel on desktop, pinch on mobile.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not add zoom buttons unless absolutely necessary (large secondary boards, very text-heavy cards like Ticket to Ride).</li></ul><p><b>If you must add zoom buttons:</b>
+</p><ul><li><b>+</b> (plus): zoom in</li>
+<li><b>–</b> (minus): zoom out</li>
+<li>🏠 Home: reset to default</li></ul><h2><span id="B_.E2.80.94_Usability"></span><span class="mw-headline" id="B_—_Usability">B — Usability</span></h2><h3><span class="mw-headline" id="B.1_Tooltips">B.1 Tooltips</span></h3><p>Tooltips add insight, not duplication.
+</p><ul><li>Add extra detail beyond what's on screen (translatable text, hints about when to use).</li>
+<li>Use them to zoom into small text/icons on large game boards.</li>
+<li>Close tooltips when the user taps away on mobile.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not show the same info twice the same way.</li>
+<li>Do not add a tooltip that's just a zoomed-in copy of an already-visible card — that's a sign your components are mis-sized.</li></ul><p><i>Example: Ticket to Ride hover tooltips name cards/decks without distraction.</i>
+</p><p><i>Example: Altered shows minimal default info, with full detail on hover.</i>
+</p><h3><span class="mw-headline" id="B.2_Forbidden_actions">B.2 Forbidden actions</span></h3><p><b>✔️ Do</b>
+</p><ul><li>Grey out / disable actions that exist but aren't currently available.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not show disabled buttons for actions that are never relevant in the current context — just hide them.</li></ul><h3><span id="B.3_Undo.2C_Reset.2C_Restart"></span><span class="mw-headline" id="B.3_Undo,_Reset,_Restart">B.3 Undo, Reset, Restart</span></h3><p>BGA philosophy: fast, fluid, intuitive. Use these controls sparingly.
+</p><ul><li>Use <b>Confirm</b> buttons for impactful, irreversible actions (end turn, discard, commit resources).</li>
+<li>Prefer timed confirmation (5–8s) over undo.</li>
+<li>Offer one <b>Restart Turn</b> for the whole turn when rules allow, not per-micro-action undo.</li>
+<li>Allow "Undo last move" only when a turn has <b>more than 2 actions</b>.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not add an Undo button for every action — multiplies validation steps, slows the game.</li>
+<li>Do not layer Undo on top of Reset on top of Confirm — over-validation.</li>
+<li>Do not use Undo to paper over misclicks — fix the layout instead (bigger targets, clearer highlights).</li></ul><h2><span id="C_.E2.80.94_Design"></span><span class="mw-headline" id="C_—_Design">C — Design</span></h2><h3><span id="C.1_Typography_.26_translations"></span><span class="mw-headline" id="C.1_Typography_&amp;_translations">C.1 Typography &amp; translations</span></h3><p>Clarity beats style.
+</p><ul><li>Use the default BGA font.</li>
+<li>Use clean sans-serif if you must change.</li>
+<li>Maintain good line spacing.</li>
+<li>Make all text translatable via BGA's translation system.</li>
+<li>Support LTR <i>and</i> RTL languages — test alignment &amp; mirroring.</li>
+<li>Ensure your font supports accents/diacritics (é, ñ, ü).</li>
+<li>Meet <b>WCAG AA</b> contrast.</li>
+<li>Test on a phone — what's readable on a 27" monitor may not be on mobile.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not use decorative or themed fonts (hard to read, licensing risk, missing glyphs).</li>
+<li>Do not mix multiple fonts for "theme."</li>
+<li>Do not embed text directly into images without alt-text.</li></ul><h3><span id="C.2_Highlights_.26_Glowing_auras"></span><span class="mw-headline" id="C.2_Highlights_&amp;_Glowing_auras">C.2 Highlights &amp; Glowing auras</span></h3><p>Players should never wonder "what do I click?"
+</p><ul><li>Highlight valid options so the awaited action is obvious.</li>
+<li>Show consequences visually before the player commits.</li></ul><p><i>Example of highlighting valid options on the table.</i>
+</p><h3><span class="mw-headline" id="C.3_Button_colors_and_styling">C.3 Button colors and styling</span></h3><p>Button colors are a shared language across BGA. Mandatory for consistency.
+</p><table class="wikitable">
+<tbody><tr>
+<th>Color</th>
+<th>Meaning</th>
+<th><code>statusBar.addActionButton</code>
+</th></tr>
+<tr>
+<td>🔵 <b>Blue</b></td>
+<td>Advance, confirm, move forward</td>
+<td><code>primary</code>
+</td></tr>
+<tr>
+<td>🔴 <b>Red</b></td>
+<td>Cancel, undo, stop, exit</td>
+<td><code>alert</code>
+</td></tr>
+<tr>
+<td>⚪ <b>White / Transparent</b></td>
+<td>Optional/side actions</td>
+<td><code>secondary</code>
+</td></tr>
+<tr>
+<td>⚫ <b>Grey</b></td>
+<td>Disabled, completed, unavailable</td>
+<td>(disabled state of any of the above)
+</td></tr></tbody></table><p><b>✔️ Do</b>
+</p><ul><li>Display usernames in their assigned player color.</li>
+<li>Outline player-color text so it stays visible (e.g. yellow on white).</li>
+<li>Test player colors on both light and dark backgrounds.</li>
+<li>Take any extra colors from <b>game components</b> (cards, tiles, tokens), not UI buttons.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not reassign blue/red/grey for game-specific meaning.</li>
+<li>Do not tint UI buttons to match the game's theme.</li></ul><p>Note: Think of button colors as <b>traffic lights</b>: blue = go, red = stop, grey = unavailable.
+</p><h3><span id="C.4_Sizing_.26_responsiveness"></span><span class="mw-headline" id="C.4_Sizing_&amp;_responsiveness">C.4 Sizing &amp; responsiveness</span></h3><p><b>✔️ Do</b>
+</p><ul><li>Keep the main play area centered on every device.</li>
+<li>Use fluid layouts that expand/contract to fit available space.</li>
+<li>Leave margins around the board (prevents mobile misclicks).</li>
+<li>On desktop/tablet: show the entire board when possible.</li>
+<li>On mobile (vertical): stack secondary elements <i>below</i> the main action zone.</li>
+<li>Make everything readable and usable at 100% scale.</li>
+<li>Add HTML anchors / jump-links for vertical layouts.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not use fixed-width designs.</li>
+<li>Do not rely on zoom for legibility.</li>
+<li>Do not let layout break when players zoom in/out.</li>
+<li>Do not make any interactive element smaller than <b>32×32px</b> (see <a href="#E.3_Tap_targets">E.3</a>).</li></ul><p><i>Reference implementation:</i> <a class="external text" href="https://thoun.github.io/bga-jump-to/demo/index.html" rel="nofollow">bga-jump-to demo</a>
+</p><h3><span id="C.5_Background_.26_extras"></span><span class="mw-headline" id="C.5_Background_&amp;_extras">C.5 Background &amp; extras</span></h3><p>The background is the table surface your game sits on.
+</p><ul><li>Use thematic, modern backgrounds (subtle playmat look).</li>
+<li>Add slight texture or pattern.</li>
+<li>Apply a touch of blur so components remain the visual focus.</li>
+<li>Prioritize contrast against the game's components.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not use pure flat colors.</li>
+<li>Do not use sharp, busy, detailed backgrounds that compete with the game.</li>
+<li>Do not let the background reduce component visibility.</li></ul><h2><span id="D_.E2.80.94_Feedback"></span><span class="mw-headline" id="D_—_Feedback">D — Feedback</span></h2><h3><span id="D.1_Errors_.26_invalid_actions"></span><span class="mw-headline" id="D.1_Errors_&amp;_invalid_actions">D.1 Errors &amp; invalid actions</span></h3><p>Silence is never acceptable. Every failed action must say why.
+</p><ul><li>Use a short shake, grey-out, or tooltip on failure.</li>
+<li>Show concise plain-text errors: <i>"You don't have enough resources."</i></li>
+<li>Pair color with icons or text (don't rely on red alone).</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not leave the player guessing.</li>
+<li>Do not use color alone — colorblind users won't see it.</li></ul><h3><span class="mw-headline" id="D.2_Game_Logs">D.2 Game Logs</span></h3><p>Logs are the narration of the match. Critical for asynchronous games.
+</p><ul><li>Log every major action: card plays, moves, resource changes, eliminations.</li>
+<li>Always say <b>who</b> acted and <b>what</b> changed.</li>
+<li>Use icons, colors, formatting for fast scanning.</li>
+<li>Provide alt-text for graphic components inside logs.</li>
+<li>Group small simultaneous actions into a one-liner.</li>
+<li>Log automated/forced actions too.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not write walls of text or use oversized images that break log flow.</li>
+<li>Do not hide <i>who</i> did the action.</li></ul><p><i>Good:</i>
+</p><ul><li>"Marianna placed [red tile] on [central board] (+2 points)."</li>
+<li>"Alex drew 2 [train cards]."</li></ul><p><i>Bad:</i>
+</p><ul><li>"+2 points"</li>
+<li>"Card drawn"</li></ul><h3><span class="mw-headline" id="D.3_Animation">D.3 Animation</span></h3><p>Animations explain <b>what moved, where it went, why it matters</b>.
+</p><ul><li>Use animations for: cards entering a hand, tokens moving, score count-up.</li>
+<li>Keep regular animations at <b>0.5s</b>, max <b>0.8s</b>.</li>
+<li>Batch repetitive updates (don't show 50 tiny +1 animations).</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not animate trivial updates one by one.</li>
+<li>Do not use looping, bouncing, or glowing animations as decoration.</li></ul><p>→ See <a class="external text" href="https://en.doc.boardgamearena.com/BgaAnimations" rel="nofollow">BGA animation library</a>.
+</p><h3><span class="mw-headline" id="D.4_Sound_effects">D.4 Sound effects</span></h3><p>Sound is a bonus, not a requirement.
+</p><ul><li>Keep volume <b>below</b> the BGA default.</li>
+<li>Keep sounds short, sharp, purposeful.</li>
+<li>Always pair sound with a visual cue.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not add long looping soundtracks.</li>
+<li>Do not let any action be communicated by <b>sound only</b>.</li>
+<li>Do not surprise players with loud audio.</li></ul><h2><span id="E_.E2.80.94_Accessibility"></span><span class="mw-headline" id="E_—_Accessibility">E — Accessibility</span></h2><h3><span class="mw-headline" id="E.1_Design_for_all">E.1 Design for all</span></h3><p><b>✔️ Do</b>
+</p><ul><li>Pair colors with icons, textures, or shapes.</li>
+<li>Meet contrast ratio <b>4.5:1</b> minimum.</li>
+<li>Label every button, icon, and interactive element (screen readers).</li>
+<li>Use bold shapes, clear outlines, strong contrast to differentiate pieces.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not rely on color alone.</li>
+<li>Do not use flashing or rapidly alternating visuals.</li>
+<li>Do not depend on fine details or subtle shading to differentiate components.</li></ul><h3><span class="mw-headline" id="E.2_Colorblind-safe_design">E.2 Colorblind-safe design</span></h3><p><b>✔️ Do</b>
+</p><ul><li>Add unique shapes/symbols/outlines per pawn or token color.</li>
+<li>Place small icons in card corners (or patterns) so suits are recognizable without hue.</li>
+<li>Meet <b>WCAG AA</b> for text and icons.</li>
+<li>Outline player-color names so yellow doesn't vanish on white.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not assume players perceive color differences.</li></ul><h3><span class="mw-headline" id="E.3_Tap_targets">E.3 Tap targets</span></h3><p><b>✔️ Do</b>
+</p><ul><li>Minimum <b>32×32px</b> for any interactive element.</li>
+<li>Aim for <b>40–44px</b> (greatly reduces mis-taps).</li>
+<li>Leave spacing between buttons, tokens, cards.</li>
+<li>Group many options into expandable menus or secondary panels.</li>
+<li>When space runs out, add scrolling — don't shrink components.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not cram small icons into tight clusters.</li>
+<li>Do not shrink components below the minimum to fit.</li></ul><h3><span id="E.4_Settings_.26_customization"></span><span class="mw-headline" id="E.4_Settings_&amp;_customization">E.4 Settings &amp; customization</span></h3><p><b>✔️ Do</b>
+</p><ul><li>Put all game settings in BGA's <b>standard settings menu</b>.</li>
+<li>Reuse existing BGA controls.</li>
+<li>Offer per-game options only where relevant: animation speed, tooltip detail, sound on/off.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not build custom settings UI (the platform is phasing those out).</li>
+<li>Do not duplicate controls already available globally.</li></ul><h2><span id="F_.E2.80.94_Technical"></span><span class="mw-headline" id="F_—_Technical">F — Technical</span></h2><h3><span id="F.1_Endgame_.26_Replays"></span><span class="mw-headline" id="F.1_Endgame_&amp;_Replays">F.1 Endgame &amp; Replays</span></h3><p><b>✔️ Do</b>
+</p><ul><li>Make replays flow without interruption.</li>
+<li>Keep animations skippable and playable at minimum speed.</li>
+<li>Keep logs and highlights in sync with each replayed action.</li>
+<li>Match the scoring pay-off to game length — long games deserve a longer reveal.</li>
+<li>Use synchronous notifications per scoring step and <code>this.displayScoring</code> for points animations.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not put blocking popups in replays.</li>
+<li>Do not drop the final score instantly at the end of a long game.</li></ul><h3><span id="F.2_Refresh_.26_Continuity"></span><span class="mw-headline" id="F.2_Refresh_&amp;_Continuity">F.2 Refresh &amp; Continuity</span></h3><p>A refresh should feel invisible.
+</p><ul><li>Restore the exact game state after refresh (no missing/corrupted info).</li>
+<li>Restore temporary UI: whose turn it is, pending actions, selected components.</li>
+<li>Treat the server as the source of truth for all critical state.</li>
+<li>Expect disconnect/reconnect as normal — BGA may do it at any time.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not store critical state in client-only memory.</li>
+<li>Do not rely on session continuity hacks.</li></ul><h3><span class="mw-headline" id="F.3_Error_handling">F.3 Error handling</span></h3><p><b>✔️ Do</b>
+</p><ul><li>Handle disconnects and dropped actions without breaking flow.</li>
+<li>Show players short, friendly messages explaining what went wrong.</li>
+<li>Log precise error details to the developer console.</li>
+<li>Isolate the error to the affected action.</li></ul><p><b>❌ Don't</b>
+</p><ul><li>Do not crash the game on invalid input.</li>
+<li>Do not expose raw server logs or stack traces to players.</li>
+<li>Do not block the whole table because of one failed request.</li></ul><h2><span class="mw-headline" id="Pre-release_Checklist">Pre-release Checklist</span></h2><p><i>Version 1.0.0 — May 22, 2026</i>
+</p><table class="wikitable">
+<tbody><tr>
+<th>#</th>
+<th>Check
+</th></tr>
+<tr>
+<td>1</td>
+<td>Layout centers and scales on all devices.
+</td></tr>
+<tr>
+<td>2</td>
+<td>Action Bar ≤ 4 buttons, never replaces components.
+</td></tr>
+<tr>
+<td>3</td>
+<td>Tooltips: clear, translatable, useful.
+</td></tr>
+<tr>
+<td>4</td>
+<td>Buttons follow BGA standards (blue = forward, red = cancel).
+</td></tr>
+<tr>
+<td>5</td>
+<td>No blocking popups mid-game.
+</td></tr>
+<tr>
+<td>6</td>
+<td>Animations: quick, smooth, informative.
+</td></tr>
+<tr>
+<td>7</td>
+<td>All tap/click targets ≥ 32px.
+</td></tr>
+<tr>
+<td>8</td>
+<td>Colorblind-safe icons in place.
+</td></tr>
+<tr>
+<td>9</td>
+<td>Endgame shows breakdown + replay option.
+</td></tr>
+<tr>
+<td>10</td>
+<td>Game state restores cleanly after refresh.
+</td></tr></tbody></table><h2><span class="mw-headline" id="Closing_thoughts">Closing thoughts</span></h2><ul><li><b>Alpha:</b> gather usability feedback.</li>
+<li><b>Beta:</b> listen to the crowd — confusion spots = redesign spots.</li>
+<li><b>Iterate:</b> small UX tweaks = big retention gains.</li>
+<li><b>Watch metrics:</b> if players stall at a phase, that's your design flag.</li></ul><p>Play other BGA games with similar mechanics — get inspired, challenge your assumptions, and treat UX as a key part of design, not an afterthought.
+</p><h1><span id="BGA_Studio_Guidelines_.28Source_Code.29"></span><span class="mw-headline" id="BGA_Studio_Guidelines_(Source_Code)">BGA Studio Guidelines (Source Code)</span></h1><p>Make your code as easy to read and understand as possible: clearly named functions and variables, comments when necessary, ...
+</p><p>In case you drop the support for a project, another developer should be able to follow up on your code and understand it easily.
+</p><h2><span id="Front_.28JS.29_code"></span><span class="mw-headline" id="Front_(JS)_code">Front (JS) code</span></h2><h3><span class="mw-headline" id="Generated_code">Generated code</span></h3><p>Generated code (SCSS, Typescript) is tolerated, as long as you provide both source files and built files, ideally with build tools. The build file should not be minimized, as someone taking over your project might not know the source language, and will the work on the built file ignoring the source file. Build tools are useful if he wants to continue the project with your source files.
+</p><h3><span class="mw-headline" id="Templates">Templates</span></h3><p>Use of .tpl file and view.php is deprecated and forbidden for new projects. 
+</p><h2><span id="Back_.28PHP.29_code"></span><span class="mw-headline" id="Back_(PHP)_code">Back (PHP) code</span></h2><p>Game name and option names should be Capitalized. 
+</p><h3><span class="mw-headline" id="Framework_functions">Framework functions</span></h3><h5><span class="mw-headline" id="Undocumented_functions">Undocumented functions</span></h5><p>Do not use undocumented functions. They may change or be deleted without warning, and your game will not work anymore. Any change on documented function will be avoided as much as possible, and will be notified. 
+</p><h4><span class="mw-headline" id="Function_override">Function override</span></h4><p>Do not override framework functions. Use a wrapper instead. 
+</p><pre>public function getPlayerNameById($player_id) { // same name as the framework function = override
+  if ($player_id == 0) {
+    return 'Automata';
+  } else {
+    return parent::getPlayerNameById($player_id);
+  } 
+}
+</pre><p><b>Better :</b>
+</p><pre>public function myGameGetPlayerNameById($player_id) { // // different name = wrapper
+  if ($player_id == 0) {
+    return 'Automata';
+  } else {
+    return $this-&gt;getPlayerNameById($player_id);
+  } 
+}
+</pre><h4><span class="mw-headline" id="State_functions">State functions</span></h4><p>States functions should be prefixed "st"
+</p><p>Action functions should be prefixed "act"
+</p><h3><span class="mw-headline" id="Namespacing">Namespacing</span></h3><p>The classes should be namespaced following the PSR-4 norm. That means you won't need to require the classes, as BGA will be able to autoload them. 
+</p><pre>&lt;?php
+declare(strict_types=1);
+namespace Bga\Games\&lt;mygame&gt;\PowerCard;
+class PowerCardManager {
+</pre><h3><span class="mw-headline" id="Other">Other</span></h3><p>.action.php shouldn’t be used anymore, auto-wiring should be used instead. 
+</p><p><i>Example :</i>  
+</p><pre>$args = $this-&gt;argPlayCards();
+if (!in_array($cardId, $args['selectableCardsIds'])) { throw new \BgaUserException(...); }
+</pre><p><br/>
+Don’t use `@` to ignore the errors of a function call.  
+</p></div></body>
+</html>

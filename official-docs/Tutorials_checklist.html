@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Tutorials checklist - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Tutorials_checklist rootpage-Tutorials_checklist action-view"><div class="article"><p>In order to allow for a full-fledged tutorial to be built for the game you have adapted on BGA studio:
+</p><ol><li>the game replay archive generated for the game must be valid (you should be able to run the replay from start to finish without errors using the "Replay game" function on a finished table)</li>
+<li>each action of the replay should be replayable by triggering it manually (i.e. by reproducing the exact same sequence as done played originally during the game</li>
+<li>each element of the game interface should be available for attaching a comment or a highlight component on it.</li></ol><p>You can read more about building tutorials in practice here: <a class="external free" href="https://boardgamearena.com/tutorialfaq" rel="nofollow">https://boardgamearena.com/tutorialfaq</a>
+</p><ul><li>that you have triggered this.ajaxcall() / this.bgaPerformAction() programmatically in a notification handling function or a callback instead of only on a user interface action.</li>
+<li>or (for 2) ), that there are several way to trigger the next action with different URL/arguments. You should make sure that the same game actions are triggered with the same "ajaxcall"  / "bgaPerformAction" whatever the UX path used.</li></ul><p>If a player trying to create a tutorial reports you an issue about 3):
+</p><ul><li>you might have some overlapping elements preventing to access the "div" tag of an important interface element to attach tutorial content to it.</li>
+<li>you might have some missing "ID" on elements of the interface, preventing the tutorial author to attach elements to them.</li></ul><h2><span class="mw-headline" id="Publishing_Tutorials">Publishing Tutorials</span></h2><p>Tutorials, in general, are only published if they satisfy these conditions:
+</p><ul><li>They have an average rating of 4.2 or higher</li>
+<li>They have been rated at least 10 times (for moving to BETA)</li>
+<li>They have been rated at least 100 times (for moving to LIVE)</li></ul><p>If a tutorial should be published, but does not meet these requirements, the help of a BGA admin is required.
+</p><h2><span class="mw-headline" id="Tutorial_Game_release_override">Tutorial Game release override</span></h2><p>In case someone already wrote a tutorial that did not work well because something small must be changed in the game adaptation code, it may be possible to make the existing tutorial works with a newer version of the game adaptation.
+</p><ul><li>You wrote 90% of a tutorial for game Carcassonne, based on a game replay which is using BGA version V1.</li>
+<li>Because of a problem in the game adaptation, you cannot write the remaining 10%.</li>
+<li>The developer of the Carcassonne adaptation fixes the issue in a new version of Carcassonne for BGA: version V2.</li>
+<li>You will have to rewrite the entire tutorial using a replay based on a game played with this new version V2.</li>
+<li>HOWEVER, using Tutorial game release override, you can ask a BGA admin to switch your tutorial to the newer version of the game.</li></ul><p>Important: This can only works if the game release updates are limited. To be more specific: the new version must be compatible with the moves notifications sent by the previous version. For example, if on the new version you expect on Client side a new parameter in a move notification, the version override will just break the replay and make your tutorial unplayable.
+</p><ul><li>The tutorial ID (you must be the tutorial author or the game adaptation developer)</li>
+<li>The game version that the tutorial should use</li></ul><p>If you're the game dev, you can change the version used by the tutorial by clicking "Tutorials" on the Game Metadata Manager then :
+<a class="image" href="/File:Tutorial_override_gameversion.png"><img alt="Tutorial override gameversion.png" decoding="async" height="292" src="/images/0/00/Tutorial_override_gameversion.png" width="1103"/></a>
+After changing the version, make sure the tutorial still works. If it doesn't, repoen this popin and save with an empty value, it will reset the game version used by the tutorial to its original one.
+</p></div></body>
+</html>

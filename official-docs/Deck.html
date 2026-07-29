@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Deck - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Deck rootpage-Deck action-view"><div class="article"><p><br/>
+</p><p>"Deck" is one of the most useful component on the PHP side. With "Deck", you can manage the cards in your game on the server side.
+</p><ul><li>Place cards in a pile, shuffle cards, draw cards one by one or many at a time.</li>
+<li>"Auto-reshuffle" the discard pile into the deck when the deck is empty.</li>
+<li>Move cards between different locations: hands of players, the table, etc.</li></ul><p><br/>
+</p><h2><span class="mw-headline" id="Using_Deck:_Hearts_example">Using Deck: Hearts example</span></h2><p>The Deck component is extensively used in the sample <i>Hearts</i> card game. You will find in "hearts.game.php" that the object "$this-&gt;cards" is used many times.
+</p><h2><span class="mw-headline" id="Deck_overview">Deck overview</span></h2><p>With Deck component, you manage all cards of your game.
+</p><h3><span class="mw-headline" id="The_5_properties_of_each_card">The 5 properties of each card</span></h3><p>Using the Deck component, each card will have 5 properties:
+</p><ul><li><b>id</b>: This is the unique ID of each card.</li>
+<li><b>type</b> and <b>type_arg</b>: These two values define the type of your card (i.e., what sort of card is this?).</li>
+<li><b>location</b> and <b>location_arg</b>: These two values define where the card is at now.</li></ul><p>The id, type, and type_arg properties are constants throughout the game. location and location_arg change when your cards move from one place to another in the game area.
+</p><p><b>type</b> and <b>type_arg</b> defines the type of your card.
+</p><p>You can use these two values as you like to make sure you will be able to identify the different cards in the game. See usage of "type" and "type_arg" below.
+</p><ul><li>In <i>Hearts</i>, "type" represents the color (suite) of the card (1 to 4) and "type_arg" is the value of the card (1, 2, ... 10, J, Q, K).</li>
+<li>In <i>Seasons</i>, "type" represents the type of the card (e.g., 1 is Amulet of Air, 2 is Amulet of Fire, etc...). type_arg is not used.</li>
+<li>In <i>Takenoko</i>, a Deck component is used for objective cards. "type" is the kind of objective (irrigation/panda/plot) and "type_arg" is the ID of the specific objective to realize (e.g., "green bamboo x4"). Note that a second Deck component is used in <i>Takenoko</i> to manage the "garden plot" pile.</li></ul><p><b>location</b> and <b>location_arg</b> define where a card is at now. <b>location</b> is a short string, and <b>location_arg</b> is an integer.
+</p><p>There are 3 special 'location' values that Deck manages automatically. You can choose to use these locations or not, depending on your needs:
+</p><ul><li>'deck': the 'deck' location is a standard draw deck. Cards are placed face down in a stack and are drawn in sequential order during the game. 'location_arg' is used to specify where the card is located within the stack (the card with the highest location_arg value is the next to be drawn).</li>
+<li>'hand': the 'hand' location represents cards in a player's hand. 'location_arg' is set to the ID of each player.</li>
+<li>'discard': the 'discard' location is used for discard piles. Card in 'discard' may be reshuffled into the deck if needed (see "autoreshuffle").</li></ul><p><br/>
+Tips: using the Deck component, you will use generic properties ("location", "type_arg",...) for specific purposes in your game. Thus, during the design step before realizing your game, take a few minutes to write down the exact meaning of each of these generic properties in the context of your game.
+</p><h3><span class="mw-headline" id="Create_a_new_Deck_component">Create a new Deck component</span></h3><p>For each Deck component in your game, you need to create a dedicated table in the SQL database. This table has a standard format. In practice, if you just want to have a Deck component named "card", you can copy/paste the following into your "dbmodel.sql" file:
+</p><pre>CREATE TABLE IF NOT EXISTS `card` (
+  `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `card_type` varchar(16) NOT NULL,
+  `card_type_arg` int(11) NOT NULL,
+  `card_location` varchar(16) NOT NULL,
+  `card_location_arg` int(11) NOT NULL,
+  PRIMARY KEY (`card_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+</pre><p>Note: the database schema of this table does not have to be exactly what is listed above. You can increase the size of the fields or add more fields. For additional fields
+you just have to do manual queries.
+</p><p>Once you have done this (and restarted your game), you can declare the Deck component in your PHP code in your class constructor. For <i>Hearts</i> for example, I added to the "Hearts()" method:
+</p><pre>        $this-&gt;cards = $this-&gt;deckFactory-&gt;createDeck('card');
+</pre><p>Note that we specify "card" here: the name of our previously created table. This means you can create several "Deck" components with multiple tables:
+</p><pre>        $this-&gt;firstKindCards = $this-&gt;deckFactory-&gt;createDeck( "first_kind_card" );
+        $this-&gt;secondKindCards = $this-&gt;deckFactory-&gt;createDeck( "second_kind_card" );
+</pre><p>Most of the time this is not useful; a Deck component should manage all objects of the same kind (i.e., all cards in the game).
+Note that you need to create a table for each "Deck", table name should be "first_kind_card" but the fields must remain "card_id", "card_type" and so on.
+</p><p>
+The "Deck" component provides a fast way to initialize all your cards at once: createCards. Here is how it is used for "Hearts":</p><p>As you can see, "createCards" takes a description of all cards of the game. For each type of card, you have to specify its "type", "type_arg" and the number of cards to create ("nbr"). "createCards" create all cards and place them into the "deck" location (as specified in the second argument).
+</p><h3><span class="mw-headline" id="Simple_examples_using_Deck">Simple examples using Deck</span></h3><p>(Most examples are from "Hearts" game)
+</p><pre>     // In "getAllDatas', we need to send to the current player all the cards he has in hand:
+     $result['hand'] = $this-&gt;cards-&gt;getCardsInLocation( 'hand', $player_id );
+</pre><pre>     // At some time we want to check if all the cards (52) are in player's hands:
+     if( $this-&gt;cards-&gt;countCardInLocation( 'hand' ) == 52 )
+           // do something
+</pre><pre>     // When a player plays a card in front of him on the table:
+     $this-&gt;cards-&gt;moveCard( $card_id, 'cardsontable', $player_id );
+
+     // Note the use of the custom location 'cardsontable' here to keep track of cards on the table.
+</pre><p><br/>
+</p><pre>     // This is a new hand: let's gather all cards from everywhere in the deck:
+     $this-&gt;cards-&gt;moveAllCardsInLocation( null, "deck" );
+
+     // And then shuffle the deck
+     $this-&gt;cards-&gt;shuffle( 'deck' );
+
+     // And then deal 13 cards to each player
+     // Deal 13 cards to each players
+     // Create deck, shuffle it and give 13 initial cards
+     $players = $this-&gt;loadPlayersBasicInfos();
+     foreach( $players as $player_id =&gt; $player )
+     {
+        $cards = $this-&gt;cards-&gt;pickCards( 13, 'deck', $player_id );
+           
+        // Notify player about his cards
+        $this-&gt;bga-&gt;notify-&gt;player( $player_id, 'newHand', '', array( 
+            'cards' =&gt; $cards
+         ) );
+     }  
+
+     // Note the use of "notify-&gt;player" instead of "notify-&gt;all": new cards is a private information ;)  
+</pre><h2><span class="mw-headline" id="Deck_component_reference">Deck component reference</span></h2><h3><span class="mw-headline" id="Initializing_Deck_component">Initializing Deck component</span></h3><p><b>init( $table_name )</b>
+</p><p>Argument:
+</p><ul><li>table_name: name of the DB table used by this Deck component.</li></ul><p>Must be called before any other Deck method.
+</p><p>HINT: Create the deck object with $this-&gt;deckFactory-&gt;createDeck in the constructor or you will get "$this-&gt;cards" as an invalid reference later. 
+</p><pre>	function Hearts( )
+	{
+        (...)
+        
+        $this-&gt;cards = $this-&gt;deckFactory-&gt;createDeck('card');
+	}
+</pre><p><b>createCards( $cards, $location='deck', $location_arg=null )</b>
+</p><p>"cards" describe all cards that need to be created. "cards" is an array with the following format:
+</p><pre>   // Create 1 card of type "1" with type_arg=99,
+   //  and 4 cards of type "2" with type_arg=12,
+   //  and 2 cards of type "3" with type_arg=33
+
+   $cards = array(
+        array( 'type' =&gt; 1, 'type_arg' =&gt; 99, 'nbr' =&gt; 1 ),
+        array( 'type' =&gt; 2, 'type_arg' =&gt; 12, 'nbr' =&gt; 4 ),
+        array( 'type' =&gt; 3, 'type_arg' =&gt; 33, 'nbr' =&gt; 2 )
+        ...
+   );
+</pre><p>Note: During the "createCards" process, Deck generates unique IDs for all card items.
+</p><p>If "$location" and "$location_arg" arguments are not set, newly created cards are placed in the "deck" location. If "location" (and optionally location_arg) is specified, cards are created for this specific location.
+</p><p>HINT: Be sure to do the createCards in setupNewGame. Doing createCards in the constructor will throw database errors.
+</p><h3><span class="mw-headline" id="Card_standard_format">Card standard format</span></h3><p>When Deck component methods are returning one or several cards, the following format is used:
+</p><pre>array(
+   'id' =&gt; ..,          // the card ID
+   'type' =&gt; ..,        // the card type
+   'type_arg' =&gt; ..,    // the card type argument
+   'location' =&gt; ..,    // the card location
+   'location_arg' =&gt; .. // the card location argument
+);
+</pre><h3><span class="mw-headline" id="Picking_cards">Picking cards</span></h3><p><b>pickCard( $location, $player_id )</b>
+</p><p>Return the card picked or "null" if there are no more card in given location.
+</p><p>This method supports auto-reshuffle (see "auto-reshuffle" below).
+</p><p>Pick "$nbr" cards from a "pile" location (ex: "deck") and place them in the "hand" of specified player.
+</p><p>Note that the number of cards picked can be less than "$nbr" in case there are not enough cards in the pile location.
+</p><p><b>pickCardForLocation( $from_location, $to_location, $location_arg=0 )</b>
+</p><ul><li>from_location is the "pile" style location from where you are picking a card.</li>
+<li>to_location is the location where you will place the card picked.</li>
+<li>if "location_arg" is specified, the card picked will be set with this "location_arg".</li></ul><p>This method supports auto-reshuffle (see "auto-reshuffle" below).
+</p><p>This method is similar to 'pickCards', except that you can pick cards for any sort of location and not only the "hand" location.
+</p><ul><li>from_location is the "pile" style location from where you are picking some cards.</li>
+<li>to_location is the location where you will place the cards picked.</li>
+<li>if "location_arg" is specified, the cards picked will be set with this "location_arg".</li>
+<li>if "no_deck_reform" is set to "true", the auto-reshuffle feature is disabled during this method call.</li></ul><p>This method supports auto-reshuffle (see "auto-reshuffle" below).
+</p><h3><span class="mw-headline" id="Moving_cards">Moving cards</span></h3><p><b>moveCard( $card_id, $location, $location_arg=0 )</b>
+</p><ul><li>card_id: ID of the card to move.</li>
+<li>location: location where to move the card.</li>
+<li>location_arg: if specified, location_arg where to move the card. If not specified "location_arg" will be set to 0.</li></ul><p><br/>
+<b>moveCards( $cards, $location, $location_arg=0 )</b>
+</p><ul><li>cards: an array of IDs of cards to move.</li>
+<li>location: location where to move the cards.</li>
+<li>location_arg: if specified, location_arg where to move the cards. If not specified "location_arg" will be set to 0.</li></ul><p><b>insertCard( $card_id, $location, $location_arg )</b>
+</p><p>If location_arg place is already taken, increment all cards after location_arg in order to insert new card at this precise location.
+</p><p><b>insertCardOnExtremePosition( $card_id, $location, $bOnTop )</b>
+</p><p>(note: Filling an empty location this way with N cards creates "location_arg"s from 1 to N if "$bOnTop" is true and -1 to -N if "$bOnTop" is false. This can cause off-by-one errors for code intended to run on a deck generated by "shuffle( $location )" which generates "location_arg"s from 0 to N - 1.)
+</p><p>Move all cards in specified "from" location to given location.
+</p><ul><li>from_location: where to take the cards. If null, cards from all locations will be move.</li>
+<li>to_location: where to put the cards</li>
+<li>from_location_arg (optional): if specified, only cards with given "location_arg" are moved.</li>
+<li>to_location_arg (optional): if specified, cards moved "location_arg" is set to given value. Otherwise "location_arg" is set to 0.</li></ul><p>Note: if you want to keep "location_arg" untouched, you should use "moveAllCardsInLocationKeepOrder" below.
+</p><p>Move all cards in specified "from" location to given "to" location. This method does not modify the "location_arg" of cards.
+</p><p>Move specified card at the top of the "discard" location.
+</p><h3><span class="mw-headline" id="Get_cards_informations">Get cards informations</span></h3><p><b>getCard( $card_id )</b>
+</p><p>Return null if this card is not found.
+</p><p>Get specific cards information.
+</p><p>If some cards are not found or if some card IDs are specified multiple times, the method throws an (unexpected) Exception.
+</p><p>Get all cards in specific location, as an array. Return an empty array if the location is empty.
+</p><ul><li>location (string): the location where to get the cards.</li>
+<li>location_arg (optional): if specified, return only cards with the specified "location_arg".</li>
+<li>order_by (optional): if specified, returned cards are ordered by the given database field. Example: "card_id" or "card_type".</li></ul><p>Using the "order_by" parameter changes the resulting array. Without parameter you get an associative array with the "card_id", with the paramter you get a simple indexed array.
+</p><p>Return the number of cards in specified location.
+</p><ul><li>location (string): the location where to count the cards.</li>
+<li>location_arg (optional): if specified, count only cards with the specified "location_arg".</li></ul><p><b>countCardsInLocations()</b>
+</p><p>The method returns an associative array with the format "location" =&gt; "number of cards".
+</p><pre>  array(
+    'deck' =&gt; 12,
+    'hand' =&gt; 21,
+    'discard' =&gt; 54,
+    'ontable' =&gt; 3
+  );
+</pre><p><b>countCardsByLocationArgs( $location )</b>
+</p><p>The method returns an associative array with the format "location_arg" =&gt; "number of cards".
+</p><pre>    countCardsByLocationArgs( 'hand' );
+    
+    // Result:
+    array(
+        122345 =&gt; 5,    // player 122345 has 5 cards in hand
+        123456 =&gt; 4     // and player 123456 has 4 cards in hand
+    );
+</pre><p><br/>
+<b>getPlayerHand( $player_id )</b>
+</p><p>Note: This is an alias for:
+getCardsInLocation( "hand", $player_id )
+</p><p>Get the card on top of the given ("pile" style) location, or null if the location is empty.
+</p><p><b>getCardsOnTop( $nbr, $location )</b>
+</p><p>The method return an array with at most "$nbr" elements (or a void array if there is no card in this location).
+</p><p><b>getExtremePosition( $bGetMax ,$location )</b>
+</p><p>Get the position of cards at the top of the given location / at the bottom of the given location.
+</p><p>If bGetMax=true, return the location of the top card of the pile.
+</p><p><b>getCardsOfType( $type, $type_arg=null )</b>
+</p><p>Return an array of cards, or an empty array if there is no cards of the specified type.
+</p><ul><li>type: the type of cards</li>
+<li>type_arg: if specified, return only cards with the specified "type_arg".</li></ul><p><b>getCardsOfTypeInLocation( $type, $type_arg=null, $location, $location_arg = null )</b>
+</p><p>Return an array of cards, or an empty array if there is no cards of the specified type.
+</p><ul><li>type: the type of cards</li>
+<li>type_arg: if specified, return only cards with the specified "type_arg".</li>
+<li>location (string): the location where to get the cards.</li>
+<li>location_arg (optional): if specified, return only cards with the specified "location_arg".</li></ul><h3><span class="mw-headline" id="Shuffling">Shuffling</span></h3><p><b>shuffle( $location )</b>
+</p><p>Shuffle only works on locations where cards are on a "pile" (ex: "deck").
+</p><h3><span class="mw-headline" id="Auto-reshuffle">Auto-reshuffle</span></h3><p>To enable auto-reshuffle you must do "<code>$this-&gt;cards-&gt;autoreshuffle = true</code>" during the setup of the component (often in the <i>_construct</i> function when you <i>init()</i> the Deck object).
+</p><p>
+If you need to notify players when the deck is shuffled, you can setup a callback method using this feature: </p><p>
+If you need to use other locations than "deck" and "discard" for auto-reshuffle feature, you can configure it this way: </p><p> (replace 'deck' and 'discard' with your custom locations).</p></div></body>
+</html>

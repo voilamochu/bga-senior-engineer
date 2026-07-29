@@ -1,0 +1,490 @@
+#association-board-resizable {
+    width: calc(var(--arkNovaAssociationBoardScale) * 695px);
+    height: calc(var(--arkNovaAssociationBoardScale) * 665px);
+    [data-conservation-track="0"] & {
+        height: calc(var(--arkNovaAssociationBoardScale) * 585px);
+    }
+    position: relative;
+    grid-row: 1 / span 2;
+    justify-self: center;
+
+    #association-board-container {
+        transform: scale(var(--arkNovaAssociationBoardScale));
+        transform-origin: top left;
+        width: 695px;
+        height: 665px;
+        [data-conservation-track="0"] & {
+            height: 585px;
+        }
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-right: 5px;
+        --arkNovaZooCardScale: 0.36;
+
+        #projects-holder,
+        #base-projects-holder {
+            position: relative;
+            padding: 3px 2px 3px 14px;
+            box-sizing: border-box;
+            background-image: url("img/sheet_background.jpg");
+            background-size: cover;
+            box-shadow: 1px 1px 7px -1px black;
+            border: 2px solid black;
+            border-radius: 5px;
+            display: flex;
+
+            .project-holder {
+                width: 134px;
+                height: 186px;
+                background: #ffffff88;
+                border: 2px solid #00000088;
+                border-radius: 4px;
+                margin: 0 3px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                .ark-card.zoo-card.project-card {
+                    border: 1px solid black;
+                    border-radius: 4px;
+                    margin: -1px 0px 0px -1px;
+                }
+            }
+
+            & > .icon-container {
+                position: absolute;
+                left: -17px;
+                top: 61px;
+
+                .arknova-icon {
+                    width: 28px;
+                    height: 40px;
+                }
+            }
+        }
+
+        #association-board-middle {
+            width: 695px;
+            height: 180px;
+            flex-shrink: 0;
+            display: flex;
+
+            #workers-reserves {
+                width: 60px;
+                padding-left: 1px;
+                font-size: 14px;
+                display: flex;
+                flex-flow: column;
+                justify-content: space-evenly;
+                background: url("img/notebook.png");
+                background-size: 295px;
+                background-position: -21px -59px;
+                box-shadow: 1px 1px 6px black;
+                border: 1px solid black;
+                margin: 4px -2px 4px 0px;
+                border-top-left-radius: 4px;
+                border-bottom-left-radius: 4px;
+
+                .player-reserve {
+                    height: 44px;
+
+                    .icon-worker:nth-child(1),
+                    .icon-worker:nth-child(3) {
+                        margin-right: -12px;
+                    }
+                    .icon-worker:nth-child(2) {
+                        margin-top: -2px;
+                        margin-bottom: -9px;
+                    }
+                    .icon-worker:nth-child(3) {
+                        margin-left: 5px;
+                        margin-top: -21px;
+                        margin-bottom: 3px;
+                    }
+                    .icon-worker:nth-child(4) {
+                        margin-top: -13px;
+                    }
+                }
+            }
+
+            #studbooks {
+                width: 56px;
+                padding-left: 4px;
+                margin-left: -4px;
+
+                [data-marine="1"] & {
+                    font-size: 10px;
+                    display: flex;
+                    flex-flow: column;
+                    justify-content: center;
+                    align-items: center;
+                    background: url("img/notebook.png");
+                    background-size: 295px;
+                    background-position: -21px -59px;
+                    box-shadow: 1px 1px 6px black;
+                    border: 1px solid black;
+                    margin: 4px -2px 4px -4px;
+                    border-top-right-radius: 4px;
+                    border-bottom-right-radius: 4px;
+
+                    .arknova-icon {
+                        flex-shrink: 0;
+                        & ~ .arknova-icon {
+                            margin-top: -25%;
+                        }
+                    }
+                }
+            }
+
+            #association-board {
+                position: relative;
+                z-index: 2;
+                flex-shrink: 0;
+                width: 574px;
+                height: 170px;
+                background: url("img/association-board.jpg");
+                background-size: 100%;
+                box-shadow: 1px 1px 13px -1px black;
+                margin: 4px 0px;
+                border: 1px solid black;
+                border-radius: 5px;
+                display: flex;
+                [data-marine="1"] & {
+                    background-image: url("img/association-board-marine.jpg");
+                }
+
+                & > div {
+                    height: 100%;
+                    flex-shrink: 0;
+                    position: relative;
+
+                    .worker-slot {
+                        position: absolute;
+                        border-radius: 4px;
+                        box-sizing: border-box;
+                        display: flex;
+
+                        &.selectable {
+                            border: 2px dashed red;
+                            cursor: pointer;
+
+                            &:hover {
+                                border: 2px solid red;
+                            }
+                        }
+                        &.disabled {
+                            border: 2px solid grey;
+                            cursor: not-allowed;
+                            filter: grayscale(100%);
+                            pointer-events: none;
+                        }
+                    }
+
+                    &#association-board-0 {
+                        width: 92px;
+
+                        #association-donation {
+                            display: grid;
+                            width: 83px;
+                            height: 139px;
+                            margin: 29px 4px 0px;
+                            grid-template-columns: 1fr 1fr;
+                            grid-template-rows: repeat(5, 1fr);
+                            font-size: 13px;
+
+                            #association_0_7 {
+                                grid-column-end: span 2;
+                            }
+                        }
+                    }
+                    &#association-board-2 {
+                        width: 62px;
+                        .worker-slot {
+                            width: 50px;
+                            height: 70px;
+                            left: 5px;
+                            top: 96px;
+
+                            flex-flow: column;
+                            justify-content: end;
+                            .icon-worker {
+                                margin-top: -23px;
+                                &:nth-of-type(2n) {
+                                    margin-left: 24px;
+                                }
+                            }
+                        }
+                    }
+                    &#association-board-3 {
+                        width: 207px;
+                        .worker-slot {
+                            width: 197px;
+                            height: 33px;
+                            left: 4px;
+                            top: 133px;
+                        }
+
+                        .continent-slot {
+                            position: absolute;
+                            width: 72px;
+                            height: 60px;
+
+                            &#association_3_partner-Africa {
+                                top: 69px;
+                                left: 63px;
+                            }
+                            &#association_3_partner-Americas {
+                                top: 34px;
+                                left: 1px;
+                            }
+                            &#association_3_partner-Europe {
+                                top: 4px;
+                                left: 63px;
+                            }
+                            &#association_3_partner-Asia {
+                                top: 4px;
+                                left: 133px;
+                            }
+                            &#association_3_partner-Australia {
+                                top: 69px;
+                                left: 133px;
+                            }
+                        }
+                    }
+                    &#association-board-4 {
+                        width: 156px;
+                        .worker-slot {
+                            width: 146px;
+                            height: 33px;
+                            left: 4px;
+                            top: 133px;
+                        }
+
+                        .fac-slot {
+                            position: absolute;
+                            width: 80px;
+                            height: 64px;
+
+                            &#association_4_fac-rep-hand {
+                                top: 3px;
+                                left: 48px;
+                            }
+                            &#association_4_fac-science-rep {
+                                top: 67px;
+                                left: 76px;
+                            }
+                            &#association_4_fac-science-science {
+                                top: 67px;
+                                left: 1px;
+                            }
+                            &#association_4_fac-generic {
+                                display: none;
+                            }
+
+                            [data-marine="1"] & {
+                                &#association_4_fac-rep-hand {
+                                    top: 19px;
+                                    left: 1px;
+                                }
+                                &#association_4_fac-generic {
+                                    display: block;
+                                    top: 19px;
+                                    left: 76px;
+                                }
+                                &#association_4_fac-science-rep {
+                                    top: 74px;
+                                }
+                                &#association_4_fac-science-science {
+                                    top: 74px;
+                                }
+                            }
+                        }
+                    }
+                    &#association-board-5 {
+                        width: 58px;
+                        .worker-slot {
+                            width: 49px;
+                            height: 70px;
+                            left: 4px;
+                            top: 95px;
+
+                            flex-flow: column;
+                            justify-content: end;
+                            .icon-worker {
+                                margin-top: -23px;
+                                &:nth-of-type(2n) {
+                                    margin-left: 24px;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        #conservation-track-duplicate {
+            [data-conservation-track="0"] & {
+                display: none;
+            }
+            position: relative;
+            background: url("img/score-board-conservation.jpg");
+            background-size: 100%;
+            height: 75px;
+            width: 100%;
+            margin-bottom: 5px;
+            flex-shrink: 0;
+            border-radius: 5px;
+            border: 1px solid black;
+            box-shadow: 1px 1px 5px black;
+            cursor: zoom-in;
+
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            padding: 4px 5px 0px 5px;
+            grid-column-gap: 11px;
+
+            .conservation-slot {
+                align-items: flex-start;
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                font-size: 14px;
+
+                .icon-cylinder:nth-child(3),
+                .icon-cylinder:nth-child(4) {
+                    position: relative;
+                    top: -37px;
+                    left: -4px;
+                }
+            }
+
+            .icon-cylinder {
+                transition: transform 0.5s;
+                transform: translateY(0);
+            }
+            &:hover {
+                .icon-cylinder {
+                    transform: translateY(-50%);
+                }
+                .icon-cylinder:nth-child(3),
+                .icon-cylinder:nth-child(4) {
+                    transform: translateY(-75%);
+                }
+            }
+            #conservation-duplicate-off {
+                position: absolute;
+                right: 0px;
+                width: 0px;
+                .icon-cylinder {
+                    visibility: hidden;
+                    pointer-events: none;
+                }
+            }
+
+            .scoreboard-bonus {
+                position: absolute;
+                top: 31px;
+                width: 38px;
+                height: 40px;
+                font-size: 11px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                &.permanent,
+                &#duplicate-scoreboard-bonus-10-0 {
+                    .arknova-bonus-container {
+                        width: 100%;
+                        height: 100%;
+                        .arknova-bonus {
+                            display: none;
+                        }
+                    }
+                }
+            }
+
+            #duplicate-scoreboard-bonus-2-0 {
+                left: 106px;
+            }
+            #duplicate-scoreboard-bonus-2-1 {
+                left: 170px;
+            }
+
+            #duplicate-scoreboard-bonus-5-0,
+            #duplicate-scoreboard-bonus-8-0 {
+                left: 332px;
+                width: 30px;
+                height: 30px;
+                top: 41px;
+            }
+            #duplicate-scoreboard-bonus-5-1 {
+                left: 290px;
+            }
+            #duplicate-scoreboard-bonus-5-2 {
+                left: 366px;
+            }
+
+            #duplicate-scoreboard-bonus-8-0 {
+                left: 521px;
+            }
+            #duplicate-scoreboard-bonus-8-1 {
+                left: 479px;
+            }
+            #duplicate-scoreboard-bonus-8-2 {
+                left: 555px;
+            }
+
+            #duplicate-scoreboard-bonus-10-0 {
+                left: 644px;
+            }
+        }
+
+        #veteranirian-other {
+            position: absolute;
+            right: 62px;
+            top: 0px;
+            color: white;
+            width: 30px;
+            height: 30px !important;
+            justify-content: end;
+            align-items: baseline;
+            font-size: 16px;
+            font-family: "MyriadPro-Regular";
+            display: none;
+            &.active {
+                display: flex;
+            }
+        }
+
+        #veteranirian-myself {
+            right: 87px;
+            top: 4px;
+            width: 30px;
+            height: 30px !important;
+            font-size: 16px;
+            display: none;
+            &.active {
+                display: flex;
+            }
+        }
+    }
+}
+
+#ebd-body[data-association-board-projects="1"] #association-board-resizable {
+    height: calc(var(--arkNovaAssociationBoardScale) * 400px);
+
+    #association-board-container {
+        height: 400px;
+    }
+}
+
+#ebd-body[data-association-board-projects="1"][data-conservation-track="0"] #association-board-resizable {
+    height: calc(var(--arkNovaAssociationBoardScale) * 320px);
+
+    #association-board-container {
+        height: 320px;
+    }
+}

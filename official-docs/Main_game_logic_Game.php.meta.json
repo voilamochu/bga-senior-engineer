@@ -1,0 +1,15 @@
+{
+  "title": "Main game logic: Game.php",
+  "source_html": "Main_game_logic_Game.php.html",
+  "clean_html": "Main_game_logic_Game.php.html",
+  "url": "https://en.doc.boardgamearena.com/Main_game_logic:_Game.php",
+  "depth": 1,
+  "sha256_raw": "ee12a3abbd47c9aa6ceba577448831ca2059535033752b81a3e490c3d670529e",
+  "sha256_clean": "6a3e38156b8c18785c2240ab10b4dcd8737c61f698e69b424e149c59be03d01b",
+  "word_count": 13423,
+  "code_block_count": 84,
+  "table_count": 1,
+  "image_count": 0,
+  "heading_count": 58,
+  "cleaned_at": "2026-07-06T06:38:19.378530+00:00"
+}

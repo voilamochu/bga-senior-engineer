@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Stock - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Stock rootpage-Stock action-view"><div class="article"><p><br/>
+</p><p><big>A new lib for cards has been added to the framework: <b><a href="BgaCards.html" title="BgaCards">BgaCards</a></b>. <i>We recommend to use it instead of Stock.</i></big>
+</p><h2><span class="mw-headline" id="Overview">Overview</span></h2><p><b>Stock</b> is a javascript component that you can use in your game interface to display a set of elements of the same size that need to be arranged in single or multiple lines.
+</p><p>Examples of stock use cases:
+</p><ul><li>Display a set of cards, typically hands (examples: <i>Hearts</i>, <i>Seasons</i>, <i>The Boss</i>, <i>Race for the Galaxy</i>).</li>
+<li>Display items in player panels (examples: <i>Takenoko</i>, <i>Amyitis</i>, ...)</li>
+<li>... Many other situations. For example, black dice and cubes on cards in <i>Troyes</i> are displayed with stock components.</li></ul><p>Using stock:
+</p><ul><li>Your items are arranged nicely and sorted by type.</li>
+<li>When adding or removing items to a set, all items slide smoothly to their new position in the set.</li>
+<li>Selecting and unselecting items are built-in functions.</li>
+<li>You don't have to worry about inserting/removing HTML code; the entire life cycle of the stock is managed by the component.</li></ul><h2><span class="mw-headline" id="Using_stock:_a_simple_example">Using stock: a simple example</span></h2><p>Let's have a look at how the stock is used in the game <i>Hearts</i> to display a hand of standard cards.
+</p><pre>const [stock] = await importDojoLibs(['ebg/stock']);
+</pre><p>The stock is initialized in the Javascript "setup" method like this:
+</p><pre>    // Player hand
+    this.playerHand = new ebg.stock();
+    this.playerHand.create( this.bga.gameui, $('myhand'), this.cardwidth, this.cardheight );
+</pre><p>Explanations:
+</p><ul><li>We create a new stock object for the player hand.</li>
+<li>As parameters of the "create" method, we provide the width/height of an item (a card), and the div container "myhand" - which is a simple empty "div" element defined in our HTML template (.tpl).</li></ul><p>Then, we must tell the stock what items it is going to display during its life: the 52 cards of a standard card game. Of course, we did not create 52 different images, but a "CSS sprite" image named "cards.jpg" with the cards arranged in 4 rows and 13 columns.
+</p><pre>    // Specify that there are 13 images per row in the CSS sprite image
+    this.playerHand.image_items_per_row = 13;
+
+    // Create card types:
+    for( var color=1;color&lt;=4;color++ )
+    {
+        for( var value=2;value&lt;=14;value++ )
+        {
+            // Build card type id
+            var card_type_id = this.getCardUniqueId( color, value );
+            this.playerHand.addItemType( card_type_id, card_type_id, this.bga.images.getImgUrl('cards.jpg'), card_type_id );
+        }
+    }
+</pre><p>Explanation:
+</p><ul><li>First, we tell the stock component that our CSS sprite contains 13 items per row. This way, it can find the correct image for each card type id.</li>
+<li>Then for the 4x13 cards, we call the "addItemType" method that creates the type. The arguments are the type id, the weight of the card (for sorting purpose), the URL of our CSS sprite, and the position of our card image in the CSS sprite.</li></ul><p>Note: In this specific example we need to generate a unique ID for each type of card based on its color and value. This is the only purpose of "getCardUniqueId".
+</p><pre>this.playerHand.addToStock( this.getCardUniqueId( 2 /* 2=hearts */, 5 ) );
+</pre><p>In reality, cards have some IDs, which are useful to manipulate them. This is the reason we are using "addToStockWithId" instead:
+</p><pre>this.playerHand.addToStockWithId( this.getCardUniqueId( 2 /* 2=hearts */, 5 ), my_card_id );
+</pre><p>If afterwards we want to remove this card from the stock:
+</p><pre>this.playerHand.removeFromStockById( my_card_id );
+</pre><h2><span class="mw-headline" id="Complete_stock_component_reference">Complete stock component reference</span></h2><p>for interest, the source is available here : <a class="external free" href="https://x.boardgamearena.net/data/themereleases/220811-1000/js/modules/stock.js" rel="nofollow">https://x.boardgamearena.net/data/themereleases/220811-1000/js/modules/stock.js</a> (this link may change with new release)
+</p><p>And StockItemType is record {weight: number, image: string, image_position: number}
+</p><h3><span class="mw-headline" id="Creation">Creation</span></h3><p><b>create( page, container_div, item_width, item_height ):</b>
+</p><p>Parameters:
+</p><ul><li>page: the container page. Usually: "this.bga.gameui".</li>
+<li>container_div: the container "div" element. Its not an id, if you have id you can pass $(id). It must exists.</li>
+<li>width and height (in pixels) for the stock component.</li></ul><p>(See <i>Hearts</i> example above).
+</p><p>Define a new type of item (StockItemtType) and add it to the stock with given type id.
+</p><p>Parameters:
+</p><ul><li>type: id of the type to add. You can choose any positive integer. All item types must have distinct IDs.</li>
+<li>weight: weight of items of this type. Weight value is used to sort items of the stock during the display. Note that you can specify the same weight for all items; in this case, they are not sorted and their order might change randomly at any time.</li>
+<li>image: URL of item image. Most of the time, you will use a CSS sprite for stock items, so you have to specify CSS sprite image here.</li></ul><p>Be careful: you must specify the image url as this:
+</p><pre>  this.bga.images.getImgUrl('yourimage.png')
+</pre><ul><li>image_position: if "image" specify the URL of a CSS sprite, you must specify the position of the item image in this CSS sprite. For example, if you have a CSS sprite with 3 cubes with a size of 20x20 pixels each (so your CSS image has for example a size of 20x60 or 60x20), you specify "0" for the first cube image, 1 for the second, 2 for the third.</li></ul><p><i>Important</i>: if there is more than one line of items in your CSS sprite,  you must specify how many items per line you have in your CSS sprite, see image_items_per_row below:
+</p><pre>    // Specify that there are 10 image items per row in images used in "myStockObject" control.
+    this.myStockObject.image_items_per_row = 4;
+</pre><h3><span id="Add.2FRemove_items"></span><span class="mw-headline" id="Add/Remove_items">Add/Remove items</span></h3><p><b>addToStock( type, from )</b>
+</p><p>To make your life easier, in most cases we suggest you use <b>addToStockWithId</b> in order to give an ID to the item added. <b>addToStock</b> is suitable when you are using a stock to control items that are generic game materials that don't need to be tracked individually (example: a bunch of money tokens).
+</p><ul><li>type: ID of the item type to use (as specified in "addItemType")</li>
+<li>from: OPTIONAL: if you specify an HTML item here, the item will appear on this item and will be slid to its position on the stock item.</li></ul><p>Example:
+</p><pre>  // Add a money token to the "player money" stock.
+  // The money token will appear on "player_id" player panel and will move to its position.
+  this.playerMoney.addToStock( MONEY_TOKEN, 'overall_player_board_'+player_id );
+</pre><p>Important: for a given stock control, you must use either <b>addToStock</b> or <b>addToStockWithId</b>, but NEVER BOTH OF THEM.
+</p><p>This is the same method as <b>addToStock</b>, except that it also associates an ID with the newly created item.
+</p><ul><li>When you need to know which item(s) have been selected by the user (see <b>getSelectedItems</b>).</li>
+<li>When you need to remove a specific item from the stock with <b>removeFromStockById</b>.</li></ul><p><b>removeFromStock( type, to, noupdate )</b>
+</p><p>'to' is an optional parameter. If "to" contains the ID of an HTML element, the item removed from the Stock slides to this HTML element before it disappears. Note that this method does not expose the associated animation object, however, so it's not possible to trigger other actions when it finishes, for example. If you need to do that, use Dojo's slideToObject() instead.
+</p><p><b>removeFromStockById( id, to, noupdate )</b>
+</p><p>'to' is an optional parameter. If "to" contains the ID of an HTML element, the item removed from the Stock slides to this HTML element before it disappears. Note that this method does not expose the associated animation object, however, so it's not possible to trigger other actions when it finishes, for example. If you need to do that, use Dojo's slideToObject() instead.
+</p><p><b>removeAll()</b>
+</p><p><b>removeAllTo( to )</b>
+</p><p><br/>
+</p><h3><span class="mw-headline" id="Getters">Getters</span></h3><p><b>getPresentTypeList()</b>
+</p><p>Example:
+</p><pre>    this.myStockControl.removeAll();
+    this.myStockControl.addToStock( 65 );
+    this.myStockControl.addToStock( 34 );
+    this.myStockControl.addToStock( 89 );
+    this.myStockControl.addToStock( 65 );
+    
+    // The following returns: { 34:1,  65:1,  89:1  }
+    var item_types = this.myStockControl.getPresentTypeList();
+</pre><p><b>count():</b>
+</p><p><b>getAllItems()</b>
+</p><p><b>getItemDivId(id)</b>
+</p><p><b>getItemById(id)</b>
+</p><p><b>getItemWeightById(id: number): number|null</b>
+</p><p><b>container_div</b>
+</p><p><b>control_name</b>
+Its id of container_div above
+</p><h3><span class="mw-headline" id="Selection">Selection</span></h3><p><b>setSelectionMode( mode )</b>
+</p><ul><li>0: no item can be selected by the player.</li>
+<li>1 (default): a maximum of one item can be selected by the player at a time.</li>
+<li>2: multiple items can be selected by the player at the same time.</li></ul><p><b>setSelectionAppearance( type )</b>
+</p><ul><li>'border': there will be a red border around selected items (this is the default). The attribute 'apparenceBorderWidth' can be used to manage the width of the border (in pixels).</li>
+<li>'disappear': the selected item will fade out and disappear. This is useful when the selection has the effect of destroying the item.</li>
+<li>'class': there will be an extra <b>stockitem_selected</b> css class added to the element when it is selected (and removed when unselected). The name of the class can be changed by using the <b>selectionClass</b> attribute. You can also override the default class in the css file for your game but beware of the <b>!important</b> keyword.</li></ul><p>By default this class definition is:
+</p><pre>.stockitem_selected {
+	border: 2px solid red ! important;
+}
+</pre><p>If you want to override it (for example, to change the border color) add this in your &lt;game&gt;.css file:
+</p><pre>.stockitem_selected {
+	border: 2px solid orange ! important;
+}
+</pre><p><b>isSelected( id )</b>
+</p><p><b>selectItem( id )</b>
+</p><p><b>unselectItem( id )</b>
+</p><p><b>unselectAll()</b>
+</p><p><b>selectItemsByType(type: number): void</b>
+</p><p><b>unselectItemsByType(type: number): void</b>
+</p><p><b>onChangeSelection</b>
+</p><p>You can connect this to one of your methods like this:
+</p><pre>    dojo.connect( this.myStockControl, 'onChangeSelection', this, 'onMyMethodToCall' );
+    
+    (...)
+    
+    onMyMethodToCall( control_name, item_id )
+    {
+        // This method is called when myStockControl selected items changed
+        var items = this.myStockControl.getSelectedItems();
+        
+        // (do something)
+    }
+</pre><p>Nota bene: 
+- The "control_name" argument is the ID (the "DOM" id) of the "div" container of your stock control. Using "control_name", you can use the same callback method for different Stock control and see which one trigger the method.
+- The "item_id" argument is the stock ID (index) of the stock item that has just been selected/unselected.
+</p><p>Return the list of selected items, as an array with the following format:
+</p><pre>[
+   { type:1,  id:  1001 },
+   { type:1,  id:  1002 },
+   { type:3,  id:  1003 }
+   ...
+]
+</pre><p><b>getUnselectedItems()</b>
+</p><h3><span class="mw-headline" id="Layout">Layout</span></h3><p><b>resetItemsPosition()</b>
+</p><p><br/>
+</p><p>Example code if you change the underlying stock item, or otherwise want to make the stock item refresh:
+</p><pre>    this.myStockControl.updateDisplay();
+</pre><p><b>item_margin</b>
+</p><p>Example:
+</p><pre>     this.myStockControl.item_margin=5;
+</pre><p><b>changeItemsWeight( newWeights )</b>
+</p><p>Items are immediately re-sorted with the new weight.
+</p><p>newWeights is an associative array: item type id =&gt; new weight.
+</p><pre>    // Item type 1 gets a new weight of 10, 2 a new weight of 20, 3 a new weight of 30.
+    this.myStockControl.changeItemsWeight( { 1: 10, 2: 20, 3: 30 } );
+</pre><p>Example2:
+</p><pre>    // Be careful with object initialisers with variables, use the bracket notation.
+    // Item type 1 gets a new weight of 10
+    var card_type = 1;
+    this.myStockControl.changeItemsWeight( { [card_type]: 10 } );
+</pre><p><br/>
+<b>centerItems</b>
+</p><p><b>setOverlap( horizontal_percent, vertical_percent )</b>
+</p><p><b>horizontal_overlap</b>
+</p><p>When horizontal_overlap=20, it means that a stock item will overlap to only show 20% of the width of all the previous items. horizontal_overlap can't be greater than 100.
+</p><p>There is two modes, in one mode it used to adjust every 2nd item (See the games "Jaipur" or "Koryŏ"), second mode when setting use_vertical_overlap_as_offset=false is more/less normal overlap with vertical layout except its perentage of overlap (opposite of horizontal_overlap).
+</p><p>This is example of vertical stock with overlap
+</p><pre>stock.container_div.width = "60px"; // enought just for 1 card
+stock.autowidth = false; // this is required so it obeys the width set above
+stock.use_vertical_overlap_as_offset = false; // this is to use normal vertical_overlap
+stock.vertical_overlap = 20; // overlap
+stock.horizontal_overlap  = -1; // current bug in stock - this is needed to enable z-index on overlapping items
+stock.item_margin = 0; // has to be 0 if using overlap
+stock.updateDisplay(); // re-layout
+</pre><p><a class="image" href="/File:StockV.png"><img alt="StockV.png" decoding="async" height="479" src="/images/f/fb/StockV.png" width="312"/></a> <a class="image" href="/File:StockHV.png"><img alt="StockHV.png" decoding="async" height="267" src="/images/6/66/StockHV.png" width="327"/></a> <a class="image" href="/File:StockMixed.png"><img alt="StockMixed.png" decoding="async" height="307" src="/images/1/11/StockMixed.png" width="325"/></a>
+</p><p><b>autowidth</b>
+</p><pre>  mystock.autowidth = true;
+</pre><p><b>resizeItems( width, height, background_width, background_height )</b>
+</p><p>background_height is an optional argument.
+</p><pre> stock.resizeItems(100, 120, 150, 170);</pre><h3><span class="mw-headline" id="Customize_Appearance">Customize Appearance</span></h3><p><b>extraClasses</b>
+</p><pre> this.playerHand.extraClasses='mycard';
+</pre><p>Note that it is the same list for all items.
+</p><p>Using onItemCreate, you can trigger a method each time a new item is added to the Stock, in order to customize it.
+</p><pre>    // During "setup" phase, we associate our method "setupNewCard" with the creation of a new stock item:
+    this.myStockItem.onItemCreate = dojo.hitch( this, 'setupNewCard' ); 
+
+
+    // And here is our "setupNewCard":
+    setupNewCard( card_div, card_type_id, card_id )
+    {
+       // Add a special tooltip on the card:
+       this.addTooltip( card_div.id, _("Some nice tooltip for this item"), '' );
+
+       // Note that "card_type_id" contains the type of the item, so you can do special actions depending on the item type
+
+       // Add some custom HTML content INSIDE the Stock item:
+       dojo.place( this.format_block( 'jstpl_my_card_content', {
+                                ....
+                           } ), card_div.id );
+    }
+
+</pre><p><b>onItemDelete</b>
+</p><pre>  this.myStock.onItemDelete = (card_div, card_type_id, card_id) =&gt; { console.log("card deleted from myStock: "+card_id); };
+</pre><p><br/>
+<b>jstpl_stock_item</b>
+</p><pre>  mystock.jstpl_stock_item ='&lt;div id="${id}" class="stockitem ${extra_classes}" style="top:${top}px;left:${left}px;width:${width}px;height:${height}px;${position};background-image:url(\'${image}\');${additional_style}"&gt;&lt;/div&gt;';
+            
+</pre><p>Note: variable ${position} normally resolve to nothing or z-index: X - depending on overlap variables, and additional_style resolves to `background-size: ${this.backgroundSize}` if it is set
+</p><p>If you want to use your own css styles for images on the items (i.e. not grid), you can do it as following, use customize template, then modify onItemCreate to add slyle which is based on type
+</p><pre> mystock.jstpl_stock_item =  '&lt;div id="${id}" class="stockitem card" style="top:${top}px;left:${left}px;${position};"&gt;&lt;/div&gt;';
+ mystock.onItemCreate = (card_div, card_type_id, card_id ) =&gt; { dojo.addClass(card_div, 'card_type_'+card_type_id); }
+ for (var type = 0; type &lt;= 48; type++) {
+   mystock.addItemType(type, type); // we skipped image and image position here
+ }
+</pre><p>Note: in this case your CSS must define all styles require for these stock items such as width, heigh, image and image positioning for every type
+</p><pre>.card {
+  width: 50px;
+  height: 80px;
+  background-image: url(img/cards.jpg);
+  background-size: 600% auto;
+}
+.card_type_1 {
+  background-postion: 20% 0%;
+}
+</pre><h2><span id="Tips_when_adding.2Fremoving_items_to.2Ffrom_Stock_components"></span><span class="mw-headline" id="Tips_when_adding/removing_items_to/from_Stock_components">Tips when adding/removing items to/from Stock components</span></h2><p>Most cases will be one of the following situations:
+</p><p>When you add a card to a stock item, and this card is <b>not</b> coming from another stock:
+</p><ul><li>Use <b>addToStockWithId</b> with a "from" argument set to the element of your interface where the card should come from (i.e. div id). For example if you want to "reveal" card from player hand and it is not an interface element you can set from to be 'player_board_'+activePlayerId (where activePlayerId is player who played that card).</li></ul><p><b>Situation B</b>:
+</p><ul><li>On the destination Stock, use <b>addToStockWithId</b> with a "from" argument which is the HTML id of the corresponding item in the source Stock. For example, if the source stock id is "myHand", then the HTML id of card 48 is "myHand_item_48".</li>
+<li>Then, remove the source item with <b>removeFromStockById</b>. Note: do NOT set the 'to' argument in this call, otherwise you'll get two animations.</li></ul><p>(Note that it's important to do things in this order, because the source item must still exist when you use it as the origin of the slide.)
+</p><p>When you move a card from a stock item to something that is not a stock item:
+</p><ul><li>Insert the card as a classic HTML template (dojo.place / this.format_block).</li>
+<li>Place it on the Stock item with <b>this.placeOnObject</b>, using the Stock item HTML id (see above).</li>
+<li>Slide it to its new position with <b>this.slideToObject</b>.</li>
+<li>Remove the card from the Stock item with <b>removeFromStockById</b>.</li></ul><p>Using the methods above, your cards should slide to, from, and between your Stock controls smoothly.
+</p><h2><span class="mw-headline" id="Known_issues">Known issues</span></h2><h4><span class="mw-headline" id="Incorrectly_displayed_sprites_on_Safari">Incorrectly displayed sprites on Safari</span></h4><p>As mentioned above, stock displays its images using "sprites" consisting of a portion of a larger image. To accomplish this, it uses the CSS background-position attribute in negative multiples of 100%. For example, the first element of the first row would be 0% 0%. The second element of the first row would be -100% 0%, etc.
+</p><p>Using pixels in background-position is probably the easiest way to fix this problem, but that would require modifying the stock code itself. As a developer, you can also work around the problem by specifying a background-size attribute based on the size in elements of your source image. For example, if you have a source image that contains 5 rows of 28 sprites, you should specify "background-size: 2800% 500%;"
+</p></div></body>
+</html>

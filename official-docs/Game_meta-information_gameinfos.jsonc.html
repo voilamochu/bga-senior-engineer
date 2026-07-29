@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Game meta-information: gameinfos.jsonc - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Game_meta-information_gameinfos_jsonc rootpage-Game_meta-information_gameinfos_jsonc action-view"><div class="article"><p><br/>
+</p><h2><span class="mw-headline" id="Overview">Overview</span></h2><p>From this file, you can edit the various meta-information of your game.
+</p><p>Note: if you break gameinfos and cannot load the management page, then reload using the direct URL: <a class="external free" href="https://studio.boardgamearena.com/admin/studio/reloadGameInfos.html?game=" rel="nofollow">https://studio.boardgamearena.com/admin/studio/reloadGameInfos.html?game=</a> (with your game name at the end of url).
+</p><p>See sections below for specific cases.
+</p><h2><span class="mw-headline" id="Publisher">Publisher</span></h2><p>These fields should match the publisher of the game. In the case of a public domain name, they should be left empty (empty string)
+</p><h2><span class="mw-headline" id="Time_Profiles">Time Profiles</span></h2><p><b>fast/medium/slow_additional_time</b>: please set high values here: after the game has been released, there is a process that adjusts these values to match the real game duration. Adjustment starts when the game enters beta, after that these have no effect, and require admin intervention to change.
+</p><h2><span class="mw-headline" id="Number_of_players">Number of players</span></h2><p><b>players</b>
+</p><pre> "players": [3, 4, 6],
+</pre><ul><li>during the first step of development of a game, it is recommended to have a "1 player" configuration: it is much easier to start/stop a game this way, as you don't need to switch players.</li>
+<li>if you change the minimum number of players from 1 to 2, for example, make sure the new tables you create are not restricted from 1 to 1 player otherwise when you create a new table and this account setting is used, there will be a conflict with the new minimum number of players allowed and you will be blocked from creating the game.</li></ul><p>But you can also unblock yourself by changing the number of players again, launching a game with a larger number, and then getting back to the number you want.
+</p><pre> "suggest_player_number": 3,
+ "not_recommend_player_number": [6],
+</pre><p>Don't specify anything here (null) if there is no configuration that is REALLY better/worse than another one. You can check player's poll on BoardGameGeek game page if you have any doubt. Note that there can be at most one suggested player count (provide either null or a single number), but there can be several not recommended player counts (provide either null or an array of values).
+</p><p><b>Important exception:</b> in the automatic lobby, if 'suggest_player_number' is not specified, the system will try first the lowest. So if the lowest player number is not compatible with the default options for your game (especially if there is a Solo mode that can only be played in training mode) you have to specify a suggest_player_number of your choice, so that players launching a game in the automatic lobby without checking the option don't get an error with the default configuration.
+</p><h2><span class="mw-headline" id="Colors">Colors</span></h2><p><b>player_colors</b>
+</p><pre>  "player_colors": ["ff0000", "008000", "0000ff", "ffa500", "ffffff"],
+</pre><p>This array defines the default player colors, theoretically this can be bigger then maximum number of players but you have to support all of the players in your game.
+Your setupNewGame in php is responsible for attributing these values to players. See section "Player color preferences" in <a class="mw-redirect" href="/Main_game_logic:_yourgamename.game.php" title="Main game logic: yourgamename.game.php">Main_game_logic:_yourgamename.game.php</a> for details.
+</p><h2><span class="mw-headline" id="Minimum_screen_size">Minimum screen size</span></h2><p>The settings to specify mobile (or small desktop) screen size if detailled here:
+<a class="external free" href="https://en.doc.boardgamearena.com/Your_game_mobile_version" rel="nofollow">https://en.doc.boardgamearena.com/Your_game_mobile_version</a>
+</p><h2><span class="mw-headline" id="Losers_not_ranked_between_themselves">Losers not ranked between themselves</span></h2><p>By default, all player are ranked, but in some games, the rules say that all non-winners are losers and not ranked between themselves. You can set this option to true so that for your game, there are only winners and losers, without a full ranking of all players.
+</p><div style="padding: 1em; background: #FFCDD2; color: #B71C1C">
+<p><b>Warning: Do not use this option in 2-player games, co-op games, or games where perfect ties are frequent, as ELO will not change when everyone is perfectly tied (including tiebreakers).</b>
+</p>
+</div><pre>// If in the game, all losers are equal (no score to rank them or explicit in the rules that losers are not ranked between them), set this to true 
+// The game end result will display "Winner" for the 1st player and "Loser" for all other players
+"losers_not_ranked": false,
+</pre><p><br/>
+<b>Note</b>: In some team games like Tichu, Spades, and Belote, players do not gain or lose ELO by teammates. (Hover over the ELO changes to find 'Teammate: -100%')
+</p><p><b style="color:darkred">Warning:</b> This modifier should not be applied to co-op games or games where 3 or more parties can compete each other (e.g. individual mode with 3 or more players, 2v2v2 6 player mode, and etc.).
+</p><h2><span class="mw-headline" id="Disable_player_rotation_in_case_of_rematch">Disable player rotation in case of rematch</span></h2><p>By default, in case of a rematch players are rotated so that the first player changes. If for your game it's better to always have a random player order you can change this option.
+</p><pre>// When doing a rematch, the player order is swapped using a "rotation" so the starting player is not the same
+// If you want to disable this, set this to true (even if the comment in your game file say the opposite).
+"disable_player_order_swap_on_rematch": false,
+</pre><h2><span class="mw-headline" id="Deprecated_fields">Deprecated fields</span></h2><ul><li>Game designer (<code>designer</code>)</li>
+<li>Game artist (<code>artist</code>)</li>
+<li>Year (<code>year</code>)</li>
+<li>Tags (<code>tags</code>)</li>
+<li>Game presentation (<code>presentation</code>)</li>
+<li>Game page warning (<code>gamepanel_page_warning</code>)</li>
+<li>Custom "buy this game" button (<code>custom_buy_button</code>)</li></ul><p><b>⚠ Note</b>: these fields are <b style="color:darkred">no longer read from this file</b>; these are now managed via the <a href="Game_metadata_manager.html" title="Game metadata manager">Game Metadata Manager</a>.
+</p><h2><span class="mw-headline" id="Tie_breaker_description">Tie breaker description</span></h2><p>Describe tie breaker score calculation (using $this-&gt;playerScoreAux).
+</p><p>Example:
+</p><pre>"tie_breaker_description": "Number of remaining cards in hand",
+</pre><h2><span class="mw-headline" id="Multiple_tie_breaker_management">Multiple tie breaker management</span></h2><p>If your game has multiple tie breakers, here is what you should do.
+</p><p>In this example, your playerScoreAux field might be calculated like this:
+</p><p>In this case, you should add the following in gameinfos.inc.php:
+</p><pre> "tie_breaker_split": [10000, 100 , 1],
+</pre><p>It means that the first tie breaker has been multiplied by 10000, the second by 100, and the third by 1.
+</p><ul><li>When 2 players are tied, it will show their remaining money.</li>
+<li>If their remaining money are equal, it will show the number of building built in addition to the remaining money.</li>
+<li>If these two tie breaker are still the same, it will show the 3 tie breaking values.</li></ul><h2><span class="mw-headline" id="Language_dependency">Language dependency</span></h2><p>If you have a game that is language dependent, you can use the option described here: <a class="mw-redirect" href="/Main_game_logic:_yourgamename.game.php#Language_dependent_games_API" title="Main game logic: yourgamename.game.php">Main_game_logic:_yourgamename.game.php#Language_dependent_games_API</a>
+</p><h2><span class="mw-headline" id="Coop_Elo_Mode">Coop Elo Mode</span></h2><p>For cooperative games, by default players will earn as many rating points as the score. Games ended with a positive score counts as wins, and scores of 0 or below count as losses. 
+</p><p><br/>
+</p><div style="padding: 1em; background: #FFCDD2; color: #B71C1C">
+<p><b>Warning: While this can reflect player skills more precisely compared to flat rating gain, this parameter is generally not recommended as players may abandon losing games or avoid new players to prevent rating loss.</b>
+</p>
+</div><p>Related discussion:
+</p><p><a class="external free" href="https://boardgamearena.com/forum/viewtopic.php?t=32289" rel="nofollow">https://boardgamearena.com/forum/viewtopic.php?t=32289</a>
+</p><p>Here is an example using options and win/loss (score 1/0):
+</p><pre>   'coop_elo_mode' =&gt; [
+       'type' =&gt; 'points_references',
+       'references' =&gt; [
+           // Difficulty 1
+           ['players_nbr' =&gt; 2, 'options' =&gt; [100 =&gt; 1, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1400]],
+           ['players_nbr' =&gt; 2, 'options' =&gt; [100 =&gt; 1, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1470]],
+           ['players_nbr' =&gt; 3, 'options' =&gt; [100 =&gt; 1, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1350]],
+           ['players_nbr' =&gt; 3, 'options' =&gt; [100 =&gt; 1, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1400]],
+           ['players_nbr' =&gt; 4, 'options' =&gt; [100 =&gt; 1, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1400]],
+           ['players_nbr' =&gt; 4, 'options' =&gt; [100 =&gt; 1, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1470]],
+           // Difficulty 2
+           ['players_nbr' =&gt; 2, 'options' =&gt; [100 =&gt; 2, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1540]],
+           ['players_nbr' =&gt; 2, 'options' =&gt; [100 =&gt; 2, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1690]],
+           ['players_nbr' =&gt; 3, 'options' =&gt; [100 =&gt; 2, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1450]],
+           ['players_nbr' =&gt; 3, 'options' =&gt; [100 =&gt; 2, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1540]],
+           ['players_nbr' =&gt; 4, 'options' =&gt; [100 =&gt; 2, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1540]],
+           ['players_nbr' =&gt; 4, 'options' =&gt; [100 =&gt; 2, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1690]],
+           // Difficulty 3
+           ['players_nbr' =&gt; 2, 'options' =&gt; [100 =&gt; 3, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1690]],
+           ['players_nbr' =&gt; 2, 'options' =&gt; [100 =&gt; 3, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1910]],
+           ['players_nbr' =&gt; 3, 'options' =&gt; [100 =&gt; 3, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1540]],
+           ['players_nbr' =&gt; 3, 'options' =&gt; [100 =&gt; 3, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1690]],
+           ['players_nbr' =&gt; 4, 'options' =&gt; [100 =&gt; 3, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1690]],
+           ['players_nbr' =&gt; 4, 'options' =&gt; [100 =&gt; 3, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1910]],
+           // Difficulty 4
+           ['players_nbr' =&gt; 2, 'options' =&gt; [100 =&gt; 4, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1830]],
+           ['players_nbr' =&gt; 2, 'options' =&gt; [100 =&gt; 4, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 2120]],
+           ['players_nbr' =&gt; 3, 'options' =&gt; [100 =&gt; 4, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1640]],
+           ['players_nbr' =&gt; 3, 'options' =&gt; [100 =&gt; 4, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1830]],
+           ['players_nbr' =&gt; 4, 'options' =&gt; [100 =&gt; 4, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1830]],
+           ['players_nbr' =&gt; 4, 'options' =&gt; [100 =&gt; 4, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 2120]],
+           // Difficulty 5
+           ['players_nbr' =&gt; 2, 'options' =&gt; [100 =&gt; 5, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1980]],
+           ['players_nbr' =&gt; 2, 'options' =&gt; [100 =&gt; 5, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 2340]],
+           ['players_nbr' =&gt; 3, 'options' =&gt; [100 =&gt; 5, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1740]],
+           ['players_nbr' =&gt; 3, 'options' =&gt; [100 =&gt; 5, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1980]],
+           ['players_nbr' =&gt; 4, 'options' =&gt; [100 =&gt; 5, 101 =&gt; 0], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 1980]],
+           ['players_nbr' =&gt; 4, 'options' =&gt; [100 =&gt; 5, 101 =&gt; 1], 'elo' =&gt; [0 =&gt; 1000, 1 =&gt; 2340]],
+       ],
+   ],
+</pre><p>Here is an example using different scoring values to indicate the level of difficulty mastered by the players winning the game:
+</p><pre>   'coop_elo_mode' =&gt; array(
+       'type' =&gt; 'points_references',
+       'references' =&gt; array(
+           array(
+               'players_nbr' =&gt; 2,
+               //'options' =&gt; array( ),
+               'elo' =&gt; array(
+                   0 =&gt; 1000,
+                   1 =&gt; 1350,
+                   2 =&gt; 1425,
+                   3 =&gt; 1500,
+                   4 =&gt; 1576,
+                   5 =&gt; 1651,
+                   6 =&gt; 1727,
+                   7 =&gt; 1802,
+                   8 =&gt; 1878,
+                   9 =&gt; 1953,
+                   10 =&gt; 2029,
+                   11 =&gt; 2104,
+                   12 =&gt; 2180
+               )
+           ),
+           array(
+               'players_nbr' =&gt; 3,
+               //'options' =&gt; array( ),
+               'elo' =&gt; array(
+                   0 =&gt; 1000,
+                   1 =&gt; 1400,
+                   2 =&gt; 1470,
+                   3 =&gt; 1541,
+                   4 =&gt; 1612,
+                   5 =&gt; 1683,
+                   6 =&gt; 1754,
+                   7 =&gt; 1825,
+                   8 =&gt; 1895,
+                   9 =&gt; 1966,
+                   10 =&gt; 2018,
+                   11 =&gt; 2095,
+                   12 =&gt; 2250
+               )
+           ),
+           array(
+               'players_nbr' =&gt; 4,
+               //'options' =&gt; array( ),
+               'elo' =&gt; array(
+                   0 =&gt; 1000,
+                   1 =&gt; 1430,
+                   2 =&gt; 1505,
+                   3 =&gt; 1580,
+                   4 =&gt; 1655,
+                   5 =&gt; 1730,
+                   6 =&gt; 1805,
+                   7 =&gt; 1880,
+                   8 =&gt; 1955,
+                   9 =&gt; 2030,
+                   10 =&gt; 2105,
+                   11 =&gt; 2180,
+                   12 =&gt; 2330
+               )
+           ),
+           array(
+               'players_nbr' =&gt; 5,
+               // 'options' =&gt; array( ),
+               'elo' =&gt; array(
+                   0 =&gt; 1000,
+                   1 =&gt; 1480,
+                   2 =&gt; 1558,
+                   3 =&gt; 1636,
+                   4 =&gt; 1714,
+                   5 =&gt; 1792,
+                   6 =&gt; 1870,
+                   7 =&gt; 1949,
+                   8 =&gt; 2027,
+                   9 =&gt; 2105,
+                   10 =&gt; 2183,
+                   11 =&gt; 2261,
+                   12 =&gt; 2340
+               )
+           )
+       )
+   ),
+</pre></div></body>
+</html>

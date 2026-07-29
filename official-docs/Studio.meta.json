@@ -1,0 +1,15 @@
+{
+  "title": "Studio",
+  "source_html": "Studio.html",
+  "clean_html": "Studio.html",
+  "url": "https://en.doc.boardgamearena.com/Studio",
+  "depth": 0,
+  "sha256_raw": "f7a2719347d1bf527686f534f55a73aa32706f636d3c9053b654cff7da8b4326",
+  "sha256_clean": "edaa28d0fc6a38da710ae01b005e08ca232cf0a607df744e6eaf7e074e8af5cc",
+  "word_count": 938,
+  "code_block_count": 1,
+  "table_count": 0,
+  "image_count": 1,
+  "heading_count": 14,
+  "cleaned_at": "2026-07-06T06:38:19.751203+00:00"
+}

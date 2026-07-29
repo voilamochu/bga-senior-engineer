@@ -1,0 +1,15 @@
+{
+  "title": "BgaCards",
+  "source_html": "BgaCards.html",
+  "clean_html": "BgaCards.html",
+  "url": "https://en.doc.boardgamearena.com/BgaCards",
+  "depth": 1,
+  "sha256_raw": "b4074a2de1bfbe45c3d458291499ccd72437b2b16ce3d8d82218a5faf29f433d",
+  "sha256_clean": "766e1a3f1365769e1c15e1c26a5b13ff9f7cab9629b62a1d12e7e649e4f43eab",
+  "word_count": 1042,
+  "code_block_count": 12,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 11,
+  "cleaned_at": "2026-07-06T06:38:18.500090+00:00"
+}

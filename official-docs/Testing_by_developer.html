@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Testing by developer - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Testing_by_developer rootpage-Testing_by_developer action-view"><div class="article"><p>When you develop a game you obviously have to test it, this page collects the info about testing in one place
+</p><h2><span class="mw-headline" id="Manual_Testing_on_BGA">Manual Testing on BGA</span></h2><p>For manual testing the most important things to know are:
+</p><ul><li>how to start/stop game in one click</li>
+<li>how to switch between players in one click</li>
+<li>how to save/restore the game state</li>
+<li>how to construct the game state automatically</li></ul><p>All of these described here <a class="external free" href="https://en.doc.boardgamearena.com/Tools_and_tips_of_BGA_Studio" rel="nofollow">https://en.doc.boardgamearena.com/Tools_and_tips_of_BGA_Studio</a>
+</p><h2><span class="mw-headline" id="Manual_Testing_locally">Manual Testing locally</span></h2><p><b>HTML/CSS</b>
+At this era the file sync is almost instant so you do not save much by doing this locally, however if internet is a challenge - here are some tips
+<a class="external free" href="https://en.doc.boardgamearena.com/Tools_and_tips_of_BGA_Studio#Speed_up_CSS_development_and_layout" rel="nofollow">https://en.doc.boardgamearena.com/Tools_and_tips_of_BGA_Studio#Speed_up_CSS_development_and_layout</a>
+</p><h2><span class="mw-headline" id="Automated_Testing">Automated Testing</span></h2><h3><span class="mw-headline" id="JavaScript">JavaScript</span></h3><p>I did not try for pure java script, it works for typescript.
+You need dev dependency on mocha, jsdom and sinon and some other build tools.
+Typescript code lives in src/.
+Test code lives in src/tests/.
+Tests have their own src/tests/tsconfig.json
+File src/tests/setup.ts contains framework and global stubs that tests need.
+The config is very verbose so I did not copy it here, if interested check project "dojoless" or bga-dojoless on github (<a class="external free" href="https://github.com/elaskavaia/bga-dojoless" rel="nofollow">https://github.com/elaskavaia/bga-dojoless</a>).
+</p><h3><span class="mw-headline" id="PHP">PHP</span></h3><h4><span class="mw-headline" id="Install_PHPunit">Install PHPunit</span></h4><p>Install PHPunit via composer somewhere in home directory, i.e.
+</p><pre>  cd /home/&lt;yourusername&gt;/php-composer
+  composer require --dev phpunit/phpunit ^13
+</pre><p>We don't want the phpunit cache to be sync/commited, so add <code>".phpunit.cache"</code> to sftp.json ignore list. You can push the unit tests to the FTP, no need to ignore them. If someone maintains your game in the future, he willl be able to use them to make sure nothing breaks on an update! 
+If you have a .gitignore, add <code>.phpunit.cache</code> to it.
+</p><pre> phpunit() {
+ /home/&lt;yourusername&gt;/php-composer/vendor/bin/phpunit \
+   -c "$PWD/phpunit.xml.dist" \
+   --bootstrap "$PWD/tests/bootstrap.php" \
+   "$@"
+ }
+</pre><p>With that, on a new terminal you will be able to run the tests with one of the following commands at the root of your project :
+</p><pre> phpunit
+ phpunit tests/BoardManagerTest.php
+ phpunit --filter testGivesExtraTime
+</pre><h4><span class="mw-headline" id="Setup_minimal_files">Setup minimal files</span></h4><p>Create these files:
+</p><pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"&gt;
+  &lt;testsuites&gt;
+    &lt;testsuite name="Reversi"&gt;
+      &lt;directory&gt;tests&lt;/directory&gt;
+    &lt;/testsuite&gt;
+  &lt;/testsuites&gt;
+&lt;/phpunit&gt;
+</pre><p>(replace Reversi by your project name)
+</p><pre>&lt;?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/stubs/BgaFrameworkStubs.php';
+
+$autoload = __DIR__ . '/../vendor/autoload.php';
+if (file_exists($autoload)) {
+    require_once $autoload;
+}
+
+spl_autoload_register(static function (string $class): void {
+    $prefix = 'Bga\\Games\\Reversi\\';
+
+    if (!str_starts_with($class, $prefix)) {
+        return;
+    }
+
+    $relativeClass = substr($class, strlen($prefix));
+    $path = __DIR__ . '/../modules/php/' . str_replace('\\', '/', $relativeClass) . '.php';
+
+    if (file_exists($path)) {
+        require_once $path;
+    }
+});
+</pre><p>(replace Reversi by your project name)
+</p><p>That is where you stub framework classes and methods, example here
+<a class="external text" href="https://github.com/elaskavaia/bga-sharedcode/blob/master/misc/php/stubs/BgaFrameworkStubs.php" rel="nofollow">BgaFrameworkStubs.php</a>
+</p><p><br/>
+</p><h4><span class="mw-headline" id="Create_first_tests">Create first tests</span></h4><p>Example of tests for Reversi:
+</p><pre>&lt;?php
+
+declare(strict_types=1);
+
+namespace Tests;
+
+use Bga\Games\Reversi\BoardManager;
+use Bga\Games\Reversi\Game;
+use PHPUnit\Framework\TestCase;
+
+final class BoardManagerTest extends TestCase
+{
+    public function testGetPossibleMovesOnInitialBoardForBlackPlayer(): void
+    {
+        $board = $this-&gt;createEmptyBoard(8);
+        $board[4][4] = 2;
+        $board[5][5] = 2;
+        $board[4][5] = 1;
+        $board[5][4] = 1;
+
+        $game = $this-&gt;createGame(8);
+        $boardManager = $this-&gt;createBoardManager($game, $board);
+
+        $moves = $boardManager-&gt;getPossibleMoves(1);
+
+        self::assertSame(
+            [
+                3 =&gt; [4 =&gt; true],
+                4 =&gt; [3 =&gt; true],
+                5 =&gt; [6 =&gt; true],
+                6 =&gt; [5 =&gt; true],
+            ],
+            $moves,
+        );
+    }
+
+    public function testGetPossibleMovesReturnsEmptyArrayWhenNoMoveExists(): void
+    {
+        $board = $this-&gt;createEmptyBoard(4);
+        for ($x = 1; $x &lt;= 4; $x++) {
+            for ($y = 1; $y &lt;= 4; $y++) {
+                $board[$x][$y] = 1;
+            }
+        }
+
+        $game = $this-&gt;createGame(4);
+        $boardManager = $this-&gt;createBoardManager($game, $board);
+
+        self::assertSame([], $boardManager-&gt;getPossibleMoves(2));
+    }
+
+    private function createGame(int $boardSize): Game
+    {
+        $game = $this-&gt;createStub(Game::class);
+        $game-&gt;method('getBoardSize')-&gt;willReturn($boardSize);
+
+        return $game;
+    }
+
+    private function createBoardManager(Game $game, array $board): BoardManager
+    {
+        return new class ($game, $board) extends BoardManager {
+            public function __construct(Game $game, private array $board)
+            {
+                parent::__construct($game);
+            }
+
+            public function getBoard(): array
+            {
+                return $this-&gt;board;
+            }
+        };
+    }
+
+    private function createEmptyBoard(int $size): array
+    {
+        $board = [];
+        for ($x = 1; $x &lt;= $size; $x++) {
+            $board[$x] = [];
+            for ($y = 1; $y &lt;= $size; $y++) {
+                $board[$x][$y] = null;
+            }
+        }
+
+        return $board;
+    }
+}
+</pre><p><br/>
+<b>tests/States/NextPlayerTest.php</b>
+</p><pre>&lt;?php
+
+declare(strict_types=1);
+
+namespace Tests\States;
+
+use Bga\Games\Reversi\BoardManager;
+use Bga\Games\Reversi\Game;
+use Bga\Games\Reversi\States\NextPlayer;
+use PHPUnit\Framework\TestCase;
+
+final class NextPlayerTest extends TestCase
+{
+    public function testReturnsEndScoreWhenNoFreeSquareLeft(): void
+    {
+        $game = $this-&gt;createGame();
+        $this-&gt;attachBoardManager($game, $this-&gt;createBoardManagerStub(0, []));
+
+        $state = new NextPlayer($game);
+
+        self::assertSame('Bga\\Games\\Reversi\\States\\EndScore', $state-&gt;onEnteringState());
+    }
+
+    public function testGivesExtraTimeAndReturnsPlayDiscWhenPlayerCanMove(): void
+    {
+        $game = $this-&gt;createGameMock();
+        $game-&gt;expects(self::once())
+            -&gt;method('giveExtraTime')
+            -&gt;with(1, null);
+        $this-&gt;attachBoardManager($game, $this-&gt;createBoardManagerStub(5, [1 =&gt; 4, 2 =&gt; 4], [1 =&gt; [4 =&gt; [3 =&gt; true]]]));
+
+        $state = new NextPlayer($game);
+
+        self::assertSame('Bga\\Games\\Reversi\\States\\PlayDisc', $state-&gt;onEnteringState());
+    }
+
+    private function createGame(int $activePlayerId = 1, int $playerAfterId = 2): Game
+    {
+        $game = $this-&gt;createStub(Game::class);
+        $game-&gt;method('activeNextPlayer')-&gt;willReturn($activePlayerId);
+        $game-&gt;method('getPlayerAfter')-&gt;willReturn($playerAfterId);
+
+        return $game;
+    }
+
+    private function createGameMock(int $activePlayerId = 1, int $playerAfterId = 2): Game
+    {
+        $game = $this-&gt;getMockBuilder(Game::class)
+            -&gt;disableOriginalConstructor()
+            -&gt;onlyMethods(['activeNextPlayer', 'getPlayerAfter', 'giveExtraTime'])
+            -&gt;getMock();
+        $game-&gt;method('activeNextPlayer')-&gt;willReturn($activePlayerId);
+        $game-&gt;method('getPlayerAfter')-&gt;willReturn($playerAfterId);
+
+        return $game;
+    }
+
+    private function createBoardManagerStub(int $freeSquares, array $discsByPlayer, array $possibleMovesByPlayer = []): BoardManager
+    {
+        $boardManager = $this-&gt;createStub(BoardManager::class);
+        $boardManager-&gt;method('countFreeSquares')-&gt;willReturn($freeSquares);
+        $boardManager-&gt;method('getDiscCountsByPlayer')-&gt;willReturn($discsByPlayer);
+        $boardManager-&gt;method('getPossibleMoves')-&gt;willReturnCallback(
+            static fn (int $playerId): array =&gt; $possibleMovesByPlayer[$playerId] ?? []
+        );
+
+        return $boardManager;
+    }
+
+    private function attachBoardManager(Game $game, BoardManager $boardManager): void
+    {
+        $game-&gt;boardManager = $boardManager;
+    }
+}
+</pre><h4><span class="mw-headline" id="Running_the_tests">Running the tests</span></h4><p>Run the tests using
+</p><pre> phpunit
+</pre><p>If you want to run a single test file
+</p><pre> phpunit tests/BoardManagerTest.php
+</pre><p>If you want to run a single test
+</p><pre> phpunit --filter testGivesExtraTime
+</pre><p><i>If you came here from Reversi Tutorial, go back to it <a class="external free" href="https://en.doc.boardgamearena.com/Tutorial_reversi#Optional:_add_unit_tests" rel="nofollow">https://en.doc.boardgamearena.com/Tutorial_reversi#Optional:_add_unit_tests</a></i>
+</p><h2><span class="mw-headline" id="Play_testing_on_studio">Play testing on studio</span></h2><p>To play test on studio you can use your test accounts dev0... dev9. You can give some of these account to other people just make sure you change the password.
+You should not encourage other people who are not developers to create studio account, this is against bga policy.
+</p></div></body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "title": "BgaAnimations",
+  "source_html": "BgaAnimations.html",
+  "clean_html": "BgaAnimations.html",
+  "url": "https://en.doc.boardgamearena.com/BgaAnimations",
+  "depth": 1,
+  "sha256_raw": "c441a31b5bf7ca9372abcd341d3dd2caf93680e3c7c7fdf704b00a247c11fa2a",
+  "sha256_clean": "45d02a8ec4fa98bce146148692c6080caadb4c4012353730da7c91ba7c26e237",
+  "word_count": 357,
+  "code_block_count": 5,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 6,
+  "cleaned_at": "2026-07-06T06:38:18.454099+00:00"
+}

@@ -1,0 +1,196 @@
+.ark-card.zoo-card.scoring-card {
+    .ark-card-wrapper {
+        background-position-x: #{4 * 100% / 6};
+
+        .ark-card-top {
+            width: 374px;
+            height: 238px;
+            background-image: url("img/objectives.jpg");
+            background-size: 600% 300%;
+
+            .ark-card-top-left {
+                .project-card-top-left-icon {
+                    height: 102px;
+                    background: #bf765f;
+                    border-top-left-radius: 8px;
+                    border-bottom-right-radius: 12px;
+                    box-shadow: 0px 2px 11px 4px #2f2f2f;
+                    padding: 10px 10px 2px 10px;
+                    box-sizing: border-box;
+                    display: flex;
+                    align-items: center;
+                    font-size: 43px;
+
+                    .icon-container-endgame {
+                        margin-right: 15px;
+                    }
+                    .icon-science {
+                        font-size: 1.1em;
+                    }
+                    .icon-reputation {
+                        font-size: 1.5em;
+                    }
+                    .icon-condition {
+                        border-top-right-radius: 30% 50%;
+                        border-bottom-right-radius: 30% 50%;
+                        box-shadow: 0px 0px 3px 1px black;
+                    }
+                }
+            }
+        }
+
+        .ark-card-middle {
+            height: 47px;
+            background: #a04d35;
+            background: linear-gradient(90deg, #d6a391 0%, #a04d35 50%, #d6a391 100%);
+            color: white;
+
+            .ark-card-number {
+                height: 47px;
+                color: black;
+            }
+
+            .ark-card-title-wrapper {
+                padding: 7px 20px 2px;
+
+                .ark-card-title {
+                    color: white;
+                    height: 100%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-size: 23px;
+                }
+            }
+
+            .ark-card-status {
+                position: absolute;
+                bottom: 77px;
+                font-size: 40px;
+                left: 13px;
+                background: #ffffffe0;
+                right: 13px;
+                text-align: center;
+                padding: 7px 0px;
+                color: black;
+                border-radius: 8px;
+                font-weight: bold;
+                .icon-container {
+                    font-size: 37px;
+                }
+
+                &:empty {
+                    display: none;
+                }
+            }
+        }
+
+        .ark-card-bottom {
+            height: 224px;
+            padding: 6px 15px 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            .project-card-description {
+                padding: 0 15px;
+                text-align: center;
+                font-size: 19px;
+                line-height: 30px;
+
+                .score-map {
+                    margin-top: 15px;
+                    width: 100%;
+                    font-size: 30px;
+                    border-spacing: 5px 0px;
+                    border-collapse: separate;
+
+                    th {
+                        font-size: 34px;
+                        text-align: center;
+
+                        .icon-conservation {
+                            font-size: 1.3em;
+                        }
+                    }
+
+                    td {
+                        font-family: "MyriadPro-Bold";
+                        font-size: 38px;
+                    }
+
+                    tr:nth-of-type(1) {
+                        td {
+                            background: #ce9d89;
+                            width: 60px;
+                            height: 60px;
+                        }
+                    }
+                    tr:nth-of-type(2) {
+                        height: 5px;
+                        td {
+                            background: #9a4730;
+                        }
+                    }
+                    tr:nth-of-type(3) {
+                        td {
+                            background: #b8b490;
+                            width: 60px;
+                            height: 60px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    [data-card-desc="0"] &:not(.tooltip) {
+        .ark-card-wrapper {
+            .ark-card-middle {
+                margin-top: -10px;
+                margin-bottom: -10px;
+                height: 70px;
+                .ark-card-number {
+                    display: none;
+                }
+
+                .ark-card-title-wrapper {
+                    padding: 3px 20px 1px;
+
+                    .ark-card-title {
+                        font-size: 32px;
+                        line-height: 31px;
+                        height: 100%;
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@each $cId in $scoringCards {
+    $i: index($scoringCards, $cId) - 1;
+    .zoo-card.scoring-card[data-asset="#{$cId}"] .ark-card-top {
+        background-position-x: ($i % 6) * 100% / 5;
+        background-position-y: (($i - ($i % 6)) / 6) * 100% / 2;
+    }
+}
+
+.ark-card.zoo-card.scoring-card {
+    &[data-asset="F013_SpecializedHabitatZoo"],
+    &[data-asset="F014_SpecializedSpeciesZoo"] {
+        .ark-card-wrapper {
+            .ark-card-bottom {
+                .project-card-description {
+                    font-size: 17px;
+                    line-height: 22px;
+                    padding: 0px 3px;
+                }
+            }
+        }
+    }
+}

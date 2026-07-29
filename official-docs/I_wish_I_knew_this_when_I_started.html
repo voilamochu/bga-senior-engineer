@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>I wish I knew this when I started - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-I_wish_I_knew_this_when_I_started rootpage-I_wish_I_knew_this_when_I_started action-view"><div class="article"><p>This page contains most "I wish I knew this before..." moments (in regards to BGA studio game development). One line per statement please with doc references. Docs link can be outside of BGA wiki.
+Most of this is already documented on BGA wiki in details, search wiki or google for generic subject to find more info.
+</p><ul><li>Browser caches images and css, to force re-cache use Ctrl+F5 or Ctrl+Shift+R, and sometimes it's not enough so go to the web console &gt; Network &gt; check "disable cache"</li>
+<li>Browser has powerful embeded dev tools for inspection of dom, css and js, you can debug js right in browser (F12)</li>
+<li>You don't have to login with another dev account to play test the game under development, little colored arrows on studio player panel switch between test accounts</li>
+<li>You can run PHP functions from debug menu if they are prefixed with <code>debug_</code></li>
+<li>You can change style of elements (css) depending on their parent, sibling or other properties of the element</li>
+<li>You cannot save php state in global variables between actions, all data has to be stored in db</li>
+<li>Ajax actions in BGA do not use the traditional request-response model of a normal application. The ajax response does not contain any payload and instead you must send a notification ($this-&gt;bga-&gt;notify-&gt;all) to communicate the response to appropriate players.</li>
+<li>Almost every change you make to the game via sending notifications must also be included in getAllDatas (e.g., in case a player loads/refreshes the game during the middle of play).</li>
+<li>You can easily scale elements by using "em" as unit for width/height and varying font-size, i.e. .meeple {width: 2em;height: 2.5em;font-size: 20px;}</li>
+<li>You can access your javascript methods / properties in the browser console using <i><b>gameui.GameModule.&lt;yourMethod&gt;</b></i> (or <i><b>gameui.&lt;yourMethod&gt;</b></i> for older games not using JS modules, i.e. not using <code>modules/js/Game.js</code>)</li>
+<li>To interactively debug JS issues you can put <i><b>debugger;</b></i> statement in your code, enable dev tools (F12) and reload. It will hit breakpoint.</li>
+<li>To quickly try a fix you can edit css, js and html directly in browser dev tool window, no reload required (just don't forget to copy it back to your code after)</li>
+<li>To spell check all your translatable strings use Project Check from control panel - it will generate all strings, you can cut &amp; paste this in online spell checker (or just use Firefox - it has embedded spell checker).</li>
+<li>To remove inline style property from dom node $(token).style.removeProperty("position"); or dojo.style('token', 'position', null);</li></ul></div></body>
+</html>

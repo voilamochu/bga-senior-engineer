@@ -1,0 +1,272 @@
+<link href="../../agricola.css" rel="stylesheet" />
+<style type="text/css">
+  * {
+    box-sizing: border-box;
+  }
+
+
+  .container {
+    position: fixed;
+    top: 20%;
+    left: 20%;
+    transform: translate(-50%, -50%);
+  }
+
+  .radio-wrapper {
+    border:1px solid black;
+    border-radius:5px;
+    background:rgba(0,0,0,0.4);
+    transition: margin 0.8s;
+    margin-bottom:24px;
+  }
+
+  .pasture-capacity {
+    text-align:center;
+    border-bottom:1px solid black;
+    padding:4px 8px;
+  }
+
+  .pasture-composition {
+    height:90px;
+    overflow:hidden;
+    transition: height 0.8s;
+  }
+  .radio-wrapper[data-type="sheep"] .pasture-composition,  .radio-wrapper[data-type="pig"] .pasture-composition,  .radio-wrapper[data-type="cattle"] .pasture-composition {
+    height:30px;
+  }
+  #first-one {
+    transition:margin 0.8s;
+  }
+  .radio-wrapper[data-type="sheep"] #first-one { margin-top:0px; }
+  .radio-wrapper[data-type="pig"] #first-one { margin-top:-30px; }
+  .radio-wrapper[data-type="cattle"] #first-one { margin-top:-60px; }
+
+  .radio-wrapper[data-type="sheep"] { margin-top:0px; margin-bottom:60px;}
+  .radio-wrapper[data-type="pig"] { margin-top:30px; margin-bottom:30px;}
+  .radio-wrapper[data-type="cattle"] { margin-top:60px; margin-bottom:0px;}
+
+
+  .composition-type {
+    display:flex;
+    border-bottom:1px solid black;
+    height:30px;
+    text-align:center;
+  }
+  .composition-type:last-of-type {
+    border-bottom:none;
+  }
+
+  .composition-meeple {
+    padding:5px 2px;
+    font-size:1.2em;
+    width:40px;
+    display:none;
+  }
+
+  .composition-plusplus,  .composition-plus, .composition-moins {
+    background-color:rgba(0,0,0,0.4);
+    cursor:pointer;
+    width:38px;
+    height:30px;
+    border:none;
+    padding:3px 4px;
+  }
+
+  .composition-plusplus div,  .composition-plus div, .composition-moins div {
+    background-image:url('btns.png');
+    background-size:300% 300%;
+    width:30px;
+    height:24px;
+  }
+
+  .composition-moins div { background-position-x:0%;}
+  .composition-plus div { background-position-x:50%; }
+  .composition-plusplus div { background-position-x:100%; }
+
+  .composition-sheep .composition-plus div, .composition-sheep .composition-moins div, .composition-sheep .composition-plusplus div { background-position-y:0%; }
+  .composition-pig .composition-plus div, .composition-pig .composition-moins div, .composition-pig .composition-plusplus div { background-position-y:50%; }
+  .composition-cattle .composition-plus div, .composition-cattle .composition-moins div, .composition-cattle .composition-plusplus div { background-position-y:100%; }
+
+  .composition-plus {
+    border-left: 1px solid #4e6851;
+    border-right: 1px solid #4e6851;
+  }
+
+  .composition-plus:hover,   .composition-moins:hover, .composition-plusplus:hover {
+    background-color:rgba(0,0,0,0.6);
+  }
+
+  .composition-plus .meeple-container,.composition-moins .meeple-container {
+    position:absolute;
+    top:30%;
+    left:0;
+    z-index:-1;
+  }
+
+  .composition-plus:disabled, .composition-moins:disabled,  .composition-plusplus:disabled {
+      background-color:rgba(0,0,0,0.1);
+      color:#2229;
+      cursor:not-allowed;
+      filter:grayscale(30);
+      opacity:0.7;
+  }
+
+  #clearAll {
+    background:rgba(255,0,0,0.5);
+    color:white;
+    text-align:center;
+    height:0px;
+    overflow:hidden;
+    box-size:border-box;
+    transition: padding 0.8s, height 0.8s;
+    cursor:pointer;
+  }
+  #clearAll:hover {
+    background:rgba(255,0,0,0.7);
+  }
+
+  #clearAll.active {
+    border-top:1px solid #fff3;
+    padding:3px 0px;
+    height:25px;
+  }
+</style>
+
+<div class="container">
+  <div class="radio-wrapper" id="radio-wrapper">
+    <div class="pasture-capacity">
+      <span id="current-capacity"></span>
+      /
+      <span id="total-capacity"></span>
+    </div>
+    <div class="pasture-composition" id="pasture-composition" data-type="">
+      <div class="composition-type composition-sheep" id="first-one">
+        <button class="composition-moins" id="moins-sheep"><div></div></button>
+        <div class="composition-meeple">
+          <div class="meeple-container">
+            <div class="agricola-meeple meeple-sheep"></div>
+          </div>
+        </div>
+        <button class="composition-plus" id="plus-sheep"><div></div></button>
+        <button class="composition-plusplus" id="plusplus-sheep"><div></div></button>
+      </div>
+
+      <div class="composition-type composition-pig">
+        <button class="composition-moins" id="moins-pig"><div></div></button>
+        <div class="composition-meeple">
+          <div class="meeple-container">
+            <div class="agricola-meeple meeple-pig"></div>
+          </div>
+        </div>
+        <button class="composition-plus" id="plus-pig"><div></div></button>
+        <button class="composition-plusplus" id="plusplus-pig"><div></div></button>
+      </div>
+
+      <div class="composition-type composition-cattle">
+        <button class="composition-moins" id="moins-cattle"><div></div></button>
+        <div class="composition-meeple">
+          <div class="meeple-container">
+            <div class="agricola-meeple meeple-cattle"></div>
+          </div>
+        </div>
+        <button class="composition-plus" id="plus-cattle"><div></div></button>
+        <button class="composition-plusplus" id="plusplus-cattle"><div></div></button>
+      </div>
+    </div>
+    <div id="clearAll">
+      Clear
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+let t = ['sheep', 'pig', 'cattle'];
+
+let content = {
+  type:null,
+  n:0,
+};
+
+let max = 2;
+document.getElementById("total-capacity").innerHTML = max;
+
+
+function update(){
+  document.getElementById("current-capacity").innerHTML = content.n;
+  document.getElementById("radio-wrapper").setAttribute("data-type", content.type);
+
+  // Disable - buttons
+  t.forEach(type => {
+    document.getElementById('moins-' + type).disabled = content.n == 0;
+  });
+
+
+  // Disable + buttons
+  t.forEach(type => {
+    document.getElementById('plus-' + type).disabled = content.n == max;
+    document.getElementById('plusplus-' + type).disabled = content.n == max;
+  });
+
+  document.getElementById('clearAll').classList.toggle('active', content.n > 0);
+}
+
+
+let addType = (type) => {
+  return () => {
+    if(content.type != type){
+      content.type = type;
+      content.n = 1;
+    } else {
+      content.n++;
+    }
+
+    update();
+  }
+};
+
+t.forEach(type => {
+  document.getElementById('plus-' + type).addEventListener('click', addType(type));
+});
+
+
+let fillType = (type) => {
+  return () => {
+    content.type = type;
+    content.n = max;
+
+    update();
+  }
+};
+
+t.forEach(type => {
+  document.getElementById('plusplus-' + type).addEventListener('click', fillType(type));
+});
+
+
+let removeType = (type) => {
+  return () => {
+    content.n--;
+    if(content.n == 0){
+      content.type = 0;
+    }
+
+    update();
+  }
+};
+
+t.forEach(type => {
+  document.getElementById('moins-' + type).addEventListener('click', removeType(type));
+});
+
+
+document.getElementById('clearAll').addEventListener('click', () => {
+  content = {
+    type:null,
+    n:0,
+  };
+  update();
+})
+
+
+update();
+</script>

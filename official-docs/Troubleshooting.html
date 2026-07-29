@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Troubleshooting - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Troubleshooting rootpage-Troubleshooting action-view"><div class="article"><p>Describing common errors which are hard to understand and debug. This may be useful for troubleshooting.
+</p><p><br/>
+</p><h2><span class="mw-headline" id="Game_does_not_start_at_all">Game does not start at all</span></h2><h3><span id="Undefined_offset:_0_in_table.2Ftable.game.php_on_line_1417"></span><span class="mw-headline" id="Undefined_offset:_0_in_table/table.game.php_on_line_1417">Undefined offset: 0 in table/table.game.php on line 1417</span></h3><p>Do not call self::getActivePlayerName() during setupNewGame()
+</p><h3><span id="Unexpected_error:_Wrong_formatted_data_from_BGA_gameserver_1_.28method:_createGame.29:_..."></span><span class="mw-headline" id="Unexpected_error:_Wrong_formatted_data_from_BGA_gameserver_1_(method:_createGame):_...">Unexpected error: Wrong formatted data from BGA gameserver 1 (method: createGame): ...</span></h3><p>This is generic message usually followed by exact position in your source code, and usually its syntax error in one of yours php script
+</p><h3><span id="Unexpected_error:_Propagating_error_from_GS_1_.28method:_createGame.29:_Fatal_error_during_yourgame_setup:_Not_logged"></span><span class="mw-headline" id="Unexpected_error:_Propagating_error_from_GS_1_(method:_createGame):_Fatal_error_during_yourgame_setup:_Not_logged">Unexpected error: Propagating error from GS 1 (method: createGame): Fatal error during yourgame setup: Not logged</span></h3><p>Calling self::getCurrentPlayerId () or using $g_user from 'args' state function, see also below
+</p><h3><span id="Unexpected_error:_Propagating_error_from_GS_1_.28method:_createGame.29:_Fatal_error_during_yourgame_setup:_Unknow_player_statistic:"></span><span class="mw-headline" id="Unexpected_error:_Propagating_error_from_GS_1_(method:_createGame):_Fatal_error_during_yourgame_setup:_Unknow_player_statistic:">Unexpected error: Propagating error from GS 1 (method: createGame): Fatal error during yourgame setup: Unknow player statistic:</span></h3><p>Calling self::incStat() with second parameter which is an empty string
+</p><h3><span id="Unexpected_error:_Propagating_error_from_GS_1_.28method:_createGame.29:_Fatal_error_during_yourgame_setup:_Error_while_processing_SQL_request:_INSERT_INTO_stats_..."></span><span class="mw-headline" id="Unexpected_error:_Propagating_error_from_GS_1_(method:_createGame):_Fatal_error_during_yourgame_setup:_Error_while_processing_SQL_request:_INSERT_INTO_stats_...">Unexpected error:  Propagating error from GS 1 (method: createGame): Fatal error during yourgame setup: Error while processing SQL request: INSERT INTO stats ...</span></h3><p>Fatal error during yourgame setup: Error while processing SQL request: INSERT INTO stats (stats_type, stats_player_id, stats_value) VALUES ('10','2300663','0'),('10','2300662','0')
+Duplicate entry '10-2300663' for key 'stats_table_id'
+</p><h3><span id="Unexpected_error:_Propagating_error_from_GS_1_.28method:_createGame.29:_Fatal_error_during_yourgame_setup:_BGA_main_website_do_not_respond"></span><span class="mw-headline" id="Unexpected_error:_Propagating_error_from_GS_1_(method:_createGame):_Fatal_error_during_yourgame_setup:_BGA_main_website_do_not_respond">Unexpected error:  Propagating error from GS 1 (method: createGame): Fatal error during yourgame setup: BGA main website do not respond</span></h3><p>Check if other games work; if not, it's a problem with BGA Studio; if so, your game likely reaches an end state immediately. Check your states.inc.php and your transitions.
+</p><h3><span id="Unexpected_error:_Propagating_error_from_GS_1_.28method:_createGame.29:_BGA_service_error"></span><span class="mw-headline" id="Unexpected_error:_Propagating_error_from_GS_1_(method:_createGame):_BGA_service_error">Unexpected error: Propagating error from GS 1 (method: createGame): BGA service error</span></h3><p>You may have a syntax error in your dbmodel.sql.
+</p><p>Or you may not have your states.inc.php set up correctly.
+</p><h3><span id="Unexpected_error:_Table_status_of_a_starting_game_should_be_.27setup.27"></span><span class="mw-headline" id="Unexpected_error:_Table_status_of_a_starting_game_should_be_'setup'">Unexpected error: Table status of a starting game should be 'setup'</span></h3><p>This error message appears when you start a one player game using the "Express Start" button.
+</p><p>If the games does not start, it is most probable that there is a syntax error in any of your php code (Check your states.inc.php and X.game.php)
+</p><h3><span class="mw-headline" id="Fatal_error_during_creation_of_database_ebd_quoridor_389_Not_logged">Fatal error during creation of database ebd_quoridor_389 Not logged</span></h3><p>Check that you didn't use $g_user or getCurrentPlayerId() in setupNewGame() function or in an 'args' function of your state.
+</p><p>As a general rule, you should use getActivePlayerId() and not getCurrentPlayerId(). See the <a class="external text" href="http://www.slideshare.net/boardgamearena/bga-studio-focus-on-bga-game-state-machine" rel="nofollow">presentation on the game state machine</a> for more information.
+</p><h3><span id="Warning:_Invalid_argument_supplied_for_foreach.28.29_in_table.game.php"></span><span class="mw-headline" id="Warning:_Invalid_argument_supplied_for_foreach()_in_table.game.php">Warning: Invalid argument supplied for foreach() in table.game.php</span></h3><pre>  Warning: Invalid argument supplied for foreach() in /var/tournoi/release/tournoi-151226-1240-gs/www/game/module/table/table.game.php on line 129 
+  Fatal error: Cannot unset string offsets in /var/tournoi/release/tournoi-151226-1240-gs/www/game/module/table/table.game.php on line 143
+</pre><p>That appears when your arg* function that suppose to return array of state arguments returns a scalar (a non-array) value
+</p><pre> Server syntax error:
+ Warning: Invalid argument supplied for foreach() in /var/tournoi/release/tournoi-240320-1000-gs/www/game/module/table/table.game.php on line 3249
+</pre><p>Check that notfication you sending have args method supplied, i.e
+</p><pre>  $this-&gt;bga-&gt;notify-&gt;all('message', "", []); // 3rd argument MUST be array
+</pre><h3><span class="mw-headline" id="The_server_reported_an_error">The server reported an error</span></h3><p>During table creation: "The server reported an error" error shown and nothing else.
+</p><h3><span class="mw-headline" id="Unexpected_Error_:_Invalid_player_number_for_this_game_:_4">Unexpected Error : Invalid player number for this game : 4</span></h3><p>This error may comes when trying to change the player number configuration in gameinfos.jsonc from a higher to lower number of players (for example from 4 to 2).
+</p><ul><li>change in gameinfos.jsonc the entry to "players": [2,3,4]</li>
+<li>In game management page (Control Panel &gt; Manage Games &gt; "Your Game"), press the "Reload Game information" button</li>
+<li>create a new table</li>
+<li>reduce the number of players to 2 and start the game</li>
+<li>(express) Stop the game</li>
+<li>change in gameinfos.jsonc the entry to "players": [2]</li>
+<li>press again the "Reload Game information" button</li></ul><h3><span class="mw-headline" id="Blank_page">Blank page</span></h3><p>If you see no html at all check 
+</p><ul><li>if you have syntax error in your view.php file</li>
+<li>class name of your view.php file  does not match the project name (should be view_foo_foo if project is foo)</li>
+<li>game name return by getGameName() does not match the project name  (should be "foo" if project is foo)</li></ul><pre>   class view_russianrailroads_russianrailroads extends game_view {
+   function getGameName() {
+       return "russianrailroads";
+   }
+</pre><h3><span id=".22Ooooops.2C_this_page_does_not_exists_:.2F.22"></span><span class="mw-headline" id='"Ooooops,_this_page_does_not_exists_:/"'>"Ooooops, this page does not exists :/"</span></h3><p>If your table is created, but you are redirected to <code>https://studio.boardgamearena.com/1/index.php</code> when you try to launch your table, then you are most likely missing the <a href="/Players_actions:_yourgamename.action.php" title="Players actions: yourgamename.action.php">action PHP file</a>.
+</p><p>Make sure the file is correctly named, as any typo means the studio won't be able to find the file.
+</p><h3><span id="HTTP_Error_500_.28when_the_BGA_server_is_stable.29"></span><span class="mw-headline" id="HTTP_Error_500_(when_the_BGA_server_is_stable)">HTTP Error 500 (when the BGA server is stable)</span></h3><p>The table has been created, but the table loading (e.g. getAllDatas()) hasn't been finished properly for some reason. For example php type error when strict typing is enabled.
+</p><h3><span id="Unexpected_error:_Wrong_formatted_data_from_gameserver_1_.28method:_createGame.29:_JSON_ERROR_SYNTAX_-_Warning:_Undefined_array_key_100_in_....2Ftable.game.php_-_Unknown_gamestate_label:_100"></span><span class="mw-headline" id="Unexpected_error:_Wrong_formatted_data_from_gameserver_1_(method:_createGame):_JSON_ERROR_SYNTAX_-_Warning:_Undefined_array_key_100_in_.../table.game.php_-_Unknown_gamestate_label:_100">Unexpected error:  Wrong formatted data from gameserver 1 (method: createGame): JSON_ERROR_SYNTAX - Warning:  Undefined array key 100 in .../table.game.php - Unknown gamestate label: 100</span></h3><p>You've added a new option to <code>gameoptions.json</code> but forgot to initialize the option via <code>self::initGameStateLabels()</code>.
+</p><h2><span id="Game_starts_but_I_can.27t_make_a_move"></span><span class="mw-headline" id="Game_starts_but_I_can't_make_a_move">Game starts but I can't make a move</span></h2><h3><span id="When_I_do_a_move.2C_I_got_.22Move_recorded.2C_waiting_for_update_....22_forever"></span><span class="mw-headline" id='When_I_do_a_move,_I_got_"Move_recorded,_waiting_for_update_..."_forever'>When I do a move, I got "Move recorded, waiting for update ..." forever</span></h3><p>"Move recorded" means that your ajaxcall request (bgaPerformAction) has been sent to the server and returned normally.
+</p><p>If this message stays forever, it is probably that your PHP code does not send any notification when the move happens, which is abnormal. To fix this: add a notify-&gt;all or a notify-&gt;player call in your PHP code.
+</p><h3><span id="When_I_do_a_move.2C_I_get_.22Sending_move_to_server....22_then_nothing_and_game_resets_to_state_before_the_move"></span><span class="mw-headline" id='When_I_do_a_move,_I_get_"Sending_move_to_server..."_then_nothing_and_game_resets_to_state_before_the_move'>When I do a move, I get "Sending move to server..." then nothing and game resets to state before the move</span></h3><p>Its possible that server code get into infinite loops or thinks too much, in which case it will timeout and will be aborted without any extra logs (and db transaction you saw in the log won't be committed). You will usually see "Unable to connect to server" message on console in this case. You have to put more logging into server
+to trace where it hangs.
+</p><h3><span id="When_I_do_a_move.2C_I_get_.22Ajaxcall_error:_empty_answer.22"></span><span class="mw-headline" id='When_I_do_a_move,_I_get_"Ajaxcall_error:_empty_answer"'>When I do a move, I get "Ajaxcall error: empty answer"</span></h3><p>You either have missing self::ajaxResponse(); in your <a href="/Players_actions:_yourgamename.action.php" title="Players actions: yourgamename.action.php">game.action.php</a> method, or there is some problem with getting arguments (check that you are using btoa() on client when using AT_base64 arg type in action.php)
+</p><h3><span id="When_I_do_a_move.2C_I_get_.22Gameserver_is_locked_by_configuration.22."></span><span class="mw-headline" id='When_I_do_a_move,_I_get_"Gameserver_is_locked_by_configuration".'>When I do a move, I get "Gameserver is locked by configuration".</span></h3><p>You may have an error in your AJAX path, such as /reversi/reversi when your game's name is different.
+</p><h3><span id="When_I_do_a_move.2C_I_get_.22Server_syntax_error:_Fatal_error:_Allowed_memory_size_of_X_bytes_exhausted.22."></span><span class="mw-headline" id='When_I_do_a_move,_I_get_"Server_syntax_error:_Fatal_error:_Allowed_memory_size_of_X_bytes_exhausted".'>When I do a move, I get "Server syntax error: Fatal error: Allowed memory size of X bytes exhausted".</span></h3><p>You have a stack overflow when your action is called. Caused by infinitive recursion.
+</p><h3><span class="mw-headline" id="Some_player_action_is_triggered_randomly_when_I_click_somewhere_on_the_game_area">Some player action is triggered randomly when I click somewhere on the game area</span></h3><p>You probably used "dojo.connect" on a null object. In this case, dojo.connect associate the event (ex: "onclick") to the whole game area.
+</p><pre>   dojo.connect( $("my_object"), "onclick", this, (event)=&gt;{})
+</pre><p>To determine if this is the case, place "alert( $("my_object") )" before the dojo.connect to check if the object exists or not.
+</p><h3><span class="mw-headline" id="Error:_This_is_not_your_turn">Error: This is not your turn</span></h3><p>This happens when checkAction() is called and current player is NOT the active player.
+</p><p><a class="image" href="/File:Change_active_player.jpg"><img alt="Change active player.jpg" decoding="async" height="121" src="/images/0/03/Change_active_player.jpg" width="250"/></a>
+</p><h3><span id="Error:_Please_wait.2C_an_action_is_already_in_progress"></span><span class="mw-headline" id="Error:_Please_wait,_an_action_is_already_in_progress">Error: Please wait, an action is already in progress</span></h3><p>Its followed by error "(Generated by checkAction / XXX)" on studio.
+</p><p>This can happen when the player sent an Ajax request action earlier, and:
+</p><ul><li>action is not complete yet - i.e. takes some time, and user clicked something again</li>
+<li>if there is bug in interface where MULTIPLE handlers are fired on same click. To debug this add some console.trace() in place this specific checkAction is called.</li>
+<li>did not get any notification from the PHP side. To avoid this, put an empty notify-&gt;player in the PHP side of the Ajax handler to ensure the client receives a response. This line of code should do it:</li></ul><pre>    $this-&gt;bga-&gt;notify-&gt;player($this-&gt;getCurrentPlayerId(), 'message', ''); // sent to current player, who originated the action
+</pre><h3><span class="mw-headline" id="Error:_This_move_is_not_authorized_now">Error: This move is not authorized now</span></h3><p>This is generic error message generated by this.showMoveUnauthorized() function. If you did not call this function yourself, check the console log, it may have additional information.
+If you see "Move not authorized now : XXX" in the log, where XXX is your action name - this means that action XXX is not defined in list of possible actions for your current state. This error generated by checkAction() function.
+</p><h3><span class="mw-headline" id="Error:_More_than_one_possible_action_at_this_state">Error: More than one possible action at this state</span></h3><p>The argument given to $this-&gt;gamestate-&gt;nextState() is not defined in states.php.
+</p><h3><span class="mw-headline" id="Error:_You_are_not_connected_-_after_waiting_for_the_submitted_move">Error: You are not connected - after waiting for the submitted move</span></h3><p>In the log you may find: 
+</p><pre> Query execution was interrupted, maximum statement execution time exceeded - Request: SELECT global_id, global_value FROM global WHERE 1
+</pre><p>The error message above is because of failed attempt to lock a table, which happens because of infinite loop in you game.
+</p><ul><li>Check that don't enter same game state over and over again</li>
+<li>Check that you reverse for loop actually descrease counter or other loop issues</li>
+<li>Check that recursive function ends</li></ul><h3><span class="mw-headline" id="502_Bad_Gateway">502 Bad Gateway</span></h3><p>This error is similar to the infinite loop just above this section, but the loop occurred in view.php or somewhere unusual (e.g. module).
+</p><h2><span class="mw-headline" id="Predefined_server_errors">Predefined server errors</span></h2><h3><span id="Unexpected_error:_Unexpected_final_game_state_.28XX.29"></span><span class="mw-headline" id="Unexpected_error:_Unexpected_final_game_state_(XX)">Unexpected error: Unexpected final game state (XX)</span></h3><p>The action function does not transition to any state, i.e.
+</p><pre> function selectField($field) {
+   self::checkAction ( 'selectField' );
+   if ($field!=0) $this-&gt;gamestate-&gt;nextState ( 'next' );
+ }
+</pre><p>Here if $field is 0 there is no transition
+</p><h3><span class="mw-headline" id="This_game_action_is_impossible_right_now">This game action is impossible right now</span></h3><p>Check the game log. Usually your state does not define the action you trying to perform in 'possibleactions' array.
+</p><h3><span id="Unexpected_error:_This_transition_.28playerTurn.29_is_impossible_at_this_state_.2842.29"></span><span class="mw-headline" id="Unexpected_error:_This_transition_(playerTurn)_is_impossible_at_this_state_(42)">Unexpected error: This transition (playerTurn) is impossible at this state (42)</span></h3><p>This is pretty self explanatory. Function nextState() takes transition name not a state name, so you probably did not
+define this transition that the given state
+</p><h2><span class="mw-headline" id="Game_interface_hangs_during_reload_or_on_start">Game interface hangs during reload or on start</span></h2><p>Showing "Application Loading..."
+</p><h3><span class="mw-headline" id="Javascript_error:_During_pageload_undefined_no_stack_avail_Script:">Javascript error: During pageload undefined no_stack_avail Script:</span></h3><p>This error usually has no useful data, but it means you called somes API that require a callback and did not define callback function, i.e
+in dojo.connect, this.connectClass, dojo.subscribe, etc
+</p><pre>     this.connectClass('field', 'onclick', 'onField'); // &lt;-- onField is not defined
+</pre><h3><span class="mw-headline" id="Javascript_error:_During_pageload_n_is_null">Javascript error: During pageload n is null</span></h3><p>When calling dojo.place(), the name of the container (second parameter) to place the new block into is not defined in the page template.
+</p><h3><span id="Other_errors_with_.22Application_loading....22"></span><span class="mw-headline" id='Other_errors_with_"Application_loading..."'>Other errors with "Application loading..."</span></h3><p>You probably have a syntax error in your Javascript code, and the interface refuses to load.
+</p><p>If there is really nothing on the log, it's probably that the system was unable to load your Javascript because of an syntax error that affect the structure of the Javascript file, typically a missing "}" or a missing "," after a method definition.
+</p><p>If you have "dojo.publish is not defined" or something similar, this could be caused by another error earlier. For example, a syntax error caused by a malformed generated file (such as using newlines in tiebreaker description). Also you might have left some images in the /img directory with special characters in the name which must be removed. If you edited images for the game box and website, ensure that you have not left any unnecessary files there.
+</p><h3><span class="mw-headline" id="Unexpected_Syntax_Error:">Unexpected Syntax Error:</span></h3><p>No further details in the log. When log is filling with some social connect errors.
+</p><h3><span class="mw-headline" id="Game_interface_spins_in_a_loop_throwing_error">Game interface spins in a loop throwing error</span></h3><p>Errors is something like "Cannot read property 'is_ai' of undefined". Cannot restart the game because cannot access UI to stop.
+Likely you get in actplayer state with player id == 0. The only way to fix it is to edit database, globals index == 2 set player id to one of your test dudes
+(can copy from row 5 for example).
+</p><h3><span id="Unable_to_find_table_database_.281.29:_ebd_yourgame_112222"></span><span class="mw-headline" id="Unable_to_find_table_database_(1):_ebd_yourgame_112222">Unable to find table database (1): ebd_yourgame_112222</span></h3><p>Its either temporarily server error especially on studio it timeouts sometimes, just try reloading again.
+Or check if you have syntax errors in your php game file or sql.
+</p><h2><span id="Type_conversion_.2F_juggling_errors"></span><span class="mw-headline" id="Type_conversion_/_juggling_errors">Type conversion / juggling errors</span></h2><h3><span class="mw-headline" id="On_php_side_I_get_a_number_instead_of_string_I_expect">On php side I get a number instead of string I expect</span></h3><pre>$num = 3;
+$meeple = "meeple_" + $num; // &lt;-- suppose to be "meeple_3"!
+</pre><p>When you switch between JS and PHP it easy to type this and not notice the +. Plus sign (+) in php does not mean string concatenation (in javascript does!),
+in php + means integer arithmetic. So change + to . (dot)
+</p><h3><span class="mw-headline" id="On_php_side_my_string_comparison_does_not_work">On php side my string comparison does not work</span></h3><pre>  if ($color == '4baae2' || $color == '000000') { 
+  }
+</pre><p>Apparently you should not be using '==' in php to compare strings! You should use '==='. The (==) operator will typecast the strings 
+to numbers then do comparison!
+Its not very apparent because usually you can get away with it, but not when strings resemble numbers like hex 'colors'.
+</p><h3><span class="mw-headline" id="Integer_columns_in_the_database_are_returned_as_strings">Integer columns in the database are returned as strings</span></h3><p>This is normal PHP behavior. All fields are returned as string type, regardless of their actual type in the database. This also applies to global variables accessed via getGameStateValue(), since they are stored in a database table.
+</p><pre>  $myValueInt = (int)self::getGameStateValue(GLOBAL_ROUND_NUMBER);
+</pre><p>or
+</p><pre>  $myValueInt = self::getGameStateValue(GLOBAL_ROUND_NUMBER) + 0; // adding 0 casts to int
+</pre><p><br/>
+same with direct qdb ueries
+</p><pre>  $sql = "SELECT my_int_column FROM my_table WHERE my_condition";
+  $myResult = self::getUniqueValueFromDB($sql); &lt;-- this is a string
+  $myResultAsInt = (int)$myResult;
+</pre><p><a class="external free" href="https://stackoverflow.com/questions/5323146/mysql-integer-field-is-returned-as-string-in-php" rel="nofollow">https://stackoverflow.com/questions/5323146/mysql-integer-field-is-returned-as-string-in-php</a>
+</p><h2><span class="mw-headline" id="Zombie_mode">Zombie mode</span></h2><h3><span id="Unexpected_error:_Propagating_error_from_GS_1_.28method:_zombie.29:_Not_logged"></span><span class="mw-headline" id="Unexpected_error:_Propagating_error_from_GS_1_(method:_zombie):_Not_logged">Unexpected error: Propagating error from GS 1 (method: zombie): Not logged</span></h3><p>You are probably calling getCurrentPlayerId() or getCurrentPlayerName() in your zombieTurn method or any of the methods it uses. Instead, use the $active_player_id provided as parameter to zombieTurn().
+</p><h3><span id="Unexpected_error:_Can.27t_manage_zombie_player_in_this_game_state"></span><span class="mw-headline" id="Unexpected_error:_Can't_manage_zombie_player_in_this_game_state">Unexpected error: Can't manage zombie player in this game state</span></h3><p>The state the game was in at the time the error was generated didn't have "transitions" =&gt; array( "zombiePass" =&gt; 27 )" in states.inc.php (27 was an arbitrary example, but everything else must be spelled exactly that way.)
+</p><h3><span id="Unexpected_error:_Wrong_formatted_data_from_BGA_gameserver_1_.28method:_zombie.29:"></span><span class="mw-headline" id="Unexpected_error:_Wrong_formatted_data_from_BGA_gameserver_1_(method:_zombie):">Unexpected error: Wrong formatted data from BGA gameserver 1 (method: zombie):</span></h3><p>This is almost certainly an undefined value in PHP code. Look for a warning or error message in the game replay log on the right side of the table UI.
+</p><h3><span id="Unexpected_error:_BGA_gameserver_1_do_not_respond_.28method:_zombie.29_.28timeout:_cluster.29"></span><span class="mw-headline" id="Unexpected_error:_BGA_gameserver_1_do_not_respond_(method:_zombie)_(timeout:_cluster)">Unexpected error: BGA gameserver 1 do not respond (method: zombie) (timeout: cluster)</span></h3><p>You are trying to end the game from a zombie method. This is not allowed. The zombie logic must continue the game as best it can. 
+</p><h3><span class="mw-headline" id="Game_unexpectedly_ends_when_one_player_becomes_zombie">Game unexpectedly ends when one player becomes zombie</span></h3><p>There is an error in handling zombie mode, check error log. Example: if the zombie turn is called again, framework detects a infinite loop and cancels the game. On the studio there is a notification called ZombieTurnFailed
+</p><h2><span class="mw-headline" id="Dead_locks">Dead locks</span></h2><h3><span class="mw-headline" id="Database_dead_lock_in_multiplayer_state">Database dead lock in multiplayer state</span></h3><p>You normally won't see this error until game is released because to reproduce game it have to be hit with 2 players doing an action simultaneosly.
+You only can reprodoce this on studio if you either very fast or you use a script (with direct REST calls).
+</p><p>There are two known workarounds:
+</p><p>2) Before every action explictly lock tables in specific order (add this code in your game.php file)
+</p><pre>   // Due to deadlock issues involving the playersmultiactive and player tables,
+   //   standard tables are queried FOR UPDATE when any operation occurs -- AJAX or refreshing a game table.
+   //
+   // Otherwise at least two situations have been observed to cause deadlocks:
+   //   * Multiple players in a live game with tabs open, two players trading multiactive state back and forth.
+   //   * Two players trading multiactive state back and forth, another player refreshes their game page.
+   private function queryStandardTables() {
+      // Query the standard global table.
+      $this-&gt;DbQuery("SELECT global_id, global_value FROM global WHERE 1 ORDER BY global_id FOR UPDATE");
+      // Query the standard player table.
+      $this-&gt;DbQuery("SELECT player_id id, player_score score FROM player WHERE 1 ORDER BY player_id FOR UPDATE");
+      // Query the playermultiactive  table. DO NOT USE THIS is you don't use $this-&gt;bIndependantMultiactiveTable=true
+      $this-&gt;DbQuery("SELECT ma_player_id player_id, ma_is_multiactive player_is_multiactive FROM playermultiactive ORDER BY player_id FOR UPDATE");
+
+      // TODO should the stats table be queried as well?
+   }
+
+    /** This is action function that canbe called from multiplayer state */
+    protected function actionXXX() {
+        $this-&gt;queryStandardTables();
+        ... // your arg function code
+    }
+    /** This is arg function of multiplayer state, XXX is replaced by actual name of state. 
+        You need to do it for EVERY arg function in multiplayer states which accesses the database. 
+        You don't need to do it for arg function for single player states  
+    */
+    protected function argXXX() {
+        $this-&gt;queryStandardTables();
+        ... // your arg function code
+    }
+</pre><h2><span class="mw-headline" id="Other_errors">Other errors</span></h2><h3><span class="mw-headline" id="Javascript_does_not_know_how_to_sum_two_numbers">Javascript does not know how to sum two numbers</span></h3><p>Be careful when you manipulate integers returned by notifications: most of the time, Javascript considers they are Strings and not Integers.
+</p><pre>    let i = 1;
+    i += notif.args.increment;  // With notif.args.increment='1'
+    console.log( i );                 // i=11 instead of 2 !! Javascript concatenate 2 strings !
+</pre><p>To solve this, you should use the "parseInt" function:
+</p><pre>    let i = 1;
+    i += parseInt(notif.args.increment, 10);  // With notif.args.increment='1'
+    console.log( i );                 // i=2 :)
+</pre><h3><span class="mw-headline" id="Javascript:_do_not_use_substr_with_negative_numbers">Javascript: do not use substr with negative numbers</span></h3><p>To get the last characters of a string, use "slice" instead of "substr" which has a bug on IE:
+</p><pre>    var three_last_characters = string.substr( -3 );   // Wrong
+    var three_last_characters = string.slice( -3 );    // Correct
+</pre><h3><span id="Game_.22spontaneously.22_transition_to_a_new_state_without_user_input"></span><span class="mw-headline" id='Game_"spontaneously"_transition_to_a_new_state_without_user_input'>Game "spontaneously" transition to a new state without user input</span></h3><p>Make sure on php side you have no code after   $this-&gt;gamestate-&gt;nextState(...) code.
+Because if you do accidentally have code that goes to another state it will cause another state transition without user interaction.
+</p><pre>function selectField($field) {
+  self::checkAction ( 'selectField' );
+  if ($field!=0) $this-&gt;gamestate-&gt;nextState ( 'next' );
+  $this-&gt;gamestate-&gt;nextState ( 'last' ); // &lt;-- here is missing else, so it will cause double state transition
+}
+</pre><h3><span id="Message_.22Invalid_or_missing_substitution_argument_for_log_message:_.24.7Bactplayer.7D_..._.22_when_entering_a_state"></span><span class="mw-headline" id='Message_"Invalid_or_missing_substitution_argument_for_log_message:_${actplayer}_..._"_when_entering_a_state'>Message "Invalid or missing substitution argument for log message: ${actplayer} ... " when entering a state</span></h3><p>You probably have an args function defined for that state that does <b>not</b> return an array
+</p><h3><span id="Server_syntax_error:_Warning:_count.28.29:_Parameter_must_be_an_array_or_an_object_that_implements_Countable_in_.2Fvar.2Ftournoi.2Frelease.2Ftournoi-220308-1000-gs.2Fwww.2Fgame.2Fmodule.2Ftable.2Fgamestate.game.php_on_line_823"></span><span class="mw-headline" id="Server_syntax_error:_Warning:_count():_Parameter_must_be_an_array_or_an_object_that_implements_Countable_in_/var/tournoi/release/tournoi-220308-1000-gs/www/game/module/table/gamestate.game.php_on_line_823">Server syntax error: Warning: count(): Parameter must be an array or an object that implements Countable in /var/tournoi/release/tournoi-220308-1000-gs/www/game/module/table/gamestate.game.php on line 823</span></h3><p>Generally comes with that syntax error : Warning: implode(): Invalid arguments passed in /var/tournoi/release/tournoi-220308-1000-gs/www/game/module/table/gamestate.game.php on line 845
+</p><p><br/>
+</p><h3><span id="Red_banner_.22Uncaught_EvalError:_Possible_side-effect_in_debug-evaluate.22"></span><span class="mw-headline" id='Red_banner_"Uncaught_EvalError:_Possible_side-effect_in_debug-evaluate"'>Red banner "Uncaught EvalError: Possible side-effect in debug-evaluate"</span></h3><p>This is a known issue that can be ignored (for most of case). Generally happening when working on devtool.
+A workaround is to disable the "error" event listener. To do so, you can temporarily disable the event listener in DevTools, like this:
+</p><pre>- At the top of DevTools, open the "Elements" tab
+- Press "»", on the right of "Styles", "Computed", "Layout"
+- Choose "Event listeners"
+- Find and expand "error"
+- Click "Remove"
+</pre><p>This will remove the event listener, but the issue will return after you refresh the page.
+</p></div></body>
+</html>

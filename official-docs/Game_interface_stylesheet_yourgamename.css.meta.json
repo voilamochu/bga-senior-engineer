@@ -1,0 +1,15 @@
+{
+  "title": "Game interface stylesheet: yourgamename.css",
+  "source_html": "Game_interface_stylesheet_yourgamename.css.html",
+  "clean_html": "Game_interface_stylesheet_yourgamename.css.html",
+  "url": "https://en.doc.boardgamearena.com/Game_interface_stylesheet:_yourgamename.css",
+  "depth": 1,
+  "sha256_raw": "2ad0287ac773965f37e3e639def6633e3bfc8f01071dfa5c6ceda39030be38cd",
+  "sha256_clean": "f085695297cbae1589284c744c6c797489100ee4e3a957ce5507f4f7294f8dfd",
+  "word_count": 990,
+  "code_block_count": 10,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 9,
+  "cleaned_at": "2026-07-06T06:38:19.014788+00:00"
+}

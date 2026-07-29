@@ -1,0 +1,15 @@
+{
+  "title": "BgaScoreSheet",
+  "source_html": "BgaScoreSheet.html",
+  "clean_html": "BgaScoreSheet.html",
+  "url": "https://en.doc.boardgamearena.com/BgaScoreSheet",
+  "depth": 1,
+  "sha256_raw": "6077f9bc7417caf9c9e08f374773a193e7ee052b31d0a7169f7af706133a7d36",
+  "sha256_clean": "d47d614ae21d3cd10496bb84941b042942f3e8def773df6cd01acebb27ed033e",
+  "word_count": 513,
+  "code_block_count": 5,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 5,
+  "cleaned_at": "2026-07-06T06:38:18.539872+00:00"
+}

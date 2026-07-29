@@ -1,0 +1,1 @@
+convert *.png  -gravity center -background none -extent 512x512 -set filename:f '%t' extent/'%[filename:f].png'

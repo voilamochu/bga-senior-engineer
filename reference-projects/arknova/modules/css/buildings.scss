@@ -1,0 +1,549 @@
+#pagesubtitle #building-selector {
+    margin: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+
+    .building-container {
+        margin: 0;
+        transform: scale(0.9);
+        transform-origin: center center;
+        &:hover {
+            transform: scale(0.95);
+        }
+
+        &.selected {
+            transform: scale(0.95);
+            .building-border {
+                background: green;
+            }
+        }
+
+        .building-crosshairs {
+            visibility: visible;
+        }
+
+        &.unplacable {
+            cursor: not-allowed;
+            // [data-filter="0"] & {
+            filter: grayscale(1);
+            -webkit-transform: translateZ(0);
+            -webkit-perspective: 1000;
+            -webkit-backface-visibility: hidden;
+            // }
+            opacity: 0.7;
+
+            &:hover {
+                transform: scale(0.9);
+            }
+        }
+
+        &.unaffordable {
+            position: relative;
+            clip-path: none !important;
+            cursor: not-allowed;
+            .building-inner {
+                filter: grayscale(1);
+                -webkit-transform: translateZ(0);
+                -webkit-perspective: 1000;
+                -webkit-backface-visibility: hidden;
+                opacity: 0.7;
+            }
+            .building-crosshairs {
+                display: none;
+            }
+
+            .icon-container-money {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translateX(-50%) translateY(-50%);
+                font-size: 25px;
+                .icon-money {
+                    box-shadow: 0px 0px 9px 7px red;
+                }
+            }
+        }
+
+        .action-card-special-icon {
+            width: 30px;
+            height: 30px;
+            position: absolute;
+            top: 4px;
+            left: 19px;
+        }
+    }
+}
+
+#arknova-hold:not(:empty) {
+    margin: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    background: #f8f8f8;
+    margin-top: -5px;
+
+    .building-container {
+        margin: 0;
+        transform: scale(0.9);
+        transform-origin: center center;
+        &:hover {
+            transform: scale(0.95);
+        }
+
+        &.selected {
+            transform: scale(0.95);
+            .building-border {
+                background: green;
+            }
+        }
+
+        &.unplacable {
+            cursor: not-allowed;
+            // [data-filter="0"] & {
+            filter: grayscale(1);
+            -webkit-transform: translateZ(0);
+            -webkit-perspective: 1000;
+            -webkit-backface-visibility: hidden;
+            // }
+            opacity: 0.7;
+
+            &:hover {
+                transform: scale(0.9);
+            }
+        }
+    }
+}
+
+#building-controls {
+    grid-row-end: span 2;
+    grid-column-end: span 4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    &.inactive,
+    [data-rotation-arrows="1"] &,
+    [data-rotation-arrows="2"] & {
+        display: none;
+    }
+
+    #building-controls-circle {
+        width: 0px;
+        height: 0px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        border: 4px dotted black;
+        z-index: 4;
+        pointer-events: none;
+        background: #7d7d7d1f;
+        position: relative;
+
+        #building-rotate-clockwise,
+        #building-rotate-cclockwise,
+        #building-confirm-btn {
+            position: absolute;
+            top: calc(50% - 20px);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: all;
+            cursor: pointer;
+
+            svg {
+                height: 31px;
+                width: 40px;
+            }
+        }
+        #building-rotate-clockwise {
+            right: -21px;
+        }
+        #building-rotate-cclockwise {
+            left: -21px;
+        }
+
+        #building-confirm-btn {
+            top: calc(85% - 15px);
+            left: calc(85% - 15px);
+            color: white;
+            background: #4871b6;
+            padding: 0px;
+            margin: 0px;
+            font-size: 20px;
+
+            &.disabled {
+                opacity: 1;
+                background: linear-gradient(rgba(189, 189, 189, 0.8), rgba(166, 165, 165, 0.9));
+                cursor: not-allowed;
+                pointer-events: all;
+            }
+        }
+        &.bottom #building-confirm-btn {
+            top: calc(15% - 15px);
+        }
+    }
+
+    &[data-type="kiosk"],
+    &[data-type="pavilion"],
+    &[data-type="size-1"],
+    &[data-type="victory"],
+    &[data-type="arcade"] {
+        //    [data-rotation-arrows="1"] & {
+        #building-controls-circle {
+            #building-rotate-clockwise,
+            #building-rotate-cclockwise {
+                display: none;
+            }
+        }
+    }
+
+    &.hovering #building-controls-circle #building-confirm-btn {
+        display: none;
+    }
+}
+
+.building-container {
+    &.phantom {
+        visibility: hidden;
+    }
+    position: relative;
+    flex-shrink: 0;
+
+    @for $i from 0 to 6 {
+        &[data-rotation="#{$i}"] {
+            transform: rotate(#{$i * 60}deg);
+
+            .building-crosshairs {
+                transform: rotate(#{$i * -60}deg);
+            }
+        }
+    }
+
+    &[data-type="kiosk"],
+    &[data-type="pavilion"],
+    &[data-type="size-1"],
+    &[data-type="victory"],
+    &[data-type="arcade"],
+    [data-rotation-arrows="2"] & {
+        .building-crosshairs {
+            #building-rotate-clockwise-on-tile,
+            #building-rotate-cclockwise-on-tile {
+                display: none;
+            }
+        }
+    }
+
+    [data-buildings-borders] &.selectable {
+        cursor: pointer;
+        .building-border {
+            background: black;
+        }
+
+        &.unselectable {
+            cursor: default;
+        }
+    }
+    [data-buildings-borders] &.selected {
+        .building-border {
+            background: #004cff;
+        }
+    }
+
+    .building-border,
+    .building-inner {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    [data-buildings-borders="1"] & .building-border {
+        background: #a68731;
+    }
+
+    .building-inner {
+        background: url("img/enclosures.jpg");
+        background-size: 907px;
+        background-repeat: no-repeat;
+
+        .arknova-meeple {
+            position: absolute;
+        }
+    }
+
+    .building-crosshairs {
+        visibility: hidden;
+        pointer-events: none;
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        margin-left: -15px;
+        margin-top: -15px;
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    [data-enclosure-size="1"] & {
+        &[data-state="0"] {
+            &[data-type="size-1"],
+            &[data-type="size-2"],
+            &[data-type="size-3"],
+            &[data-type="size-4"],
+            &[data-type="size-5"] {
+                .building-crosshairs::before {
+                    visibility: visible;
+                    display: block;
+                    position: absolute;
+                    width: 41px;
+                    height: 36px;
+                    top: -4px;
+                    left: -6px;
+                    // ENCLOSURE REGULAR
+                    background: url("img/icons.png");
+                    background-position: 15.002586652871186% 63.29568788501027%;
+                    background-size: 1780.8695652173913%;
+                    color: white;
+                    font-family: "MyriadPro-Bold";
+                    font-size: 25px;
+                    text-align: center;
+                    line-height: 34px;
+                }
+            }
+        }
+        &[data-type="size-1"] .building-crosshairs::before {
+            content: "1";
+        }
+        &[data-type="size-2"] .building-crosshairs::before {
+            content: "2";
+        }
+        &[data-type="size-3"] .building-crosshairs::before {
+            content: "3";
+        }
+        &[data-type="size-4"] .building-crosshairs::before {
+            content: "4";
+        }
+        &[data-type="size-5"] .building-crosshairs::before {
+            content: "5";
+        }
+    }
+
+    &#building-hover {
+        transition: transform 0.4s;
+        pointer-events: none;
+        z-index: 6;
+        .building-border {
+            background: #085f08;
+        }
+        .building-crosshairs {
+            fill: #085f08;
+            &::before {
+                display: none;
+            }
+        }
+
+        &.hovering {
+            .building-border {
+                background: black;
+            }
+            .building-crosshairs {
+                fill: black;
+            }
+        }
+        &.invalid {
+            .building-border {
+                background: red;
+            }
+            .building-crosshairs {
+                fill: red;
+            }
+        }
+
+        .building-inner {
+            display: none;
+        }
+
+        [data-rotation-arrows="0"] & .building-crosshairs {
+            visibility: visible;
+            #building-rotate-clockwise-on-tile,
+            #building-rotate-cclockwise-on-tile {
+                visibility: hidden;
+            }
+        }
+
+        [data-rotation-arrows="1"] &,
+        [data-rotation-arrows="2"] & {
+            .building-crosshairs {
+                visibility: visible;
+                transition: transform 0.4s;
+                #building-rotate-clockwise-on-tile,
+                #building-rotate-cclockwise-on-tile {
+                    pointer-events: all;
+                    position: absolute;
+                    left: -27px;
+                    top: -23px;
+                    width: 33px;
+                    height: 73px;
+
+                    svg {
+                        width: 50%;
+                        margin-left: 11px;
+                    }
+                }
+                #building-rotate-clockwise-on-tile {
+                    left: 25px;
+                    svg {
+                        margin-left: 3px;
+                    }
+                }
+            }
+        }
+    }
+
+    &:not([data-type]),
+    &[data-type=""] {
+        display: none;
+    }
+}
+
+// Buildings data
+@import "buildings.data";
+
+// Special enclosures cubes
+.building-container {
+    @for $i from 0 to 6 {
+        &[data-state="#{$i}"] .building-inner .arknova-meeple {
+            @for $j from $i + 1 to 6 {
+                &:nth-child(#{$j}) {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    &[data-state] .building-inner .arknova-meeple.selected {
+        display: block;
+        opacity: 1;
+        box-shadow: 0px 0px 4px 5px #7ca0f7;
+        background-color: #004cff;
+        border-radius: 7px;
+        border: 1px solid #7ca0f7;
+        margin: -1px;
+    }
+
+    &[data-type="petting-zoo"] .building-inner .arknova-meeple {
+        &:nth-child(1) {
+            top: 33%;
+            left: 20%;
+        }
+        &:nth-child(2) {
+            top: 15%;
+            left: 62%;
+        }
+        &:nth-child(3) {
+            top: 73%;
+            left: 20%;
+        }
+    }
+
+    &[data-type="reptile-house"] .building-inner .arknova-meeple {
+        &:nth-child(1) {
+            top: 16%;
+            left: 13%;
+        }
+        &:nth-child(2) {
+            top: 41%;
+            left: 42%;
+        }
+        &:nth-child(3) {
+            top: 16%;
+            left: 72%;
+        }
+        &:nth-child(4) {
+            top: 65%;
+            left: 13%;
+        }
+        &:nth-child(5) {
+            top: 65%;
+            left: 72%;
+        }
+    }
+
+    &[data-type="large-bird-aviary"] .building-inner .arknova-meeple {
+        &:nth-child(1) {
+            top: 14%;
+            left: 14%;
+        }
+        &:nth-child(2) {
+            top: 33%;
+            left: 43%;
+        }
+        &:nth-child(3) {
+            top: 13%;
+            left: 73%;
+        }
+        &:nth-child(4) {
+            top: 52%;
+            left: 14%;
+        }
+        &:nth-child(5) {
+            top: 72%;
+            left: 43%;
+        }
+    }
+
+    &[data-type="small-aquarium"] .building-inner .arknova-meeple {
+        &:nth-child(1) {
+            top: 15%;
+            left: 32%;
+        }
+        &:nth-child(2) {
+            top: 66%;
+            left: 32%;
+        }
+    }
+
+    &[data-type="large-aquarium"] .building-inner .arknova-meeple {
+        &:nth-child(1) {
+            top: 45%;
+            left: 19%;
+        }
+        &:nth-child(2) {
+            top: 7%;
+            left: 61%;
+        }
+        &:nth-child(3) {
+            top: 32%;
+            left: 61%;
+        }
+        &:nth-child(4) {
+            top: 57%;
+            left: 61%;
+        }
+        &:nth-child(5) {
+            top: 82%;
+            left: 61%;
+        }
+    }
+
+    &[data-type="underwater-tunnel"] .building-inner .arknova-meeple {
+        &:nth-child(1) {
+            top: 15%;
+            left: 32%;
+        }
+        &:nth-child(2) {
+            top: 66%;
+            left: 32%;
+        }
+    }
+}

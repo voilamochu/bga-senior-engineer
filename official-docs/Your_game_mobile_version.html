@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Your game mobile version - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Your_game_mobile_version rootpage-Your_game_mobile_version action-view"><div class="article"><p><br/>
+</p><p>Board Game Arena is now adaptated for Mobiles and Tablets too.
+</p><p>However, to provide your players the best experience, you should follow the two piece of advice below.
+</p><h2><span class="mw-headline" id="Declare_your_interface_minimum_width">Declare your interface minimum width</span></h2><p>By default, your game can run in a window of up to 740 pixels wide. Including the information in the right column (player's panel), it fits on a 1024px wide screen.
+</p><p>For example, the Reversi board is only 540px wide. If we stay with the default width (740px), the game interface displayed on mobile will be too large and some space will be lost on the left and on the right. Consequently the Reversi board will appear very small on the mobile screen, and players will have to "pinch &amp; zoom" to display it correctly.
+</p><p><br/>
+</p><pre> // Game interface width range (pixels)
+ // Note: game interface = space on the left side, without the column on the right
+ "game_interface_width" =&gt; {
+ 
+   // Minimum width
+   //  default: 740
+   //  maximum possible value: 740 (i.e. your game interface should fit with a 740px width, corresponding to a 1024px screen)
+   //  minimum possible value: 320 (the lower the value you specify, the better the display is on mobile)
+   "min" =&gt; 540,
+ },
+</pre><p><br/>
+And that's it! Now, BGA can choose the better display for your game interface, whatever the device.
+</p><p>If you declare that your interface can run with a 540 pixels width, it must effectively run on an interface with 540 pixels width.
+</p><p>Under 490, player panels aren't on 2 columns on mobile, so you probably shouldn't go under 490.
+</p><ul><li>On <b>Can't Stop</b>, when the screen is too narrow, we move the dice on another position (below the main board) to fit within the width :</li></ul><pre> @media only screen and (max-width: 990px) {
+ 
+   #dicechoices {
+       left: 180px;
+       top: 530px;
+   }
+   #cantstop_wrap {
+       height: 900px;
+       width: 550px;
+   }
+ }
+</pre><ul><li>On Seasons, we have some panels on the right of the board. On small screens, we display these panels below the board:</li></ul><p><br/>
+</p><pre> @media only screen and (max-width: 970px) {
+ 
+   #board {
+       float: none;
+       margin: auto;
+   }
+   .seasons_rightpanel {
+       margin-left: 0px;
+   }
+ 
+ }
+</pre><p><br/>
+Tip: on mobile, BGA displays player panels at the top of the page (instead of displaying them on the right). When doing this, BGA applies the CSS class "mobile_version" to the root HTML element with id "ebd-body". If you want you can use this CSS "mobile_version" class to optimize some of your game adaptations to this change. In the opposite, when the "normal" version is active, the CSS class "desktop_version" BGA applies the CSS class "desktop_version" to the root HTML element with id "ebd-body".
+</p><h3><span class="mw-headline" id="Autoscale">Autoscale</span></h3><p>There is an option in `game_interface_width`, called `autoscale`, than can be `true`, `false` or `viewport`
+</p><ul><li>autoscale: true -&gt; it sets CSS zoom property on player panels, title bar, and game area</li>
+<li>autoscale: false -&gt;  it sets CSS zoom property on player panels, title bar, but NOT and game area. Some devs disabled it with `zoom: 1 !important`, now they can remove the hack and use this framework flag instead 🙂</li></ul><ul><li>autoscale: 'viewport' -&gt; use native viewport (it makes chat button and bar very small)</li></ul><p>currently, the default autoscale value is 'true'
+</p><pre> 'game_interface_width' =&gt; [
+   "autoscale" =&gt; true
+  ...
+</pre><p>Discussion about this option in <a class="external free" href="https://discord.com/channels/753304735615811584/1276225578797633536" rel="nofollow">https://discord.com/channels/753304735615811584/1276225578797633536</a>
+</p><h2><span class="mw-headline" id="Touchscreen_compatibility">Touchscreen compatibility</span></h2><p>Most of your games should work with touchscreen devices without needing any changes.
+</p><p>Special cases:
+</p><p>Because there is no mouse, ":hover" won't be triggered. This is not an issue unless it is needed to play the game. In addition, some touch devices consider that a short touch must trigger a ":hover" (and should apply corresponding CSS), which can block an interaction in your game. We advise you to explicitely disable ":hover" effects when your game is running on a touchscreen device (for ex. by adding ".notouch-device" as a prefix to all your CSS :hover rules).
+</p><p>Tooltips generally do not work properly on mobile, if important consider alternative implementation
+</p><p>If you use "onmouseover" or other mouse events, it won't work on mobile devices. Use pointer events.
+</p><p>Not considering some old ways here is basically two ways of doing it:
+</p><ul><li>Use pointer events <a class="external text" href="https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events" rel="nofollow">Pointer Events API</a>
+<ul><li>code pen <a class="external free" href="https://codepen.io/VictoriaLa/pen/MWOgYYZ" rel="nofollow">https://codepen.io/VictoriaLa/pen/MWOgYYZ</a></li>
+<li>game: Century</li></ul></li></ul><ul><li>Use native drag and drop <a class="external text" href="https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API" rel="nofollow">HTML Drag and Drop</a>
+<ul><li>code pen <a class="external free" href="https://codepen.io/VictoriaLa/pen/rNGXKxj" rel="nofollow">https://codepen.io/VictoriaLa/pen/rNGXKxj</a></li>
+<li>game: Patchwork</li></ul></li></ul><p><br/>
+Note that you may need to add the CSS property <code>touch-action: none</code> on elements where you listen for touch events, in order to prevent the browser from interpreting the touch as a request to scroll/zoom the page.
+</p><h2><span id="Viewport_.3Cmeta.3E_tag"></span><span class="mw-headline" id="Viewport_&lt;meta&gt;_tag">Viewport &lt;meta&gt; tag</span></h2><pre>Disclaimer: the infamouse chrome update 128 changed zoom implementation (properly below), as a result framework code was changed (Sep 2024) and text below may not be applicable. 
+Please follow discussion on dev discord for now  and update wiki if you have more information. There is autoscale option in 'game_interface_width' to mitigate some of the zoom issues.
+</pre><p>Mobile is an area where the BGA framework is very much showing its age. The built-in handling for mobile is incredibly unsatisfying because the framework was designed for a previous era, before mobile became the predominant form of web browsing (mobile has outpaced desktop browsing since 2016).
+</p><dl><dt>In gameinfos.inc.php</dt></dl><p>(that is probably already there, just make sure min is set to minimum value)
+</p><pre>    'game_interface_width' =&gt; [
+        'min' =&gt; 550,
+    ],
+</pre><dl><dt>In yourgame.js</dt>
+<dd></dd></dl><pre>  return declare("bgagame.yourgame", ebg.core.gamegui, {
+    setup: function (gamedatas) {
+      // Set mobile viewport for portrait orientation based on gameinfos.inc.php
+      this.default_viewport = "width=" + this.interface_min_width;
+      this.onScreenWidthChange();
+      
+      ...
+    },
+    
+    // To be overrided by games
+    onScreenWidthChange: function () {
+      // Remove broken "zoom" property added by BGA framework
+      this.gameinterface_zoomFactor = 1;
+      $("page-content").style.removeProperty("zoom");
+      $("page-title").style.removeProperty("zoom");
+      $("right-side-first-part").style.removeProperty("zoom");
+    },
+</pre><p>Note that in landscape orientation, the BGA framework always sets the viewport to "width=980". Overriding the viewport for landscape orientation is much more complicated (requires overriding undocumented framework functions), so it is not recommended.
+</p><pre>  var viewport = document.querySelector('meta[name="viewport"]');
+  if (viewport) {
+     viewport.content = this.default_viewport;
+  }
+</pre></div></body>
+</html>

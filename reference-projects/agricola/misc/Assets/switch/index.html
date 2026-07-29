@@ -1,0 +1,98 @@
+<link href="../../agricola.css" rel="stylesheet" />
+<style type="text/css">
+  * {
+    box-sizing: border-box;
+  }
+
+
+  .container {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .radio-wrapper {
+      width: 145px;
+      height: 50px;
+      display: inline-block;
+      vertical-align: middle;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 30px;
+      position: relative;
+      margin-left: 1%;
+      display:flex;
+      border:1px solid black;
+  }
+
+  label {
+    z-index: 9;
+    width:33.33%;
+    height:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border-radius: 50%;
+    font-size:26px;
+    cursor:pointer;
+  }
+
+  input[type="radio"] {
+      display: none;
+  }
+
+  #ball {
+    width: 33%;
+    height: 100%;
+    position:absolute;
+    transition: left 0.5s, background 0.5s;
+    border-radius: 50%;
+    position:absolute;
+    z-index:8;
+    border: 2px solid rgba(0, 0, 0, 1);
+  }
+
+  .neutral:checked ~ #ball {
+      background: rgba(220, 220, 220, 0.7);
+      left:33.33%;
+  }
+
+
+  .yes:checked ~ #ball {
+      background:rgba(225, 142, 36, 0.77);
+      left:0%;
+  }
+
+
+  .no:checked ~ #ball {
+      left:66.66%;
+      background: #f8ff00d9;
+  }
+
+</style>
+
+<div class="container">
+  <div class="radio-wrapper">
+    <input type="radio" name="event" class="yes" id="radio-yes" />
+    <label for="radio-yes">
+      <div class="meeple-container">
+        <div class="agricola-meeple meeple-vegetable">
+        </div>
+      </div>
+    </label>
+
+    <input type="radio" name="event" class="neutral" checked id="radio-neutral" />
+    <label for="radio-neutral"></label>
+
+
+    <input type="radio" name="event" class="no" id="radio-no" />
+    <label for="radio-no">
+      <div class="meeple-container">
+              <div class="agricola-meeple meeple-grain">
+              </div>
+            </div>
+          </label>
+
+    <div id="ball"></div>
+  </div>
+</div>

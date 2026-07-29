@@ -1,0 +1,303 @@
+.animal-holder {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  z-index: 110;
+  pointer-events: none;
+}
+
+.animal-holder.love-sown-single {
+  right: 45%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2px;
+  padding-left: 6px;
+}
+
+.node-background.containsRoom + .animal-holder {
+  left: 56%;
+  top: 55%;
+  right: 11%;
+  bottom: 15%;
+  background-color: rgba(242, 210, 33, 0.8);
+  border-radius: 24%;
+  border: 1px solid black;
+  opacity: 0;
+  transition: opacity 0.7s;
+
+  &[data-n='1'] {
+    opacity: 1;
+
+    ~ .meeple-farmer {
+      left: -10px;
+    }
+  }
+}
+
+.animals-control-wrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 200;
+
+  .animals-control {
+    position: absolute;
+    left: calc(100% - 53px);
+    bottom: calc(100% - 36px);
+
+    transition: margin 0.6s;
+    margin-bottom: 24px;
+    border: 2px solid black;
+    background-image: url('img/action_frame_bg.jpg');
+    background-size: 100% 100%;
+    border-image-slice: 27 27 27 27;
+    border-image-width: 9px 9px 9px 9px;
+    border-image-outset: 0px 0px 0px 0px;
+    border-image-repeat: stretch stretch;
+    border-image-source: url('img/action_frame_panel.png');
+    box-shadow: 2px 2px 5px -1px black;
+    background-color: transparent;
+    border-radius: 15px;
+
+    .zone-capacity {
+      text-align: center;
+      padding: 2px 0px;
+      font-size: 15px;
+      width: calc(100% - 4px);
+      margin: 3px auto 3px;
+      border-radius: 10px;
+      background: transparent;
+      transition: background 0.6s, margin 0.6s;
+      min-width: 60px;
+    }
+
+    &.active .zone-capacity {
+      background: white;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+      border-top: 1px solid black;
+      margin-top: 0px;
+    }
+
+    .ac-composition {
+      height: 0px;
+      width: 69px;
+      overflow: hidden;
+      transition: height 0.6s, width 0.6s;
+    }
+
+    &.active {
+      .ac-composition {
+        height: 90px;
+        width: 99px;
+      }
+
+      &[data-hidden='0'] .ac-composition {
+        height: 90px;
+      }
+      &[data-hidden='1'] .ac-composition {
+        height: 60px;
+      }
+      &[data-hidden='2'] .ac-composition {
+        height: 30px;
+      }
+
+      /*
+      &[data-type='sheep'],
+      &[data-type='pig'],
+      &[data-type='cattle'] {
+        .ac-composition {
+          height: 30px;
+        }
+      }
+      */
+
+      /*
+    &[data-type='sheep'] .composition-sheep {
+      margin-top: 0px;
+    }
+    &[data-type='pig'] .composition-sheep {
+      margin-top: -30px;
+    }
+    &[data-type='cattle'] .composition-sheep {
+      margin-top: -60px;
+    }
+
+    &[data-type='sheep'] {
+      margin-top: 0px;
+      margin-bottom: 60px;
+    }
+    &[data-type='pig'] {
+      margin-top: 30px;
+      margin-bottom: 30px;
+    }
+    &[data-type='cattle'] {
+      margin-top: 60px;
+      margin-bottom: 0px;
+    }
+    */
+    }
+
+    .ac-composition {
+      overflow: hidden;
+
+      .composition-type {
+        display: flex;
+        border-bottom: 1px solid black;
+        height: 30px;
+        text-align: center;
+        margin: 0px 2px;
+        transition: height 0.6s;
+        overflow: hidden;
+
+        &:first-of-type {
+          transition: margin 0.6s, height 0.6s;
+        }
+
+        &:last-of-type {
+          border-bottom: none;
+        }
+
+        &.hidden {
+          height: 0px;
+          border: none;
+        }
+
+        button {
+          background: transparent;
+          cursor: pointer;
+          width: 33px;
+          height: 30px;
+          border: none;
+          padding: 0px;
+          border-left: 1px solid #ae6d1a85;
+          &:first-child {
+            border-left: none;
+          }
+
+          &:hover {
+            background-color: rgba(0, 0, 0, 0.6);
+          }
+
+          &:disabled {
+            background-color: rgba(0, 0, 0, 0.25);
+            cursor: not-allowed;
+            filter: grayscale(30);
+            opacity: 0.7;
+          }
+
+          div {
+            background-image: url('img/animal-control.png');
+            background-size: 300% 300%;
+            width: 30px;
+            height: 24px;
+          }
+
+          &.composition-moins div {
+            background-position-x: 0%;
+          }
+          &.composition-plus div {
+            background-position-x: 50%;
+          }
+          &.composition-infty div {
+            background-position-x: 100%;
+          }
+
+          /*
+          .composition-plus {
+            border-left: 1px solid #4e6851;
+            border-right: 1px solid #4e6851;
+          }
+    */
+        }
+
+        &.composition-sheep button div {
+          background-position-y: 0%;
+        }
+        &.composition-pig button div {
+          background-position-y: 50%;
+        }
+        &.composition-cattle button div {
+          background-position-y: 100%;
+        }
+      }
+    }
+
+    .ac-clear {
+      background: rgba(255, 0, 0, 0.6);
+      color: white;
+      text-align: center;
+      height: 0px;
+      overflow: hidden;
+      box-sizing: border-box;
+      transition: padding 0.6s, height 0.6s, margin 0.6s;
+      border-top-right-radius: 8px;
+      border-top-left-radius: 8px;
+      border-bottom: none;
+      margin: 0;
+      cursor: pointer;
+      font-size: 15px;
+      font-family: var(--agricola-font-family);
+
+      &:hover {
+        background: rgba(255, 0, 0, 0.8);
+      }
+    }
+
+    &.active .ac-clear {
+      height: 25px;
+      margin: 2px 2px 0 2px;
+      padding: 2px 0px;
+      border-bottom: 1px solid #393939;
+    }
+
+    .ac-open {
+      position: absolute;
+      bottom: 28px;
+      left: calc(50% - 16px);
+      text-align: center;
+      height: 0px;
+      width: 30px;
+      overflow: hidden;
+      cursor: pointer;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      transition: height 0.6s, bottom 0.2s;
+      font-size: 17px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-image: url('img/action_frame_bg.jpg');
+      background-size: 100% 100%;
+      z-index: -1;
+      border: 1px solid #5e2d09;
+
+      &:hover {
+        font-size: 20px;
+        bottom: 31px;
+      }
+
+      svg {
+        width: 1em;
+        height: 1em;
+      }
+    }
+
+    .player-board-wrapper.reorganizing &:not([data-hidden='3']) {
+      .ac-open {
+        height: 23px;
+      }
+    }
+  }
+}

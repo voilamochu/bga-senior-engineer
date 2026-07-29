@@ -1,0 +1,446 @@
+.player-name {
+    svg {
+        width: 25px;
+        height: 21px;
+        cursor: pointer;
+        vertical-align: bottom;
+        margin-left: 3px;
+    }
+}
+
+.player_score {
+    .player_score_value {
+        display: none;
+    }
+}
+
+.player-info {
+    display: flex;
+    justify-content: space-between;
+
+    .icon-money,
+    .icon-appeal,
+    .icon-conservation,
+    .icon-reputation,
+    .player-handCount,
+    .player-xtoken {
+        font-family: "MyriadPro-Bold";
+        font-size: 20px;
+        text-align: center;
+        letter-spacing: -1px;
+        text-indent: -1px;
+    }
+
+    .icon-money {
+        width: 32px;
+        height: 32px;
+        border-radius: 20%;
+        color: white;
+        padding-right: 0px;
+    }
+
+    .handCount-holder,
+    .xtoken-holder {
+        display: flex;
+    }
+
+    .icon-xtoken {
+        width: 26px;
+        height: 26px;
+        margin: 3px 0px 3px 2px;
+    }
+
+    .icon-reputation {
+        width: 34px;
+        height: 32px;
+        color: white;
+        font-size: 19px;
+        line-height: 28px;
+    }
+
+    .icon-conservation {
+        width: 32px;
+        height: 32px;
+    }
+
+    .appeal-holder {
+        position: relative;
+
+        .icon-appeal {
+            width: 25px;
+            height: 32px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .icon-money {
+            position: absolute;
+            top: -20px;
+            left: 3px;
+            width: 19px;
+            height: 19px;
+            font-size: 14px;
+            line-height: 18px;
+        }
+    }
+
+    // .player-handCount::after {
+    //     content: "x";
+    //     margin-left: 3px;
+    // }
+
+    .handCount-holder {
+        position: relative;
+
+        &.tooMuch {
+            .player-max-handCount,
+            .player-handCount {
+                color: red;
+            }
+        }
+
+        & > .arknova-meeple {
+            position: absolute;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .player-handCount {
+            position: relative;
+            top: -4px;
+            right: -1px;
+        }
+        .player-max-handCount {
+            position: relative;
+            top: 10px;
+            font-size: 11px;
+            margin-right: -2px;
+        }
+
+        .player-handCount-icon {
+            width: 21px;
+            height: 30px;
+            border-radius: 4px;
+            background-image: url("img/card-backgrounds.jpg");
+            background-size: 700% 100%;
+            background-position-x: 50%;
+            margin: 1px 0px 1px 3px;
+        }
+
+        .scoringHandCount-holder {
+            position: absolute;
+            top: 23px;
+            // font-family: "MyriadPro-Bold";
+            font-size: 13px;
+            letter-spacing: -1px;
+            text-indent: 3px;
+            left: 10px;
+            background: #eaded2de;
+            border: 1px solid black;
+            border-radius: 6px;
+            right: -2px;
+            height: 13px;
+            line-height: 13px;
+            font-weight: bold;
+
+            svg {
+                width: 7px;
+                vertical-align: bottom;
+                background: white;
+                padding: 2px;
+                border: 1px solid black;
+                border-radius: 4px;
+                margin-left: 1px;
+                position: absolute;
+                right: -1px;
+                top: -1px;
+            }
+            // .icon-endgame {
+            //     font-size: 10px;
+            //     margin-top: -0.6em;
+            // }
+        }
+    }
+
+    [data-panel-rows="2"] & {
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        grid-template-columns: 2fr 2fr 3fr;
+        row-gap: 7px;
+
+        & > .icon-money {
+            order: 1;
+            margin-left: 30px;
+            text-indent: -60px;
+            color: black;
+            height: 26px;
+            width: 27px;
+            border: 1px solid white;
+            margin-top: 2px;
+            line-height: 25px;
+        }
+
+        .xtoken-holder {
+            order: 2;
+            .player-xtoken {
+                width: 21px;
+                margin-right: 5px;
+                text-align: right;
+                line-height: 31px;
+                margin-left: 4px;
+            }
+        }
+
+        .handCount-holder {
+            order: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            .player-handCount {
+                width: 22px;
+                margin-left: 8px;
+            }
+
+            .scoringHandCount-holder {
+                &::before {
+                    content: "(";
+                }
+                &::after {
+                    content: ")";
+                }
+                position: initial;
+                margin-left: 7px;
+            }
+        }
+
+        .icon-reputation {
+            order: 4;
+            margin-left: 28px;
+            text-indent: -52px;
+            color: black;
+            height: 30px;
+            width: 31px;
+        }
+
+        .icon-conservation {
+            order: 5;
+            margin-left: 30px;
+            text-indent: -56px;
+            height: 30px;
+            width: 30px;
+        }
+
+        .appeal-holder {
+            order: 6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            .icon-appeal {
+                margin-left: 33px;
+                text-indent: -54px;
+                height: 30px;
+                width: 23px;
+            }
+
+            .icon-money {
+                font-size: 20px;
+                text-indent: -44px;
+                margin-left: 30px;
+                position: relative;
+                top: -8px;
+                left: initial;
+                color: black;
+
+                &::before {
+                    content: "";
+                    display: block;
+                    width: 35px;
+                    height: 18px;
+                    // INCOME
+                    background: url("img/icons.png");
+                    background-position: 47.670807453416145% 73.94366197183099%;
+                    background-size: 1765.5172413793102%;
+                    position: absolute;
+                    bottom: -17px;
+                    left: -19px;
+                }
+            }
+        }
+    }
+}
+
+.action-cards-summary {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 5px;
+    border-top: 1px solid rgba(0, 0, 0, 0.671);
+    padding-top: 9px;
+
+    & > div {
+        width: 34px;
+        height: 34px;
+        position: relative;
+
+        .summary-action-card {
+            width: 34px;
+            height: 34px;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+
+            .icon-container {
+                display: block;
+                margin: 0;
+                width: 32px;
+                height: 32px;
+
+                .arknova-icon {
+                    width: 28px;
+                    height: 28px;
+                    border: 2px solid #009fe3;
+                    border-radius: 5px;
+                    box-shadow: 0px 0px 1px 1px #000000ee;
+                    transition:
+                        margin 0.5s,
+                        box-shadow 0.5s;
+                }
+            }
+
+            &:not([data-number="0"])::before {
+                content: "";
+                display: block;
+                position: absolute;
+                top: -5px;
+                left: -5px;
+                width: 15px;
+                height: 15px;
+                border-radius: 50%;
+                box-shadow: 1px 1px 3px 1px white;
+                background-image: url("img/action-cards-special.jpg");
+                background-size: 400% 500%;
+                border: 1px solid #3c3c3c;
+            }
+            &[data-lvl="2"]:not([data-number="0"])::before {
+                background-image: url("img/action-cards-special-2.jpg");
+            }
+
+            @each $cId in $actionCards {
+                $i: index($actionCards, $cId) - 1;
+                &[data-type="#{$cId}"]::before {
+                    background-position-y: #{$i * 100% / 4};
+                }
+            }
+
+            @for $i from 1 to 5 {
+                &[data-number="#{$i}"]::before {
+                    background-position-x: #{($i - 1) * 100% / 3};
+                }
+            }
+
+            &[data-lvl="2"] .icon-container .arknova-icon {
+                border-color: #a71b71;
+            }
+
+            &[data-status="1"] .icon-container .arknova-icon {
+                box-shadow:
+                    0px 0px 1px 1px #000,
+                    0px 0px 3px 3px red;
+                margin-top: -5px;
+            }
+
+            .meeples-container {
+                position: absolute;
+                font-size: 11px;
+                bottom: -3px;
+                left: -5px;
+                display: flex;
+                flex-flow: row-reverse wrap;
+                right: -5px;
+            }
+        }
+    }
+}
+
+.icons-summary {
+    margin-top: 5px;
+    border-top: 1px solid rgba(0, 0, 0, 0.671);
+    font-family: "MyriadPro-SemiBold";
+    font-size: 20px;
+    text-align: center;
+    letter-spacing: -1px;
+    text-indent: -1px;
+    &.hidden {
+        display: none;
+    }
+
+    .icons-summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 1px;
+        border-bottom: 1px solid #b9907cd6;
+        &:last-of-type {
+            border-bottom: none;
+        }
+
+        .icon-counter {
+            .badge-icon {
+                display: inline-block;
+                width: 25px;
+                height: 25px;
+                border-radius: 50%;
+                border: 1px solid #6f5749;
+                vertical-align: bottom;
+            }
+
+            &.empty {
+                opacity: 0.4;
+            }
+        }
+    }
+}
+
+[data-marine="1"] .player-board {
+    .icons-summary .icons-summary-row:nth-child(2) {
+        .icon-counter {
+            display: flex;
+            flex-flow: column-reverse;
+            margin-bottom: -3px;
+
+            // margin-left: -5%;
+
+            // &:first-child {
+            //     margin-left: 0%;
+            // }
+            // &:nth-child(2n + 1) {
+            //     margin-top: 10%;
+            // }
+        }
+    }
+}
+
+.ark-player-board {
+    .icons-summary {
+        margin-top: 0px;
+        border-top: none;
+        display: flex;
+        box-shadow: 1px 1px 13px -1px black;
+        height: 50px;
+        background: #ece3b4;
+        margin-bottom: -11px;
+        width: 875px;
+        &.hidden {
+            visibility: hidden;
+        }
+
+        .icons-summary-row {
+            border: none;
+            justify-content: space-around;
+            flex-grow: 1;
+
+            .icon-counter.empty {
+                opacity: 0.2;
+            }
+        }
+    }
+}

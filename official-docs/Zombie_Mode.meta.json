@@ -1,0 +1,15 @@
+{
+  "title": "Zombie Mode",
+  "source_html": "Zombie_Mode.html",
+  "clean_html": "Zombie_Mode.html",
+  "url": "https://en.doc.boardgamearena.com/Zombie_Mode",
+  "depth": 2,
+  "sha256_raw": "acb814ba695f2021f51ba83831d86ea5dcb030e3451a7a91ff1d11716dad417b",
+  "sha256_clean": "b2cfdaa8c69c793f81a6a92fdd436e73ed2b835f8da11feb70d717dce8f4cca1",
+  "word_count": 1277,
+  "code_block_count": 9,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 6,
+  "cleaned_at": "2026-07-06T06:38:20.322501+00:00"
+}

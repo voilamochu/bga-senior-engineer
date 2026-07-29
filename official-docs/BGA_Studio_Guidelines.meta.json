@@ -1,0 +1,15 @@
+{
+  "title": "BGA Studio Guidelines",
+  "source_html": "BGA_Studio_Guidelines.html",
+  "clean_html": "BGA_Studio_Guidelines.html",
+  "url": "https://en.doc.boardgamearena.com/BGA_Studio_Guidelines",
+  "depth": 1,
+  "sha256_raw": "5ad7a1be1555d8eb1957dddc0c89dfd094d9a4a959da81d78f3403f4f3cffcb7",
+  "sha256_clean": "ea366fc34a74f53f024d410658eb4bc7cc1ce4fac141b3847d0d074dc2364f6d",
+  "word_count": 2504,
+  "code_block_count": 4,
+  "table_count": 2,
+  "image_count": 2,
+  "heading_count": 44,
+  "cleaned_at": "2026-07-06T06:38:18.327334+00:00"
+}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>ExpandableSection - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-ExpandableSection rootpage-ExpandableSection action-view"><div class="article"><p><br/>
+</p><h2><span class="mw-headline" id="Example">Example</span></h2><p>In <b><tt>mygame_mygame.tpl</tt></b> (the border is not required):
+</p><pre>&lt;div id="my_expandable" style="border: 1px solid black"&gt;
+    &lt;a href="#" id="my_click_to_toggle" class="expandabletoggle expandablearrow"&gt;
+        &lt;div class="icon20"&gt;&lt;/div&gt;
+    &lt;/a&gt;
+    &lt;div id="my_hidden_content" class="expandablecontent"&gt;
+        Here's the hidden content
+    &lt;/div&gt;
+&lt;/div&gt;
+</pre><p>In <b><tt>Game.js</tt></b>:
+</p><pre>const [expandablesection] = await importDojoLibs(['ebg/expandablesection']);
+</pre><pre>this.expanded = new ebg.expandablesection();
+this.expanded.create(this.bga.gameui, "my_expandable");
+this.expanded.expand();   // show
+this.expanded.collapse(); // hide
+this.expanded.toggle();   // switch show/hide
+</pre><h3><span class="mw-headline" id="Notes">Notes</span></h3><ul><li>All of the inner parts of the expandable div must have ids so dojo.query can find them.</li>
+<li>The section already starts with click-to-toggle behavior, so you probably won't need to toggle in your own code. Just set the initial state in your setup method.</li>
+<li>Source code can be found here : <a class="external free" href="https://x.boardgamearena.net/data/themereleases/220811-1000/js/modules/expandablesection.js" rel="nofollow">https://x.boardgamearena.net/data/themereleases/220811-1000/js/modules/expandablesection.js</a></li></ul><p><br/>
+</p><h2><span class="mw-headline" id="Helper_Code">Helper Code</span></h2><p>This doesn't appear to be part of the BGA framework, but might make creating the above code easer and more readable.
+</p><pre>var jstpl_expandablesection = '\
+    &lt;div id="${id}"&gt;\
+        &lt;a href="#" id="toggle_${id}" class="expandabletoggle expandablearrow"&gt;\
+            &lt;div class="icon20"&gt;&lt;/div&gt;\
+        &lt;/a&gt;\
+        &lt;div id="content_${id}" class="expandablecontent"&gt;\
+            ${content}\
+        &lt;/div&gt;\
+    &lt;/div&gt;';
+</pre><p>In <b><tt>Game.js</tt></b>:
+</p><pre>placeExpandableSection(parent_id, id, content) {
+   html = this.bga.gameui.format_block('jstpl_expandablesection', { id: id, content: content }); 
+   dojo.place(html, parent_id);
+}
+</pre></div></body>
+</html>

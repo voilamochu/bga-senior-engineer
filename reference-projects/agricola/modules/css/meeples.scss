@@ -1,0 +1,641 @@
+#game_play_area {
+  font-size: 30px;
+}
+
+.meeple-container {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0.08em;
+  font-size: 1.3em;
+}
+
+.agricola-meeple {
+  background-image: url('img/meeples.png');
+  background-repeat: no-repeat;
+
+  &.meeple-wood {
+    width: 0.6em;
+    height: 0.78em;
+    background-position: 58.4507% 21.7766%;
+    background-size: 3413.33%;
+  }
+
+  &.meeple-clay {
+    width: 0.64em;
+    height: 0.74em;
+    background-position: 97.127% 8.61196%;
+    background-size: 3200%;
+  }
+
+  &.meeple-reed {
+    width: 0.72em;
+    height: 0.82em;
+    background-position: 14.1194% 21.821%;
+    background-size: 2844.44%;
+  }
+
+  &.meeple-stone {
+    width: 0.64em;
+    height: 0.8em;
+    background-position: 36.9456% 21.7988%;
+    background-size: 3200%;
+  }
+
+  &.meeple-food {
+    width: 0.8em;
+    height: 0.8em;
+    background-position: 41.0061% 21.7988%;
+    background-size: 2560%;
+  }
+
+  &.meeple-grain {
+    width: 0.75em;
+    height: 0.79em;
+    background-position: 54.5869% 21.7877%;
+    background-size: 2730.67%;
+  }
+
+  &.meeple-vegetable {
+    width: 0.82em;
+    height: 0.8em;
+    background-position: 77.0791% 21.7325%;
+    background-size: 2694.74%;
+  }
+
+  &.meeple-grain_veg_stack {
+    background-image: url('img/grain_veg_stack.png');
+    background-repeat: no-repeat;
+    width: 1em;
+    height: 1em;
+    background-size: 100%;
+    position: relative;
+    top: -2px;
+  }
+
+  &.meeple-sheep {
+    width: 0.98em;
+    height: 0.76em;
+    background-position: 80.7692% 8.62069%;
+    background-size: 2089.8%;
+  }
+
+  &.meeple-pig {
+    width: 1.118em;
+    height: 0.78em;
+    background-position: 63.8342% 21.7766%;
+    background-size: 1735.59%;
+  }
+
+  &.meeple-cattle {
+    width: 1.104em;
+    height: 0.82em;
+    background-position: 18.57% 21.821%;
+    background-size: 1969.23%;
+  }
+
+  &.meeple-score {
+    width: 0.8em;
+    height: 0.8em;
+    background-position: 45.5793% 21.7988%;
+    background-size: 2560%;
+  }
+
+  &.meeple-arrow {
+    width: 0.4em;
+    height: 0.3em;
+    background-position: 98.3359% 21.45%;
+    background-size: 3150.77%;
+  }
+  &.meeple-arrow-1x {
+    width: 1.3em;
+    height: 0.6em;
+    background-position: 7.09477% 26.3736%;
+    background-size: 1750.43%;
+  }
+  &.meeple-arrow-2x {
+    width: 1.2em;
+    height: 0.6em;
+    background-position: 0.517866% 26.4397%;
+    background-size: 1750.43%;
+  }
+  &.meeple-major {
+    width: 1.1em;
+    height: 0.74em;
+    background-position: 8.08903% 15.0728%;
+    background-size: 994.175%;
+  }
+  &.meeple-minor {
+    width: 1.1em;
+    height: 0.74em;
+    background-position: 19.7832% 15.0571%;
+    background-size: 1008.87%;
+  }
+  &.meeple-occupation {
+    width: 1.1em;
+    height: 0.74em;
+    background-position: 31.3279% 15.0571%;
+    background-size: 1008.87%;
+  }
+
+  &.meeple-field_icon {
+    width: 1.1em;
+    height: 0.6em;
+    background-position: 43.5094% 15.0415%;
+    background-size: 890.435%;
+  }
+  &.meeple-sow {
+    width: 1.8em;
+    height: 1.5em;
+    background-position: 0.580383% 0.56243%;
+    background-size: 630.154%;
+  }
+  &.meeple-bread {
+    width: 1.1em;
+    height: 0.74em;
+    background-position: 0.526316% 21.8989%;
+    background-size: 1383.78%;
+  }
+
+  &.meeple-bake {
+    width: 1em;
+    height: 1em;
+    background-position: 17.0266% 26.1905%;
+    background-size: 3592.98%;
+  }
+  &.meeple-first {
+    width: 0.4em;
+    height: 0.9em;
+    background-position: 93.9333% 0.523834%;
+    background-size: 2925.71%;
+  }
+
+  &.meeple-child {
+    width: 1.1em;
+    height: 1.3em;
+    background-position: 19.0819% 0.562114%;
+    background-size: 853.333%;
+  }
+  &.meeple-child_free {
+    width: 1.1em;
+    height: 1.5em;
+    background-position: 31.7333% 0.552486%;
+    background-size: 1183.82%;
+  }
+
+  &.meeple-room_wood {
+    width: 1.5em;
+    height: 0.8em;
+    background-position: 74.5923% 8.62506%;
+    background-size: 1393.2%;
+  }
+  &.meeple-room_clay {
+    width: 1.5em;
+    height: 0.8em;
+    background-position: 88.5324% 8.62069%;
+    background-size: 1393.2%;
+  }
+  &.meeple-room_stone {
+    width: 1.5em;
+    height: 0.8em;
+    background-position: 71.6544% 21.7766%;
+    background-size: 1365.33%;
+  }
+  &.meeple-upgrade {
+    width: 4em;
+    height: 1.7em;
+    background-position: 54.866% 0.552181%;
+    background-size: 325.079%;
+  }
+  &.meeple-cook {
+    width: 2em;
+    height: 1.1em;
+    background-position: 13.3132% 26.2165%;
+    background-size: 3150.77%;
+
+    #anytimeActions & {
+      margin: 0em -0.4em;
+    }
+  }
+  &.meeple-begging {
+    width: 1.1em;
+    height: 1.1em;
+    background-position: 50.1524% 21.7988%;
+    background-size: 2560%;
+  }
+
+  &.meeple-farmer_icon {
+    background-image: url('img/farmers.png');
+    background-size: 500% 100%;
+    width: 0.9em;
+    height: 1.2em;
+  }
+  &.meeple-barn {
+    background-image: url('img/stables.png');
+    background-size: 500% 100%;
+    background-position-x: 100%;
+    width: 0.8em;
+    height: 1.1em;
+  }
+  &.meeple-fence_icon {
+    background-image: url('img/fences.png');
+    background-size: 500% 100%;
+    background-position-x: 100%;
+    width: 0.9em;
+    height: 0.9em;
+  }
+
+  &.meeple-reorganize {
+    background-position: 26.3889% 21.821%;
+    background-size: 825.806%;
+    width: 4.1em;
+    height: 1.4em;
+    margin: -0.2em -0.4em;
+  }
+
+  &.meeple-pasture {
+    width: 1.1em;
+    height: 1.1em;
+    background-position: 93.3536% 8.61632%;
+    background-size: 2659.74%;
+  }
+  &.meeple-empty {
+    width: 1em;
+    height: 1em;
+    background-position: 94.5674% 21.5686%;
+    background-size: 3413.33%;
+  }
+
+  &.meeple-foodplus {
+    width: 0.8em;
+    height: 0.8em;
+    background-image: url("img/food_plus.png");
+    background-size: 100%;
+    background-repeat: no-repeat; 
+  }
+  &.meeple-woodplus {
+    width: 0.6em;
+    height: 0.78em;
+    background-image: url("img/wood_plus.png");
+    background-size: 100%;
+    background-repeat: no-repeat; 
+  }
+  &.meeple-vegetableplus {
+    width: 0.8em;
+    height: 0.8em;
+    background-image: url("img/vegetable_plus.png");
+    background-size: 100%;
+    background-repeat: no-repeat; 
+  }
+  &.meeple-fieldplus {
+    width: 1.1em;
+    height: 0.6em;
+    background-image: url("img/field_plus.png");
+    background-size: 100%;
+    background-repeat: no-repeat; 
+  }
+}
+
+.meeple-farmer,
+.meeple-stable {
+  width: 45px;
+  height: 60px;
+  background-image: url('img/farmers.png');
+  .colorblind & {
+    background-image: url('img/farmers_colorblind.png');
+  }
+  background-size: 500% 100%;
+  position: relative;
+  z-index: 100;
+
+  &.meeple-stable {
+    width: 24px;
+    height: 31px;
+    background-image: url('img/stables.png');
+  }
+
+  &[data-color='ff0000'],
+  .player-ff0000 & {
+    background-position-x: 0%;
+  }
+  &[data-color='008000'],
+  .player-008000 & {
+    background-position-x: 25%;
+  }
+  &[data-color='72c3b1'],
+  .player-72c3b1 & {
+    background-position-x: 50%;
+  }
+  &[data-color='982fff'],
+  .player-982fff & {
+    background-position-x: 75%;
+  }
+  &[data-color='7b7b7b'],
+  .player-7b7b7b & {
+    background-position-x: 100%;
+  }
+}
+
+.meeple-farmer {
+  width: 30px;
+  height: 40px;
+  transform-origin: bottom center;
+  transition: transform 1s;
+  transform: scale(1);
+
+  &.child {
+    transform: scale(0.7);
+  }
+}
+
+.meeple-fence {
+  border: 1px solid #535050;
+  box-shadow: 2px 2px 6px -2px black;
+  background-image: none;
+
+  &.fence-hor {
+    width: 110px;
+    height: 12px;
+  }
+  &.fence-ver {
+    height: 110px;
+    width: 12px;
+  }
+
+  &[data-color='ff0000'] {
+    background-color: #ee0808;
+  }
+  &[data-color='008000'] {
+    background-color: #2c8404;
+  }
+  &[data-color='72c3b1'] {
+    background-color: #2eb9b9;
+  }
+  &[data-color='982fff'] {
+    background-color: #803fb5;
+  }
+  &[data-color='7b7b7b'] {
+    background-color: #959393;
+  }
+
+  &.fence-palisade {
+    position: relative;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: visible;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 0.6em;
+      height: 0.78em;
+      background-image: url('img/meeples.png');
+      background-repeat: no-repeat;
+      background-position: 58.4507% 21.7766%;
+      background-size: 3413.33%;
+      transform: translate(-50%, -50%) scale(1.5);
+      transform-origin: center;
+      pointer-events: none;
+      filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+    }
+
+    &::before {
+      left: calc(50% - 21px);
+    }
+    &::after {
+      left: calc(50% + 21px);
+    }
+
+    &.fence-ver::before,
+    &.fence-ver::after {
+      left: 50%;
+    }
+    &.fence-ver::before {
+      top: calc(50% - 21px);
+    }
+    &.fence-ver::after {
+      top: calc(50% + 21px);
+    }
+  }
+}
+
+.meeple-firstPlayer {
+  width: 0.4em;
+  height: 0.9em;
+  font-size: 44px;
+  background-image: url('img/meeples.png');
+  background-repeat: no-repeat;
+  background-position: 93.9333% 0.523834%;
+  background-size: 2925.71%;
+}
+
+.meeple-field {
+  background-image: url('img/field.png');
+  background-size: 100%;
+  width: 100%; // 112px
+  height: 100%; // 112px
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.meeple-field .seed-holder,
+.pasture-seed-holder {
+  display: flex;
+  flex-flow: column-reverse;
+
+  .agricola-meeple {
+    margin: 0 auto -0.3em;
+    #ebd-body:not(.mobile_version) & {
+      filter: drop-shadow(1px 1px 1px black);
+    }
+
+    &:first-child {
+      margin: 0;
+    }
+  }
+}
+
+.pasture-seed-holder {
+  position: absolute;
+  // Must be above .animal-holder (110) and below .animals-control-wrapper (200).
+  z-index: 120;
+  pointer-events: none;
+}
+
+.pasture-seed-holder-slot {
+  // Left/top/transform are assigned dynamically from JS to center on pasture footprint.
+}
+
+.meeple-roomWood,
+.meeple-roomClay,
+.meeple-roomStone {
+  background-image: url('img/rooms.png');
+  background-size: 300% 100%;
+  width: 100%;
+  height: 100%;
+
+  &.meeple-roomClay {
+    background-position-x: 50%;
+  }
+
+  &.meeple-roomStone {
+    background-position-x: 100%;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 1px;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-image: url('img/room_layouts.png');
+    background-size: 400% 400%;
+  }
+}
+
+.colorblind .board-cell:hover .node-background.containsRoom {
+  .meeple-roomWood,
+  .meeple-roomClay,
+  .meeple-roomStone {
+    &::before {
+      content: '';
+      position: absolute;
+      z-index: 2;
+      bottom: 0;
+      right: 0;
+      background-color: rgba(230, 216, 142, 0.9);
+      border: 3px solid rgba(230, 216, 142, 0.9);
+      border-radius: 3px;
+      background-image: url('img/meeples.png');
+      background-repeat: no-repeat;
+    }
+
+    &.meeple-roomWood::before {
+      width: 0.6em;
+      height: 0.78em;
+      background-position: 58.4507% 21.7766%;
+      background-size: 3413.33%;
+    }
+
+    &.meeple-roomClay::before {
+      width: 0.64em;
+      height: 0.74em;
+      background-position: 97.127% 8.61196%;
+      background-size: 3200%;
+    }
+
+    &.meeple-roomStone::before {
+      width: 0.64em;
+      height: 0.8em;
+      background-position: 36.9456% 21.7988%;
+      background-size: 3200%;
+    }
+  }
+}
+
+// SWITCH for the SOW action
+.switch-wrapper {
+  width: 100px;
+  height: 33.33px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 25px;
+  border: 1px solid black;
+  position: relative;
+  display: flex;
+  box-sizing: border-box;
+  z-index: 201;
+
+  &.wood-switch {
+    width:66.66px;
+  }
+
+  &.stone-switch {
+    width:66.66px;
+  }
+
+  label {
+    width: 33.33%;
+    height: 100%;
+    position: relative;
+    z-index: 9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    transition: opacity 0.5s;
+  }
+  &.wood-switch label {
+    width: 50%;
+  }
+  &.stone-switch label {
+    width: 50%;
+  }
+
+  input[type='radio'] {
+    display: none;
+
+    &:disabled + label {
+      filter: grayscale(1);
+      cursor: not-allowed;
+      opacity: 0.4;
+    }
+  }
+
+  .switch-ball {
+    width: 33%;
+    height: 100%;
+    position: absolute;
+    transition: left 0.5s, background 0.5s;
+    border-radius: 50%;
+    position: absolute;
+    z-index: 8;
+    border: 1px solid rgba(0, 0, 0, 1);
+    box-sizing: border-box;
+  }
+  &.wood-switch .switch-ball {
+    width:50%;
+  }
+  &.stone-switch .switch-ball {
+    width:50%;
+  }
+
+  .switch-grain:checked ~ .switch-ball {
+    background: #f8ff00d9;
+    left: 0%;
+  }
+
+  .switch-neutral:checked ~ .switch-ball {
+    background: rgba(220, 220, 220, 0.7);
+    left: 33.33%;
+  }
+
+  .switch-vegetable:checked ~ .switch-ball {
+    left: 66.66%;
+    background: rgba(225, 142, 36, 0.77);
+  }
+
+  &.wood-switch .switch-neutral:checked ~ .switch-ball {
+    left:0%;
+  }
+
+  &.wood-switch .switch-wood:checked ~ .switch-ball {
+    left: 50%;
+    background: rgba(168, 101, 15, 0.77);
+  }
+
+  &.stone-switch .switch-neutral:checked ~ .switch-ball {
+    left:0%;
+  }
+
+  &.stone-switch .switch-stone:checked ~ .switch-ball {
+    left: 50%;
+    background: rgba(168, 101, 15, 0.77);
+  }
+}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Counter - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Counter rootpage-Counter action-view"><div class="article"><p><br/>
+</p><p>This is very simple control that allow to set/get numeric value from inner html of div/span, and provides animation on from/to value.  It is used for the built-in score counter of the player panels.
+</p><h2><span class="mw-headline" id="Dependency">Dependency</span></h2><p>The counter is loaded by default by BGA, as it is used for the score display, so you don't need to import it.
+</p><h2><span class="mw-headline" id="Setup_a_counter">Setup a counter</span></h2><pre>var counter = new ebg.counter();
+counter.create(targetId);
+</pre><p>Where <b>targetId</b> either string or dom element, which already exists in the template, which will be used to display the counter value.
+For example:
+</p><pre>  &lt;span id="my_counter"&gt;&lt;/span&gt;
+</pre><p>In reality you will have a counter per player, so probably want to create a counter per player, in this case target Id can be 'hand_size_player_' + player_id and you create it in the loop for all players and store as class member. See example below on how to inject per-player sections.
+</p><h2><span class="mw-headline" id="API">API</span></h2><dl><dt>create(target, settings?)</dt>
+<dd>associate counter with existing target DOM element target is the DOM element or element id</dd>
+<dd>settings can define:
+<ul><li>value: the initial value of the counter (null to disable)</li>
+<li>tableCounter: the name of the TableCounter on PHP side, to update automatically on change (see <a href="PlayerCounter_and_TableCounter.html" title="PlayerCounter and TableCounter">PlayerCounter and TableCounter</a>)</li>
+<li>playerCounter and playerId: the name of the PlayerCounter on PHP side, and the playerId it is associated to, to update automatically on change (see <a href="PlayerCounter_and_TableCounter.html" title="PlayerCounter and TableCounter">PlayerCounter and TableCounter</a>)</li></ul></dd></dl><dl><dt>getValue()</dt>
+<dd>return current value</dd></dl><dl><dt>incValue(by);</dt>
+<dd>increment value by "by" and animate from previous value</dd></dl><dl><dt>setValue(value);</dt>
+<dd>set value, no animation</dd></dl><dl><dt>toValue(value);</dt>
+<dd>set value with animation</dd></dl><dl><dt>disable()</dt>
+<dd>Sets the value to "-". Note it just changes display value once, it does not actually disable it, i.e. if you set it again, it will be shown again</dd></dl><dl><dt>speed</dt>
+<dd>Duration of the animation, default is 100</dd></dl><p>const x = new ebg.counter()
+x.speed = 300; // to make it slower
+</p><h2><span class="mw-headline" id="Players_panels">Players panels</span></h2><h3><span id="Adding_stuff_to_player.27s_panel"></span><span class="mw-headline" id="Adding_stuff_to_player's_panel">Adding stuff to player's panel</span></h3><p>First, create a new JS template string function and variables to hold your counter(s) in your template (tpl) file.
+</p><pre>    stone_counters: {};
+
+    getPlayerBoardTemplate(player) {
+      return 
+      `&lt;div class="cp_board"&gt;
+         &lt;div id="stoneicon_p${player.player_id}" class="gmk_stoneicon gmk_stoneicon_${player.player_color}"&gt;&lt;/div&gt;
+         &lt;span id="stonecount_p${player.player_id}"&gt;0&lt;/span&gt;
+       &lt;/div&gt;`;
+    }
+</pre><p>Then, add this piece of code in the <b>setup</b> function of your JS file to add this template to each player panel:
+</p><pre>            for( var player_id in gamedatas.players )   {
+                var player = gamedatas.players[player_id];
+                         
+                // Setting up players boards if needed
+                var player_board_div = this.bga.playerPanels.getElement(player_id);
+                player_board_div.insertAdjacentHTML('beforeend', this.getPlayerBoardTemplate(player));
+
+                // create counter per player
+                this.stone_counters[player_id] = new ebg.counter();
+                this.stone_counters[player_id].create( 'stonecount_p'+player_id );
+            }
+</pre><p>Often, you have to distinguish between the current player and other players. In this case, create another JS template (ex: getCurrentPlayerBoardTemplate) and use it where <code>player_id</code> is different than <code>this.players.getCurrentPlayerId</code>.
+</p></div></body>
+</html>

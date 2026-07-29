@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Game statistics: stats.json - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Game_statistics_stats_json rootpage-Game_statistics_stats_json action-view"><div class="article"><p><br/>
+</p><p>In this file, you are describing game statistics, that will be displayed at the end of the game.
+</p><h3><span class="mw-headline" id="File_Structure">File Structure</span></h3><p>There are 2 types of statistics:
+</p><ul><li>table statistics, that are not associated to a specific player (i.e.: one value for each game).</li>
+<li>player statistics, that are associated to each players (i.e.: one value for each player in the game).</li></ul><p>Statistics types can be "int" for integer, "float" for floating point values, and "bool" for boolean.
+</p><p>If you want to skip some of your statistics according to game variants, do not init it, or call set or inc on it. It will be displayed as "-" (instead of 0 if you init it and don't update it afterwards)
+</p><p>If your game is already public on BGA, please read the following before any change:
+<a class="external free" href="https://en.doc.boardgamearena.com/Post-release_phase#Changes_that_breaks_the_games_in_progress" rel="nofollow">https://en.doc.boardgamearena.com/Post-release_phase#Changes_that_breaks_the_games_in_progress</a>
+</p><ul><li>Statistic index is the reference used in set/inc/init PHP method</li>
+<li>Statistic index must contains alphanumerical characters and no space. Example: 'turn_played'</li>
+<li>Statistics IDs must be &gt;=10</li>
+<li>Two table statistics can't share the same ID, two player statistics can't share the same ID</li>
+<li>A table statistic can have the same ID as a player statistics, however its not recommended unless it is same conceptually (like turns_number is same statistic in both per table and per player)</li>
+<li>Statistics ID is the reference used by BGA website. If you change the ID, you lost all historical statistic data. Do NOT re-use an ID of a deleted statistic.</li>
+<li>Statistic name is the English description of the statistic as shown to players</li>
+<li>The order in which the stats will appear in the endscreen is determined by the order in the array, NOT by the ID. That is helpful for stats which getting added later but need to be higher up in the list.</li>
+<li>Statistic names and labels are automatically added to the translations system, so there is no need to wrap them in totranslate() calls</li>
+<li>Previously, this was a PHP file (stats.inc.php). You can continue to use this format for old projects. (<b>Note</b>: once a game has been committed with a <code>stats.json</code> file, it is not possible to go back without admin intervention.</li>
+<li>(Number of table statistics) + (Number of player statistics × Maximum number of players) should not exceed ~930, or the game will crash. (Note: the maximum limit is not precise - Seems having stats around 980 broke the game, but reducing to around 930 solved this)</li></ul><pre> {
+   "table": {
+     "turns_number": {
+       "id": 10,
+       "name": "Number of turns",
+       "type": "int"
+     }
+   },
+   "player": {
+     "turns_number": {
+       "id": 10,
+       "name": "Number of turns",
+       "type": "int"
+     },
+     "player_teststat1": {
+       "id": 11,
+       "name": "player test stat 1",
+       "type": "int"
+     },
+     "player_teststat2": {
+       "id": 12,
+       "name": "player test stat 2",
+       "type": "float"
+     }
+   }
+ }
+</pre><h3><span class="mw-headline" id="Generate_PHP_initialization">Generate PHP initialization</span></h3><p>In the Chrome DevTool console (F12), write
+</p><pre>stats = &lt;Ctrl+V of the content of your stats.json file&gt;
+
+['table', 'player'].map(type =&gt; `$this-&gt;${type}Stats-&gt;init([${Object.keys(stats[type]).map(key =&gt; `'${key}'`).join(',')}], 0);`).join('\n')
+</pre><p>Then on the result string do right click &gt; Copy string content and paste it in your PHP setupNewGame function (this is assuming you want to init all your stats to 0).
+</p><pre>['table', 'player'].map(type =&gt; Object.keys(stats[type]).map(key =&gt; `$this-&gt;${type}Stats-&gt;inc('${key}', 1${type === 'player' ? ', $playerId' : ''});`).join('\n')).join('\n')
+</pre><h3><span class="mw-headline" id="Labeled_stats">Labeled stats</span></h3><p>Sometimes you may want to display a label instead of a number (for instance if you want to indicate the winning faction as a table statistic, and the faction chosen by each player as a player statistic in a game like Terra Mystica).
+</p><pre>{
+  "table": {
+    "winning_race": {
+      "id": 11,
+      "name": "Winning race",
+      "type": "int"
+    },
+  },
+  "value_labels": {
+    "11": [
+      "None (or tied)",
+      "Auren",
+      "Witches",
+      "Fakirs",
+      "Nomads",
+      "Chaos Magicians",
+      "Giants",
+      "Swarmlings",
+      "Mermaids",
+      "Dwarves",
+      "Engineers",
+      "Halflings",
+      "Cultists",
+      "Alchemists",
+      "Darklings"
+    ]
+  }
+}
+</pre><h3><span class="mw-headline" id="Limited_access_stats">Limited access stats</span></h3><p>If you want to consider some internal game statistics for game developer, publisher or admins's purpose only, simply add the following extra property : "display" =&gt; "limited". For instance :
+</p><pre>{
+  "player_teststat2": {
+    "id": 12,
+    "name": "player test stat 2",
+    "type": "float",
+    "display": "limited"
+  }
+}
+</pre><h3><span class="mw-headline" id="Translations">Translations</span></h3><p>Note that any name or value_labels text in these JSON files are automatically added to the translation system, even though they aren't wrapped in totranslate() calls.
+</p></div></body>
+</html>

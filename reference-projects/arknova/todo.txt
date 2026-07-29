@@ -1,0 +1,12 @@
+ - overflow cards : title and abilities for animals
+ - check tooltips sizes
+ - seed mode
+
+ - max-height on floating hand to avoid not being able to interact the page if too many cards in hand
+ - map pack 2 : reconstruction with quarters bonuses
+ - Not able to play a sponsor building if you currently dont have space for it (for example, you can not okapi into diverse reseach if you currently dont have a spot for okapi).
+ - A lot of interactions that force you to pay for venom first (for example, you can not sprint if you have less than 2 money and havent pay for venom yet, even if you are on habour and can sell a card from sprint). 
+
+X alternative map : special building map bonus should allow for the aquarium
+X Not being able to sell card on habour to build more (the game automatically jump to end of turn confirmation if you dont have enough money for a proper build).
+X Not being able to hypno your opponent build II action if you only have build I and all your build I spots are filled.

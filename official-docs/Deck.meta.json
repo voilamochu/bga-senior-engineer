@@ -1,0 +1,15 @@
+{
+  "title": "Deck",
+  "source_html": "Deck.html",
+  "clean_html": "Deck.html",
+  "url": "https://en.doc.boardgamearena.com/Deck",
+  "depth": 1,
+  "sha256_raw": "dc15bd304d546d27d3a28679ab9a7e2dfb0ce1155b97857c982a0d2b4d491c94",
+  "sha256_clean": "2836f38318c97cfcb36fa2080dcdecc1e6a32dade7b379952b8284305d854f99",
+  "word_count": 2296,
+  "code_block_count": 12,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 13,
+  "cleaned_at": "2026-07-06T06:38:18.748134+00:00"
+}

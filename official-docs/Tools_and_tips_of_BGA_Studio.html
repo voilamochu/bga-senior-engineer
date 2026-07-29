@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Tools and tips of BGA Studio - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Tools_and_tips_of_BGA_Studio rootpage-Tools_and_tips_of_BGA_Studio action-view"><div class="article"><p><br/>
+</p><h2><span class="mw-headline" id="Server_Tools_and_Tips">Server Tools and Tips</span></h2><h3><span class="mw-headline" id="Starting_a_game_in_one_click">Starting a game in one click</span></h3><p>To start a game:
+</p><ul><li>Go to Play now and configure game type: Simple game -&gt; Turn-based -&gt; Manual</li>
+<li>Select your game and click on "Create".</li>
+<li>If you want to play a game with 3 players, specify that you want a maximum of 3 players at this table.</li>
+<li>Click on "Express Start".</li></ul><h3><span class="mw-headline" id="Stopping_a_game_in_one_click">Stopping a game in one click</span></h3><ul><li>Click on the "menú" icon on the top right of the screen.</li>
+<li>Click on "Express Stop" ("Quit this game" if playing a solo game).</li></ul><h3><span class="mw-headline" id="Switching_between_users">Switching between users</span></h3><p>When running a game on Studio, you can use the little red arrow near each player's name to open a new tab with this player's perspective.
+You can also modify the URL to view the table as any user you want (changing &amp;testuser=myid in the URL), allowing to easily test as a spectator.
+</p><h3><span class="mw-headline" id="Access_to_game_database_and_Logs">Access to game database and Logs</span></h3><p>At the bottom of the game area, there is section without a title containing 3 useful links:
+</p><pre> Go to game database • BGA request&amp;SQL logs • BGA unexpected exceptions logs
+</pre><ul><li>"Go to game database" link is an immediate access to the PhpMyAdmin tool to view/edit the tables of the current game</li>
+<li>BGA request&amp;SQL logs - link to your studio PHP log - all tables, all severities. Anything you print using debugging and tracing functions from PHP and some framework logs</li>
+<li>BGA unexpected exceptions logs - same log as above but only severity warning and higher</li></ul><p>See <a href="Practical_debugging.html" title="Practical debugging">Practical debugging</a> for more info about it.
+</p><h3><span id="Save_.26_restore_state"></span><span class="mw-headline" id="Save_&amp;_restore_state">Save &amp; restore state</span></h3><p>Using links of this section, you can save the complete current (database) state of your game, then restore it later.
+</p><p>We provide you 3 "slots": 1, 2 and 3. This way, you can save 3 different game situations.
+</p><ul><li>the "restore" function does not work anymore when the game is over.</li>
+<li>a saved situation from a given table cannot be restored in another table.</li>
+<li>when you "restore" a situation, the current browser page is refreshed to reflect the updated game situation, but you have to refresh you other tabs/pages manually.</li></ul><h3><span id="Input.2FOutput_debugging_section"></span><span class="mw-headline" id="Input/Output_debugging_section">Input/Output debugging section</span></h3><p>This section shows you:
+</p><ul><li>The AJAX calls made by your game interface to the game server. AJAX calls (outputs) begins with "&gt;"</li>
+<li>The notifications received by your game interface. Notifications (inputs) begins with "&lt;".</li></ul><p>Note: if you click on some notification title, you can resend it immediately to the user interface.
+</p><h3><span class="mw-headline" id="Zombify_a_player">Zombify a player</span></h3><p>Using the red arrow, go to the player view and select Quit game (make sure you're playing in friendly mode to avoid your studio accounts to go to 0 karma while testing zombie).
+</p><h3><span class="mw-headline" id="Stopping_Hanging_Game">Stopping Hanging Game</span></h3><p>If game is hanging and you cannot enter it to stop you can type this URL (replace 12345 with your table number),
+which should bring you to a place where you can stop it without entering:
+</p><pre> https://studio.boardgamearena.com/#!table?table=12345
+</pre><h2><span class="mw-headline" id="Desktop_and_Web_Tools">Desktop and Web Tools</span></h2><h3><span class="mw-headline" id="Code_Editors_and_IDEs">Code Editors and IDEs</span></h3><h4><span class="mw-headline" id="Visual_Studio_Code">Visual Studio Code</span></h4><p>Microsoft Visual Studio Code is light weight IDE/Editor. All desktops.
+<a class="external free" href="https://code.visualstudio.com" rel="nofollow">https://code.visualstudio.com</a>
+</p><h4><span class="mw-headline" id="Eclipse_For_PHP_Developers">Eclipse For PHP Developers</span></h4><p>Eclipse PHP package can be starting point for development you need. You may also want to 
+install Tern JS plugins to understand dojo style JS. All desktops.
+<a class="external free" href="https://projects.eclipse.org/projects/tools.pdt" rel="nofollow">https://projects.eclipse.org/projects/tools.pdt</a>
+</p><h4><span id="Gedit_.28Ubuntu.29"></span><span class="mw-headline" id="Gedit_(Ubuntu)">Gedit (Ubuntu)</span></h4><p><b>Edit TPL</b>
+To edit TPL with HTML code highlightings in Gedit under Ubuntu:
+</p><pre>    sudo gedit /usr/share/gtksourceview-3.0/language-specs/html.lang
+</pre><p>then find 'globs' section, and change:
+</p><pre>    &lt;property name="globs"&gt;*.html;*.htm;*.tpl&lt;/property&gt;
+</pre><h3><span class="mw-headline" id="File_Sync">File Sync</span></h3><p>NOTE: If you use VS Code you don't need to use methods below, use one of the sync methods provided by VS Code extensios. See <a href="Setting_up_BGA_Development_environment_using_VSCode.html" title="Setting up BGA Development environment using VSCode">Setting up BGA Development environment using VSCode</a>
+</p><h4><span class="mw-headline" id="File_Sync_on_Windows">File Sync on Windows</span></h4><p>Install <a class="external text" href="http://winscp.net/" rel="nofollow">WinSCP</a>. Map a remote directory to a local one and enable continuous sync (one way). You need SFTP password you get when you registered dev account (or ssh key).
+</p><h4><span class="mw-headline" id="File_Sync_on_Linux">File Sync on Linux</span></h4><h5><span id="Option_1_-_Nautilus_.28file_manager.29"></span><span class="mw-headline" id="Option_1_-_Nautilus_(file_manager)">Option 1 - Nautilus (file manager)</span></h5><p>You can just use Nautilus "connect to a server" function with URL <a class="external free" href="sftp://1.studio.boardgamearena.com:2022" rel="nofollow">sftp://1.studio.boardgamearena.com:2022</a>
+Then you'll get a mounted local folder mapping your studio folder and you can use any editor you like without further need for sync. Downside - if connection goes down you cannot work on source code, no local copy.
+</p><h5><span class="mw-headline" id="Option_2_-_sshfs_and_rsync">Option 2 - sshfs and rsync</span></h5><p>This setup will sync in the background (continuous sync) when file is saved, after you set it up and start just save your files and they be on server before you can hit refresh. You need to install "sshfs" first. 
+This is linux script:
+</p><pre>#!/bin/bash
+BASEDIR=`dirname $0`
+REMOTE=$BASEDIR/remote
+
+
+#mount remote
+fusermount -u $REMOTE #this unmounts dir
+#this asssumes your default ssh key is uploaded to studio
+sshfs -p 2022 <a class="__cf_email__" data-cfemail="84e9fdf1f7e1f6eae5e9e1ece1f6e1c4b5aaf7f0f1e0edebaae6ebe5f6e0e3e5e9e1e5f6e1eae5aae7ebe9" href="/cdn-cgi/l/email-protection">[email protected]</a>: $REMOTE
+
+
+#this starts auto-sync from local to remote mount
+killall lsyncd
+LOCAL=$BASEDIR/workspace
+
+#for every game you can do something like this
+GAME=mygamenamehere
+lsyncd -delay 1 -rsync $LOCAL/$GAME/ $REMOTE/$GAME
+</pre><p>This can be able run on startup, so you don't have to do anything manually. However sshfs is not very stable you
+have to kill and restart it sometimes. And remote goes away sometimes due to connection issues with studio. 
+In this case its handy to have a local copy, which is what lsyncd for.
+</p><pre>rsync -vlrt $LOCAL/$GAME/ $REMOTE/$GAME
+</pre><p>Note: is insecure way of running sshfs (password will go away, set up using ssh key S.V.P.)
+echo LongDevPassword | sshfs -p 2022 -o password_stdin ...
+</p><h5><span class="mw-headline" id="Option_3_-_lftp">Option 3 - lftp</span></h5><p><a class="external text" href="https://lftp.yar.ru/" rel="nofollow">lftp</a> is a fast command-line file transfer program. It supports parallel threads, transferring multiple files at a time.
+</p><ul><li>Linux: Install using your package manager, for example: <b>sudo apt-get install lftp</b></li>
+<li>Mac: Install <a class="external text" href="https://brew.sh/" rel="nofollow">Homebrew</a>, then install lftp using <b>brew install lftp</b></li></ul><p>To upload your project to BGA studio, use the "mirror" command like this:
+</p><p>Be sure to include the trailing <b>/</b> after both directory names.
+</p><p>This is one time sync (unless I am missing something this does not do continious sync?)
+</p><h3><span class="mw-headline" id="Debuggers">Debuggers</span></h3><p>Browser is the best tool for JS/HTML5 debugging, see <a href="Practical_debugging.html" title="Practical debugging">Practical debugging</a> for details.
+</p><h3><span class="mw-headline" id="Version_Control">Version Control</span></h3><p>Studio provides svn for you code on server, there are some limited abilities there to see history and restore. I recommend to also keep your code in another repository, which allows keeping more fine-grained history and can simplify collaboration.
+</p><p>Other option is to host source code on github. If you do, the convention is to use github.com/&lt;yourname&gt;/bga-&lt;yourgame&gt;. It is recommended to add the <a class="external text" href="https://github.com/topics/boardgamearena" rel="nofollow">boardgamearena</a> tag and add your repo to the list on the <a href="BGA_Code_Sharing.html" title="BGA Code Sharing">BGA_Code_Sharing</a> page.
+</p><p>You can also configure github to automatically deploy to BGA whenever you push to a branch. See <a class="external text" href="https://forum.boardgamearena.com/viewtopic.php?f=12&amp;t=13370&amp;start=10#p59537" rel="nofollow">this forum post</a> for instructions.
+</p><h3><span class="mw-headline" id="PHP_CLI">PHP CLI</span></h3><p>Its handy to have php cli (command line) tools install to run php locally, so you can test some stuff without deployment cycle, or create some scripts that generate code or markup.
+</p><h3><span class="mw-headline" id="Image_Manipulation">Image Manipulation</span></h3><h4><span class="mw-headline" id="ImageMagick">ImageMagick</span></h4><p>Handy set of image manipulation <b>command line</b> tools, useful to for example to stitch together bunch of images and re-size, to use as sprite (in Stock component for example). I.e. you got a graphics file from publisher where every tile is 600x600 PNG file in separate file. You want .jpg instead of .png to make it not like 20Mb, and combine all images in one column and re-size to 128x128:
+</p><pre>/usr/bin/montage  `ls Tiles*.png` -tile 1 -geometry 128x128+0+0 out/tiles128.jpg
+</pre><p>The order of the images will match the 'ls' order. If needed change the filenames if you need a specific order.
+</p><h4><span class="mw-headline" id="Gimp">Gimp</span></h4><p>GUI tool, very complex but will do ALL what you possibly need to do with game graphics
+</p><h4><span class="mw-headline" id="Shrinking">Shrinking</span></h4><p>Shrink images without loss of quality <a class="external free" href="https://tinypng.com/" rel="nofollow">https://tinypng.com/</a> or <a class="external free" href="http://www.iloveimg.com/" rel="nofollow">http://www.iloveimg.com/</a>
+</p><h4><span class="mw-headline" id="PDF_Scrapper">PDF Scrapper</span></h4><p>extract images from PDF file (i.e. game rulebook) :
+</p><p><a class="external free" href="http://www.extractpdf.com/" rel="nofollow">http://www.extractpdf.com/</a>
+</p><h3><span class="mw-headline" id="Restore_project_to_Original_template">Restore project to Original template</span></h3><p>You can restore your project with default project using Studio Control Panel.
+I.e go to <a class="external free" href="https://studio.boardgamearena.com/studio" rel="nofollow">https://studio.boardgamearena.com/studio</a> find your project click on it's link, find Override text in the control panel.
+</p><ul><li>Use words <i>EmptyGame</i> as second project.</li>
+<li>Use your own project name (with capital/s) as first project.</li>
+<li>Press Go (or whatever button named)</li></ul><h3><span id="Rename.2FCopy_project"></span><span class="mw-headline" id="Rename/Copy_project">Rename/Copy project</span></h3><p>You can now override your project with any other project using Studio Control Panel.
+</p><p>Alternatively there is a script available in sharedcode project to do the renaming which can be called in command line if you have php command line installed.
+You need to have php clt (command line interface) installed, then you can download script and run it.
+</p><p>Usage:
+</p><pre>php bgaprojectrename.php &lt;originalProjectPath&gt; &lt;copyOfProjectRenamedPath&gt;
+</pre><p>Example on how to call it in command line  if you project name is "heartsmyproject"
+</p><pre>php8.4 git/bga-sharedcode/tools/bgaprojectrename.php remote/hearts/ remote/heartsmyproject/
+</pre><h3><span class="mw-headline" id="BGA_Workbench">BGA Workbench</span></h3><p>Unofficial/unsupported PHP library providing tools to help manage BGA Studio projects including deployment and test utilities. <a class="external free" href="https://github.com/danielholmes/bga-workbench" rel="nofollow">https://github.com/danielholmes/bga-workbench</a>
+</p><h3><span class="mw-headline" id="Testing_and_validation_tools">Testing and validation tools</span></h3><ul><li>Run static analysis on your project to detect common problem and translation issues - project check - available from control panel - manage games - &lt;your project&gt; - Check project (blue button left middle)</li>
+<li>Check if web feature is supported <a class="external free" href="https://caniuse.com/" rel="nofollow">https://caniuse.com/</a></li>
+<li>PHP: <a class="external free" href="https://phpcodechecker.com/" rel="nofollow">https://phpcodechecker.com/</a></li>
+<li>JS: <a class="external free" href="http://esprima.org/demo/validate.html" rel="nofollow">http://esprima.org/demo/validate.html</a></li>
+<li>CSS: <a class="external free" href="http://jigsaw.w3.org/css-validator/" rel="nofollow">http://jigsaw.w3.org/css-validator/</a></li></ul><h3><span class="mw-headline" id="State_machine_diagram_generation_tool">State machine diagram generation tool</span></h3><p>You can easily generate a state machine diagram from your states.inc.php using the dot language (<a class="external free" href="https://graphviz.org/" rel="nofollow">https://graphviz.org/</a>) via a PHP script.
+</p><ul><li>download the php script from the bga-sharedcode git repo located here <a class="external free" href="https://github.com/elaskavaia/bga-sharedcode/blob/master/misc/generate_state_diagram.php" rel="nofollow">https://github.com/elaskavaia/bga-sharedcode/blob/master/misc/generate_state_diagram.php</a> and place it into your project root (on the same level as states.inc.php)</li>
+<li>run the script locally: "php.exe generate_state_diagram.php &gt; graph.dot"</li>
+<li>open the generated dot file for visualization in visual studio code using the "Graphviz Interactive Preview" extension</li>
+<li>alternatively install graphiz (<a class="external free" href="https://graphviz.org/download/" rel="nofollow">https://graphviz.org/download/</a>) and generate an image file by running the following command "dot -Tpng -o graph.png graph.dot"</li></ul><p>Here is an example of running the generation script on the hearts game from the tutorial:
+</p><p><b>Legend:</b>
+</p><ul><li>states of type GAME appear in yellow</li>
+<li>states of type ACTIVE_PLAYER appear in blue</li>
+<li>states of type MULTIPLE_ACTIVE_PLAYER appear in green</li></ul><p>Once you have this state machine, you can use it to generate boilerplate code using the <a class="external text" href="https://github.com/xmakina/bga-statemachinegenerator" rel="nofollow">BGA State Machine Generator</a>
+</p><h2><span class="mw-headline" id="Other_useful_tools">Other useful tools</span></h2><ul><li>Website with bunch of textures and sounds <a class="external free" href="http://www.grsites.com/archive/textures/" rel="nofollow">http://www.grsites.com/archive/textures/</a></li>
+<li>Shrink images without loss of quality <a class="external free" href="https://tinypng.com/" rel="nofollow">https://tinypng.com/</a> or <a class="external free" href="http://www.iloveimg.com/" rel="nofollow">http://www.iloveimg.com/</a> (recommended by Gregory Isabelli)</li>
+<li>CSS shapes <a class="external free" href="https://css-tricks.com/examples/ShapesOfCSS/" rel="nofollow">https://css-tricks.com/examples/ShapesOfCSS/</a></li>
+<li>PDF Scraper - extract images - <a class="external free" href="http://www.extractpdf.com/" rel="nofollow">http://www.extractpdf.com/</a></li>
+<li>Hexagonal Grids (from Red Blob Games) - <a class="external free" href="https://www.redblobgames.com/grids/hexagons/" rel="nofollow">https://www.redblobgames.com/grids/hexagons/</a></li>
+<li>CSS tools (shades, shapes, textures) - <a class="external free" href="https://dev.to/lissy93/super-useful-css-resources-1ba3" rel="nofollow">https://dev.to/lissy93/super-useful-css-resources-1ba3</a></li>
+<li>Color blind pallette <a class="external free" href="https://jfly.uni-koeln.de/color/" rel="nofollow">https://jfly.uni-koeln.de/color/</a> <a class="external free" href="https://mikemol.github.io/technique/colorblind/2018/02/11/color-safe-palette.html" rel="nofollow">https://mikemol.github.io/technique/colorblind/2018/02/11/color-safe-palette.html</a></li>
+<li>CSS stroked text <a class="external free" href="https://blog.logrocket.com/create-beautiful-stroked-text-css/" rel="nofollow">https://blog.logrocket.com/create-beautiful-stroked-text-css/</a></li>
+<li>CSS box model and SVG images <a class="external free" href="https://www.freecodecamp.org/news/how-to-use-css-box-model-and-style-svg-images/" rel="nofollow">https://www.freecodecamp.org/news/how-to-use-css-box-model-and-style-svg-images/</a></li></ul><h2><span class="mw-headline" id="Client_Tips">Client Tips</span></h2><h3><span id="Speed_up_game_re-loading_by_disabling_Input.2FOutput_debug_section"></span><span class="mw-headline" id="Speed_up_game_re-loading_by_disabling_Input/Output_debug_section">Speed up game re-loading by disabling Input/Output debug section</span></h3><p>Development UI have few sections for debugging only, such as 'Input/Output debugging section'. Loading this data will significantly slow down
+your reload. I did some profiling and my reloading (i.e. F5) took 14 seconds, 12 of which it was dealing with loading this section. 
+If you not using it you can disable it. In your JavaScript code, in the begging of 'setup' method add this code
+</p><pre>        dojo.destroy('debug_output');
+</pre><p>That should get rid of this section and overhead associated with loading it (it may have some other side-effects, I have not explored all of them)
+</p><h3><span class="mw-headline" id="Speed_up_CSS_development_and_layout">Speed up CSS development and layout</span></h3><p>Syncing files to server and refreshing is relative fast but still can take up to 20 seconds which is annoying.
+If you working
+a lot on css/images/layout you can speed it up by copying html in some state of the game to your local folder.
+I.e. in your  project folder create directory misc/ and save your html as misc/test.html and changing path to css to load from local disk (and it will load your images to from local disk as well). 
+I.e. find something like
+</p><pre> &lt;link rel="stylesheet" type="text/css" href="<a class="external free" href="http://1.studio.boardgamearena.com:8081/data/themereleases/151226-1240/games/mygame/999999-9999/mygame.css" rel="nofollow">http://1.studio.boardgamearena.com:8081/data/themereleases/151226-1240/games/mygame/999999-9999/mygame.css</a>"/&gt;
+</pre><p>and replace with
+</p><pre>  &lt;link rel="stylesheet" type="text/css" href="../mygame.css"/&gt;
+
+</pre><p>You project structure will look like this
+</p><pre>mygame
+  img/ &lt;-- your images
+  mygame.css  &lt;-- your original css
+  ...
+  misc/
+    test.html &lt;-- your test html
+</pre><p>It is a bit tricky to save html exact state, if you do save as it also pulls all resources sometimes.
+</p></div></body>
+</html>

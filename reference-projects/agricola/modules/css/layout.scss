@@ -1,0 +1,270 @@
+#left-side {
+  margin-left: 0px !important;
+}
+
+#position-wrapper {
+  position: relative;
+  min-height: calc(var(--agricolaCentralBoardScale) * 795px);
+
+  [data-additional='1'][data-players='4'] & {
+    min-height: calc(var(--agricolaCentralBoardScale) * 965px);
+  }
+  [data-additional='1'][data-players='3'] & {
+    min-height: calc(var(--agricolaCentralBoardScale) * 890px);
+  }
+
+  #main-boards {
+    width: 100%;
+    height: calc(var(--agricolaCentralBoardScale)*795px);
+    display: flex;
+
+    [data-additional='1'][data-players='4'] & {
+      height: calc(var(--agricolaCentralBoardScale)*965px);
+    }
+    [data-additional='1'][data-players='3'] & {
+      height: calc(var(--agricolaCentralBoardScale)*890px);
+    }
+  }
+}
+
+// Shared campaign goal-track styles (used by the panel and the new-game modal)
+.cp-track {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: calc(var(--agricolaCentralBoardScale) * 4px);
+  flex-wrap: nowrap;
+}
+.cp-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: calc(var(--agricolaCentralBoardScale) * 28px);
+  padding: calc(var(--agricolaCentralBoardScale) * 2px) calc(var(--agricolaCentralBoardScale) * 4px);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.35);
+  line-height: 1.15;
+
+  &.cp-current {
+    outline: 2px solid #1b5e20;
+    font-weight: bold;
+  }
+  &.cp-hit {
+    background: rgba(76, 175, 80, 0.55);
+  }
+  &.cp-miss {
+    background: rgba(211, 47, 47, 0.45);
+  }
+}
+.cp-game {
+  font-size: calc(var(--agricolaCentralBoardScale) * 10px);
+  color: #555;
+}
+.cp-target {
+  font-size: calc(var(--agricolaCentralBoardScale) * 14px);
+}
+.cp-chip {
+  min-width: calc(var(--agricolaCentralBoardScale) * 18px);
+  padding: 0 calc(var(--agricolaCentralBoardScale) * 4px);
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  font-size: calc(var(--agricolaCentralBoardScale) * 11px);
+  text-align: center;
+
+  &.cp-hit {
+    background: rgba(76, 175, 80, 0.55);
+  }
+  &.cp-miss {
+    background: rgba(211, 47, 47, 0.45);
+  }
+}
+
+.campaign-cheer {
+  color: #1b5e20;
+  font-weight: bold;
+}
+
+#campaign-panel {
+  font-family: var(--agricola-font-family);
+  width: fit-content;
+  // Center on the central board (same reference as #game-flow-panel) so the two stack tidily
+  margin-left: calc(var(--agricolaCentralBoardScale) * 415px);
+  transform: translateX(-50%);
+  margin-bottom: calc(var(--agricolaCentralBoardScale) * 6px);
+  box-sizing: border-box;
+  background: rgba(210, 205, 120, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+  padding: calc(var(--agricolaCentralBoardScale) * 5px) calc(var(--agricolaCentralBoardScale) * 14px);
+  text-align: center;
+
+  .cp-head {
+    font-size: calc(var(--agricolaCentralBoardScale) * 15px);
+    margin-bottom: calc(var(--agricolaCentralBoardScale) * 4px);
+  }
+  .cp-history {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: calc(var(--agricolaCentralBoardScale) * 3px);
+    margin-top: calc(var(--agricolaCentralBoardScale) * 4px);
+  }
+  .cp-history-label {
+    font-size: calc(var(--agricolaCentralBoardScale) * 11px);
+    margin-right: calc(var(--agricolaCentralBoardScale) * 2px);
+    opacity: 0.8;
+  }
+}
+
+.campaign-intro {
+  text-align: center;
+  min-width: 320px;
+  // breathing room so content (long permanent list, score chips) doesn't touch the frame
+  padding: 4px 14px 16px;
+
+  .ci-game {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  .cp-track {
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    gap: 5px;
+  }
+  // Bigger, more legible game-number / target cells in the modal (fixed px, not board-scaled)
+  .cp-cell {
+    min-width: 40px;
+    padding: 4px 7px;
+  }
+  .cp-game {
+    font-size: 12px;
+  }
+  .cp-target {
+    font-size: 19px;
+    font-weight: bold;
+  }
+  .ci-line {
+    margin: 7px 0;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+  .ci-note {
+    font-style: italic;
+    opacity: 0.8;
+  }
+  .cp-history {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .cp-history-label {
+    font-size: 15px;
+    opacity: 0.85;
+  }
+  // Larger, legible score chips in the modal (fixed px, not board-scaled)
+  .cp-chip {
+    min-width: 30px;
+    padding: 3px 9px;
+    font-size: 16px;
+    border-radius: 4px;
+  }
+  #campaign-intro-start {
+    display: inline-block;
+    margin-top: 16px;
+  }
+}
+
+#game-flow-panel {
+  font-family: var(--agricola-font-family);
+
+  &.gf-game {
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    margin-left: calc(var(--agricolaCentralBoardScale) * 415px);
+    transform: translateX(-50%);
+    margin-bottom: calc(var(--agricolaCentralBoardScale) * 6px);
+
+    [data-players='3'] &,
+    [data-players='4'] &,
+    [data-additional='1'][data-players='2'] & {
+      margin-left: calc(var(--agricolaCentralBoardScale) * 493px);
+    }
+    box-sizing: border-box;
+    background: rgba(210, 205, 120, 0.85);
+    border: 1px solid rgba(0,0,0,0.25);
+    border-bottom: 1px solid rgba(0,0,0,0.15);
+    border-radius: 4px 4px 0 0;
+    padding: calc(var(--agricolaCentralBoardScale) * 5px) calc(var(--agricolaCentralBoardScale) * 16px);
+  }
+  .gf-round {
+    font-size: calc(var(--agricolaCentralBoardScale) * 16px);
+    white-space: nowrap;
+    padding-right: calc(var(--agricolaCentralBoardScale) * 14px);
+    margin-right: calc(var(--agricolaCentralBoardScale) * 14px);
+    border-right: 1px solid rgba(0,0,0,0.2);
+  }
+  .gf-of {
+    font-size: calc(var(--agricolaCentralBoardScale) * 14px);
+    font-weight: normal;
+    color: #444;
+  }
+  .gf-track {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--agricolaCentralBoardScale) * 5px);
+    flex-wrap: nowrap;
+  }
+  .gf-ph {
+    padding: calc(var(--agricolaCentralBoardScale) * 3px) calc(var(--agricolaCentralBoardScale) * 10px);
+    border-radius: calc(var(--agricolaCentralBoardScale) * 12px);
+    font-size: calc(var(--agricolaCentralBoardScale) * 14px);
+    color: #111;
+    background: rgba(0,0,0,0.18);
+    white-space: nowrap;
+    &.on {
+      background: #5a9e4b;
+      color: #fff;
+      font-weight: bold;
+      text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+    }
+  }
+  .gf-arr {
+    color: #666;
+    font-size: calc(var(--agricolaCentralBoardScale) * 12px);
+  }
+  .gf-sub-intro {
+    color: #5a9e4b;
+    font-size: calc(var(--agricolaCentralBoardScale) * 14px);
+    margin-left: calc(var(--agricolaCentralBoardScale) * 4px);
+  }
+  .gf-sub {
+    padding: calc(var(--agricolaCentralBoardScale) * 2px) calc(var(--agricolaCentralBoardScale) * 8px);
+    border-radius: calc(var(--agricolaCentralBoardScale) * 10px);
+    font-size: calc(var(--agricolaCentralBoardScale) * 12px);
+    color: #111;
+    background: rgba(0,0,0,0.18);
+    white-space: nowrap;
+    &.on {
+      background: #d4820f;
+      color: #fff;
+      font-weight: bold;
+      text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+    }
+  }
+}
+
+@import 'layout.draft';
+@import 'layout.central';
+@import 'layout.playerBoard';
+
+.action-button.btn-selected {
+  opacity: 0.5;
+  outline: 2px solid #000;
+}

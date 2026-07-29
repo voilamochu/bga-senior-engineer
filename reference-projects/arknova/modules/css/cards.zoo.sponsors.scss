@@ -1,0 +1,233 @@
+.ark-card.zoo-card.sponsor-card {
+    .ark-card-wrapper {
+        background-size: 100%;
+
+        & > .arknova-meeple.icon-token {
+            position: absolute;
+            top: 10px;
+            left: 155px;
+            font-size: 2em;
+
+            & ~ .arknova-meeple.icon-token {
+                left: 225px;
+            }
+        }
+
+        .ark-card-top {
+            width: 373px;
+            height: 283px;
+            background: none;
+
+            .ark-card-top-left {
+                display: none;
+
+                .sponsor-card-top-left-icon {
+                    width: 40px;
+                    height: 70px;
+                }
+
+                .zoo-card-prerequisites {
+                }
+            }
+        }
+
+        .ark-card-middle {
+            height: 37px;
+            background: #006999;
+            background: linear-gradient(90deg, #6596c0 0%, #006999 50%, #6596c0 100%);
+
+            .ark-card-number {
+                height: 37px;
+                color: black;
+            }
+
+            .ark-card-title-wrapper {
+                padding: 6px 20px 3px;
+
+                .ark-card-title {
+                    color: white;
+                    height: 100%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-size: 23px;
+                    letter-spacing: -1px;
+                }
+            }
+
+            .ark-card-suptitle {
+                position: absolute;
+                top: -32px;
+                font-size: 22px;
+                left: 0px;
+                background: white;
+                right: 0px;
+                text-align: center;
+                padding: 2px 0px;
+            }
+        }
+
+        .ark-card-bottom {
+        }
+    }
+
+    [data-card-desc="0"] &:not(.tooltip) {
+        .ark-card-wrapper {
+            .ark-card-middle {
+                margin-top: -10px;
+                height: 75px;
+                .ark-card-number {
+                    display: none;
+                }
+
+                .ark-card-title-wrapper {
+                    padding: 3px 20px 1px;
+
+                    .ark-card-title {
+                        font-size: 32px;
+                        line-height: 34px;
+                        height: 100%;
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        letter-spacing: 0px;
+                    }
+                }
+            }
+        }
+    }
+
+    &[data-id="S253_OkapiStable"] .ark-card-wrapper > .arknova-meeple.icon-token {
+        top: 0px;
+        left: 10px;
+
+        & ~ .arknova-meeple.icon-token {
+            top: 0px;
+            left: 64px;
+
+            & ~ .arknova-meeple.icon-token {
+                top: 21px;
+                left: 34px;
+            }
+        }
+    }
+
+    &[data-id="S227_WazaSpecialAssignment"][data-choice] .ark-card-wrapper::before {
+        content: "\f00d";
+        position: absolute;
+        left: 93px;
+        top: 11px;
+        background: #e1e1e1c4;
+        z-index: 10;
+        font: normal normal normal 14px/1 FontAwesome;
+        font-size: 60px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: red;
+        border-radius: 9px;
+        width: 118px;
+        height: 65px;
+    }
+
+    &[data-id="S227_WazaSpecialAssignment"][data-choice="small"] .ark-card-wrapper::before {
+        left: 227px;
+    }
+}
+
+.dijitTooltipContainer {
+    ul.sponsor-effects-list {
+        font-size: 18px;
+        padding-left: 7px;
+
+        li {
+            &::before {
+                content: "";
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                border: 1px solid black;
+                margin: 0px 4px;
+            }
+
+            &.effect-immediate::before {
+                background: #fbea5e;
+                border-color: #8b7f0b;
+            }
+            &.effect-income::before {
+                background: #c39bc2;
+                border-color: #9e6e9e;
+            }
+            &.effect-endgame::before {
+                background: #a9744a;
+                border-color: #7c716a;
+            }
+            &.effect-passive::before {
+                background: #006c9b;
+                border-color: #04587c;
+            }
+
+            &.no-bullet::before {
+                display: none;
+            }
+        }
+    }
+
+    .ark-card.zoo-card.sponsor-card .ark-card-wrapper .ark-card-middle .ark-card-suptitle {
+        position: absolute;
+        top: -21px;
+        font-size: 15px;
+        left: 2px;
+        right: auto;
+        background: #ffffffd4;
+        padding: 2px 7px;
+    }
+}
+
+@each $cId in $sponsorCards {
+    $i: index($sponsorCards, $cId) - 1;
+    .zoo-card.sponsor-card[data-id="#{$cId}"] {
+        .ark-card-wrapper {
+            background-image: url("img/sponsors/#{$cId}.jpg");
+        }
+    }
+}
+
+@each $cId in $maxAppealSponsorCards {
+    [data-starting-appeal="10"] .zoo-card.sponsor-card[data-id="#{$cId}"] {
+        .ark-card-wrapper {
+            background-image: url("img/solo/max-35.png"), url("img/sponsors/#{$cId}.jpg");
+            background-size:
+                69px 52px,
+                100%;
+            background-position:
+                0px 79px,
+                0px 0px;
+            background-repeat: no-repeat;
+        }
+    }
+
+    [data-starting-appeal="20"] .zoo-card.sponsor-card[data-id="#{$cId}"] {
+        .ark-card-wrapper {
+            background-image: url("img/solo/max-45.png"), url("img/sponsors/#{$cId}.jpg");
+            background-size:
+                69px 52px,
+                100%;
+            background-position:
+                0px 79px,
+                0px 0px;
+            background-repeat: no-repeat;
+        }
+    }
+}
+
+[data-starting-appeal="10"],
+[data-starting-appeal="20"] {
+    .zoo-card.sponsor-card[data-id="S207_BasicResearch"] .ark-card-wrapper {
+        background-position:
+            0px 138px,
+            0px 0px;
+    }
+}

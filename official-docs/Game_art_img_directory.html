@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Game art: img directory - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Game_art_img_directory rootpage-Game_art_img_directory action-view"><div class="article"><p><br/>
+</p><h2><span class="mw-headline" id="What_assets_to_request_from_publisher">What assets to request from publisher</span></h2><p>Requesting graphics assets is a 2nd thing you should do after getting the game license. 
+</p><ul><li>Graphic assets of printed SQUARE materials (cards, boards) in common formats (pdf, jpg, png). PDF cannot have watermarks, cut or bleed marks.</li>
+<li>Graphic assets non NON-SQUARE tokens (i.e hex) in PNG (because it needs transparent bg)</li>
+<li>Graphic assets of game non-flat resources (minis, dice, etc) as were used in rulebook in "contents of the game" in PNG (best one per file)</li>
+<li>For all assets that have text on them (numbers don't count): We need ENGLISH or NO TEXT version. We can overlay translated text on graphics if no text version is provided.</li>
+<li>You can also ask game meta data images such as box and banners, but this can be done later (see below for meta data images)</li></ul><h2><span class="mw-headline" id="Metadata_images">Metadata images</span></h2><p>Game metadata images are images of game box, banner, title, etc. These images are no longer stored in project directory.
+</p><h2><span class="mw-headline" id="Game_art">Game art</span></h2><p>You must upload in img directory all images of your game interface.
+</p><h3><span class="mw-headline" id="Images_naming_constraints">Images naming constraints</span></h3><p>To be correctly deployed your images file names should not contain spaces or parentheses.
+</p><h3><span class="mw-headline" id="Images_loading">Images loading</span></h3><p><b>Be careful</b>: by default, ALL images of your img root directory are loaded on a player's browser when he loads the game. For this reason, don't publish images that are not useful in your img, or it will slow down the game load. You can put them in a subdirectory of img, that won't be preloaded by default, for example images used only if an expansion is activated..
+</p><p>General recommendation it to have no more than dozen of image files, 2Mb max each. However if there is heavy game resources specific to a player (i.e. player board of specific color or set of cards) it is better to separate them and "don't pre-load" since in any given game only some of them will be used.
+</p><h3><span class="mw-headline" id="Images_format">Images format</span></h3><p>You can use these image formats while building your game interface:
+</p><dl><dt>webp images</dt></dl><p>should be used whenever possible. It's lightweight and handles transparency.
+</p><dl><dt>jpg images</dt></dl><p>should be used for non-transparent images. Jpg are usually lighter than pngs, so please choose Jpg for big pictures (ex: game board, cards) when you don't need transparency to accelerate game load. You don't need transparency for rounded card corners, it can be done using css.
+</p><dl><dt>png images</dt></dl><p>should be used for images with transparency, such as non-square tokens, meeples, etc (combined into sprite).
+</p><dl><dt>gif images</dt></dl><p>can be used for animated images. This is not recommended to use gif animated images as they can upset players, but for some specific interface element this could be useful.
+</p><dl><dt>svg images</dt></dl><p>svg images can be really efficient for icons or abstract images. Note: consider also using font awesome for icons instead of separate asset file.
+</p><h3><span class="mw-headline" id="Webp">Webp</span></h3><p>png and jpg images are automatically converted to webp during deployment. Webp's are lighter weight.
+</p><p>In rare cases, this can cause a problem because the conversion is lossy. The best solution is to create webp manually from your png/jpg file, to make sure your web pfile is valid, and use it instead of the png/jpg file.
+</p><h3><span class="mw-headline" id="Use_background-size">Use background-size</span></h3><p>In order to allow for players to use the browser zoom without your images becoming pixelated, it's recommended to use higher resolution images than needed for the normal display of your interface, and to use the css property <b>background-size</b> to fit the image to the size you need for your interface.
+</p><h3><span class="mw-headline" id="Use_CSS_Sprites">Use CSS Sprites</span></h3><p>To limit the number of images load and make the game load faster, you must use CSS sprites, i.e. you must gather several images in a single one. However, there are limitations. Do not make any CSS image sprite with dimensions that exceed 4096x4096 pixels or it will not work on mobile devices (Android max texture size is 4096 pixels, test your own browser at <a class="external text" href="http://webglreport.com/" rel="nofollow">WebGL Report</a>).
+</p><ul><li><a class="external text" href="http://www.w3schools.com/css/css_image_sprites.asp" rel="nofollow">CSS sprites (W3C documentation)</a>.</li>
+<li><a href="/Game_interface_stylesheet:_yourgamename.css" title="Game interface stylesheet: yourgamename.css">Game interface stylesheet: yourgamename.css</a></li></ul><p><b>Important:</b> the maximum image size should be 4096x4096 (otherwise, some devices may not display parts of the image, see <a class="external free" href="https://stackoverflow.com/questions/34682482/what-is-the-maximum-sprite-sheet-size-i-can-use-for-android-devices" rel="nofollow">https://stackoverflow.com/questions/34682482/what-is-the-maximum-sprite-sheet-size-i-can-use-for-android-devices</a>)
+</p><ul><li>Sprite Generator <a class="external free" href="https://www.toptal.com/developers/css/sprite-generator/" rel="nofollow">https://www.toptal.com/developers/css/sprite-generator/</a></li>
+<li>Another Sprite Generator <a class="external free" href="https://www.finalparsec.com/tools/sprite_sheet_maker" rel="nofollow">https://www.finalparsec.com/tools/sprite_sheet_maker</a></li></ul><h3><span class="mw-headline" id="Shrink_images">Shrink images</span></h3><p>If you get high resolution images from publisher you need to shrink them since web display requires much lower resolution than printing.
+</p><ul><li>Shrink images size without visible loss of quality
+<ul><li>Offline tool for PNG: <a class="external free" href="https://pngquant.org/" rel="nofollow">https://pngquant.org/</a></li>
+<li>Online tools for PNG/JPG: <a class="external free" href="https://tinypng.com/" rel="nofollow">https://tinypng.com/</a> or <a class="external free" href="http://www.iloveimg.com/" rel="nofollow">http://www.iloveimg.com/</a> or <a class="external free" href="https://squoosh.app/" rel="nofollow">https://squoosh.app/</a></li>
+<li>Online tool for SVG: <a class="external free" href="https://jakearchibald.github.io/svgomg/" rel="nofollow">https://jakearchibald.github.io/svgomg/</a></li></ul></li></ul><h2><span class="mw-headline" id="Image_Manipulation_Tools">Image Manipulation Tools</span></h2><p>You have no choice but to use one of the image manipulating tools to create a successful game adaptation, you would have to
+deal with
+</p><ul><li>Converting to supported formats</li>
+<li>Adding transparency</li>
+<li>Stitching</li>
+<li>Shrinking with no quality loss</li>
+<li>Resizing</li></ul><p>For that you need a good tools, recommended tools (if you know more add them here)
+</p><ul><li>Gimp (all platforms) - general GUI image editor</li>
+<li>Paint.net (Windows) - general GUI image editor</li>
+<li>ImageMagic (All platforms) - <a class="external free" href="https://www.imagemagick.org/script/download.php" rel="nofollow">https://www.imagemagick.org/script/download.php</a> - command line image editor, great for mass manipulations and scripting</li></ul><p>AI tools are very good at editing photos with minimal prompting too.
+</p><h3><span class="mw-headline" id="Examples">Examples</span></h3><p>PDF to png convertion (linux)
+</p><pre>gs -sDEVICE=pngalpha   -o output.png -r600 -dDownScaleFactor=3 input.pdf 
+</pre><p>PDF to jpg using image magic and cropping page
+</p><pre>montage -colorspace sRGB -density 300 -geometry 452x+0+0 -tile 5 -crop 82x87%+130+126 input.pdf  output.jpg
+
+</pre><p>PSD Extraction (image magic - CMYK to sRBG - one layer per file)
+</p><pre>for i in *.psd; do  convert  $i -profile /usr/share/color/icc/colord/sRGB.icc   `basename $i .psd`.png; done;
+</pre><p><br/>
+Tiling - The order of the images will match the 'ls' order. If needed change the filenames if you need a specific order.
+</p><pre>montage -colorspace sRGB -density 300 *.png -tile 6 -background transparent ../tokens.png
+</pre><p><br/>
+PDF scrabber (linux) - extract all graphics file from pdf
+</p><pre>pdfimages my.pdf prefix-
+</pre><h3><span class="mw-headline" id="Online_tools">Online tools</span></h3><p>PSD extraction (adobe file format)
+</p><pre><a class="external free" href="https://www.photopea.com/" rel="nofollow">https://www.photopea.com/</a>
+</pre><p><br/>
+Seamless background (for tiled background wallpaper)
+</p><pre><a class="external free" href="https://www.imgonline.com.ua/eng/make-seamless-texture.php" rel="nofollow">https://www.imgonline.com.ua/eng/make-seamless-texture.php</a>
+</pre><p>Download game assets from tabletop simulator
+</p><pre><a class="external free" href="https://www.npmjs.com/package/ttsbackup" rel="nofollow">https://www.npmjs.com/package/ttsbackup</a>
+</pre><h3><span class="mw-headline" id="Community_Provided">Community Provided</span></h3><ul><li><a class="external text" href="https://github.com/sumpfork/seas_of_havoc_boardgamearena/tree/main/misc/tools/extract_cards" rel="nofollow">This python script</a> shows how to make card sprite images for BGA from a one-card-per-page pdf:
+<ul><li>reads the pages from a pdf document</li>
+<li>crops each pages to exclude bleed etc.</li>
+<li>removes duplicate images based on a difference in histograms</li>
+<li>converts to a target resolution</li>
+<li>assembles the resulting images into a single one given a number of rows and columns</li>
+<li>saves as any format that Pillow supports (e.g. jpg or png)</li></ul></li></ul></div></body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "title": "Game interface logic: Game.js",
+  "source_html": "Game_interface_logic_Game.js.html",
+  "clean_html": "Game_interface_logic_Game.js.html",
+  "url": "https://en.doc.boardgamearena.com/Game_interface_logic:_Game.js",
+  "depth": 1,
+  "sha256_raw": "ecd2b5a68dc87e70c0e66dfd5e53da6976587fae4c13ac113c6d257f2b685f30",
+  "sha256_clean": "aeda5ceab83558d389de9c2fee15aab71d718abe4fdf42a53d99276ca46afff8",
+  "word_count": 9542,
+  "code_block_count": 121,
+  "table_count": 0,
+  "image_count": 2,
+  "heading_count": 65,
+  "cleaned_at": "2026-07-06T06:38:18.988819+00:00"
+}

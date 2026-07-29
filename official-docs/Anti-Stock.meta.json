@@ -1,0 +1,15 @@
+{
+  "title": "Anti-Stock",
+  "source_html": "Anti-Stock.html",
+  "clean_html": "Anti-Stock.html",
+  "url": "https://en.doc.boardgamearena.com/Anti-Stock",
+  "depth": 1,
+  "sha256_raw": "fa41c5176563ffc4d9f8506631a19468929ea45862da17b5ca2c24c8c1642f54",
+  "sha256_clean": "0df11f77a434cb2dbdbe3b6c8ba667d7a6fffd40c14f4f12f23f144c81291957",
+  "word_count": 1283,
+  "code_block_count": 15,
+  "table_count": 0,
+  "image_count": 1,
+  "heading_count": 9,
+  "cleaned_at": "2026-07-06T06:38:18.094527+00:00"
+}

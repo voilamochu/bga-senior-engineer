@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Game database model: dbmodel.sql - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Game_database_model_dbmodel_sql rootpage-Game_database_model_dbmodel_sql action-view"><div class="article"><p><br/>
+</p><p>In this file, you specify the database schema of your game.
+</p><p><b>Note:</b> you can't change the database schema during the game.
+</p><h2><span class="mw-headline" id="Create_your_schema">Create your schema</span></h2><p>To build this file, we recommend you build the tables you need with the PhpMyAdmin tool (see the BGA user guide), and then export them and copy/paste the content to this file.
+</p><p>Example: Deck component, see <a href="Deck.html" title="Deck">Deck</a>
+</p><pre>CREATE TABLE IF NOT EXISTS `card` (
+  `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `card_type` varchar(16) NOT NULL,
+  `card_type_arg` int(11) NOT NULL,
+  `card_location` varchar(16) NOT NULL,
+  `card_location_arg` int(11) NOT NULL,
+  PRIMARY KEY (`card_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+</pre><p>Example: Euro Game. See details on database design for euro game at <a href="/BGA_Studio_Cookbook#Database_for_The_euro_game" title="BGA Studio Cookbook">BGA_Studio_Cookbook#Database_for_The_euro_game</a>
+</p><pre>CREATE TABLE IF NOT EXISTS `token` (
+  `token_key` varchar(32) NOT NULL,
+  `token_location` varchar(32) NOT NULL,
+  `token_state` int(10),
+  PRIMARY KEY (`token_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+</pre><p>Rules you should follow:
+</p><ul><li>Do not overcomplicate, you are dealing with games with 50-500 pieces!
+<ul><li>If you have 5 tables for a card game with 30 cards - it is overkill</li></ul></li>
+<li>The database should only be storing dynamic data, all static data should be stored in material file (php).
+<ul><li>Example: if you have cards that have power, color, and special abilities. In the database, you only need to store the card type, all the other properties should not be there. The only exception is if it changes during the game.</li></ul></li>
+<li>Columns should be permanent, independent of the game data, i.e. location, type, position, row, etc.
+<ul><li>Example: do not create columns such as Country1, Country2, Country3, etc.</li></ul></li>
+<li>Do not store translatable strings in the database, use an integer number of "ident" to access properties
+<ul><li>i.e. card type should be "22" or "bob_cat", instead of "Bob's cat"</li></ul></li>
+<li>Create a separate module in PHP to handle all database queries, do a lot of type checking to prevent SQL injections</li></ul><p>Example of method to handle a database query:
+</p><pre>    // Set token state
+    function setTokenState($token_key, $state) {
+        self::checkState($state); // ensure state is number
+        self::checkKey($token_key); // ensure key is alphanum
+        $sql = "UPDATE `{$this-&gt;table}`";
+        $sql .= " SET `token_state` = '$state'";
+        $sql .= " WHERE `token_key` = '$token_key'"; // don't need to escape anymore since we checked key before
+        self::DbQuery($sql);
+        return $state;
+    }
+</pre><h2><span class="mw-headline" id="Default_tables">Default tables</span></h2><p>By default, BGA creates four tables for your game: <b>global</b>, <b>stats</b>, <b>gamelog</b>, and <b>player</b>.
+</p><h3><span class="mw-headline" id="The_player_table">The <b>player</b> table</span></h3><p>You may add columns to the <b>player</b> table. It is very practical to add simple values associated with players. <b>NB:</b> you must not alter existing columns created by the framework.
+</p><pre>ALTER TABLE `player` ADD `player_reserve_size` SMALLINT UNSIGNED NOT NULL DEFAULT '7';
+</pre><p>The commonly used columns of the default "player" table are:
+</p><ul><li><strong>player_no</strong>: the index of a player in natural playing order (starting with 1)</li>
+<li><strong>player_id</strong> (int)</li>
+<li><strong>player_name</strong>: (note: it is better to access this data with the getActivePlayerName() or loadPlayersBasicInfos() methods)</li>
+<li><strong>player_score</strong>: the current score of a player (displayed in the player panel). Update this field with $this-&gt;playerScore, to update a player's score.</li>
+<li><strong>player_score_aux</strong>: the secondary score, used as a tie breaker. Update this field with $this-&gt;playerScoreAux, according to tie breaking rules of the game (see also: <a class="mw-redirect" href="/Main_game_logic:_yourgamename.game.php#Manage_player_scores_and_Tie_breaker" title="Main game logic: yourgamename.game.php">Manage_player_scores_and_Tie_breaker</a>)</li></ul><ul><li><strong>player_table_order</strong>: gives an indication of the rank of the player by order of arrival in the lobby (starting with 1). It is not the same as player_no (which is the player order <u>within</u> the game). player_table_order is useful for setting custom teams if desired in a game option (for instance, 1st-2nd vs 3rd-4th).<br/><strong>Note:</strong> player_table_order <i>only exists during game initialization</i> (in the <b>setupNewGame</b> function). It is not added as a column in the <b>players</b> Db table.</li></ul><p><strong><u>CAUTION:</u></strong> <b>player_table_order</b> is not guaranteed to be equal to the rank of the player in the table. For example, in a four-player game, if the table was full but the third player leaves before the game starts, the fourth player becomes the third on this table <u>but</u> their player_table_no is still equal to four! If another player then joins, their player_table_no will then be 5.<br/>Thus, it is essential to normalize these values first in the game setup if you wish to use them to prevent bugs at game launch. For example, if the set of player_table_order are &lt;player A&gt;: 3, &lt;player B&gt;: 2, &lt;player C&gt;: 5, &lt;player D&gt;: 7, you see that you can't read those values as ranks directly, but you can still deduce that &lt;player B&gt; was first on the table, then &lt;player A&gt;, then &lt;player C&gt;, and then &lt;player D&gt; 😉
+</p><h2><span class="mw-headline" id="CREATE_TABLES">CREATE TABLES</span></h2><p>You can create tables, using engine InnoDB.
+See examples above on how to create tables.
+Pay attention to the following:
+</p><ul><li>Always add IF NOT EXISTS</li>
+<li>Always set ENGINE=InnoDB DEFAULT CHARSET=utf8mb4</li>
+<li>Define primary keys</li>
+<li>If you create NOT NULL fields after the game has gone into production, make sure you took care of the database migration</li></ul><p><br/>
+</p><p>Example:
+</p><pre>`activated` BOOL NOT NULL DEFAULT 1, --  activated or not
+</pre><p>will also comment out the whole column `activated` BOOL, and that code will not be executed.
+</p><h2><span class="mw-headline" id="PHP">PHP</span></h2><p>Database initialization (filling the table created by this file) should be in the function setupNewGame() in 'Game.php'.
+</p><p>Warning: all CREATE/ALTER tables and views should be in dbmodel.sql. Do not call these queries from PHP to avoid implicit commits <a class="external free" href="https://dev.mysql.com/doc/refman/5.7/en/implicit-commit.html" rel="nofollow">https://dev.mysql.com/doc/refman/5.7/en/implicit-commit.html</a>
+which will cause issues. The only time you can do such queries from PHP is in the upgradeTableDb() method.
+</p><h2><span class="mw-headline" id="Errors_Log">Errors Log</span></h2><p>To trace Database creation, check the logs that you can access in /admin/studio.
+</p><h2><span class="mw-headline" id="Post-release_database_modification">Post-release database modification</span></h2><p>If you want to modify your database schema after the first release of your game to production, then you should implement the upgradeTableDb() method, see <a href="/Post-release_phase#Updating_the_database_schema" title="Post-release phase">Updating the database schema after release</a>
+</p><h2><span class="mw-headline" id="Uses_and_misuses_of_AUTO_INCREMENT">Uses and misuses of AUTO_INCREMENT</span></h2><p>AUTO_INCREMENT is not particularly well-named; it's best to think of it as simply guaranteeing uniqueness of a column value. Try to design your schema and model so you don't require strictly-increasing-by-one identifiers; do not assume that the next row inserted will have a value one larger than the current maximum.
+</p><p><br/>
+</p><h2><span class="mw-headline" id="Beware_of_the_size">Beware of the size</span></h2><p>Please note the database size for each game is not unlimited, if size of all table (including system tables) exceeds 64Mb it will stop working.
+The biggest contributor to this will be gamelog and reply related tables, therefore please consider the size when designing data send for each state (args) and player's notifications.
+</p></div></body>
+</html>

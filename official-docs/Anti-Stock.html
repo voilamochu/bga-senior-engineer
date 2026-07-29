@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Anti-Stock - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Anti-Stock rootpage-Anti-Stock action-view"><div class="article"><h2><span class="mw-headline" id="Overview">Overview</span></h2><p>If the <a href="Stock.html" title="Stock">Stock</a> component works for you then great, you don't need this article. If you start tweaking it and you are doing something slightly more complex and you cannot find an answer, it may be best to not use it.
+This article describes how to replace Stock.
+What is Stock? It's a component that does a lot of stuff at once:
+</p><ul><li>It generates in-line attributes of an object the represents graphics and dimensions for "cards" (can be anything really).</li>
+<li>It also manages the layout of a single container of such cards, and cards within it - including animation.</li>
+<li>It also manages selections in that container.</li></ul><p>Recipe to get rid of Stock (the gist): 
+</p><ul><li>Create all cards as divs in the template file (with the help of view.php as needed)</li>
+<li>Create generic css classes for the cards defining images, sizing, etc. Create/generate a css class for each card type with background positioning - there are scripts in <a class="external text" href="https://github.com/elaskavaia/bga-sharedcode/blob/master/misc/gen_sprite.php" rel="nofollow">sharedcode</a> project to generate grid positioning or you can use some online css generator (which is what Stock does under the hood)</li>
+<li>Create a parent div for card placement and use Element.insertAdjacentHTML to move cards there. In css use your preferred layout for this, including margins, etc.</li>
+<li>Tricky one: When cards are moved during animations you have to use a special method; none of animation methods from BGA parent classes will work, as the card will not have absolute positioning. You can use methods from the sharedcode project or create your own (the trick is that during animation the object has to have absolute positioning, which is removed after the animation).</li></ul><h2><span class="mw-headline" id="Presentation">Presentation</span></h2><p>In modern JS the objects that we want to render will always be represented by <b>div</b> elements in the dom. This div will have a unique id, classes, and also custom data attributes which can be used for styling and selection.
+</p><pre>  &lt;div id="card_21_1" class="card card_21" data-num="21"&gt;&lt;/div&gt;
+</pre><p>This is the 10 of hearts and king of clubs inside a hand in a game
+</p><pre>&lt;div id="game" class="classic_deck"&gt;
+  &lt;div id="hand" class="hand"&gt;
+    &lt;div id="card_H_10" class="card" data-suit='H' data-rank="10"&gt; &lt;/div&gt;
+    &lt;div id="card_C_K" class="card" data-suit='C' data-rank="K"&gt; &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</pre><p>If you prefer not to use custom attributes you can do this:
+</p><pre>    &lt;div id="card_H_10" class="card_H_10 suit_H rank_10"&gt; &lt;/div&gt;
+</pre><p>Card id, does not have to be like this either, I use this one because it maps to my db, but if you are using the <b>Deck</b> component for cards in a "deck" table, you can use something like:
+</p><pre>    &lt;div id="deck_33" class="card_H_10 suit_H rank_10"&gt; &lt;/div&gt;
+</pre><p>where 33 is id which maps to database id of deck table.
+</p><p>We will use the BGA card stock <a class="external free" href="https://x.boardgamearena.net/data/others/cards/FULLREZ_CARDS_ORIGINAL_NORMAL.jpg" rel="nofollow">https://x.boardgamearena.net/data/others/cards/FULLREZ_CARDS_ORIGINAL_NORMAL.jpg</a>.
+</p><pre>.card {
+   background-image: url('https://x.boardgamearena.net/data/others/cards/FULLREZ_CARDS_ORIGINAL_NORMAL.jpg');   /* don't do full url in your game, copy this file inside img folder */
+   background-size: 1500% auto;  /* this mean size of background is 15 times bigger than size of card, because its sprite */
+   border-radius: 5%;
+   width: 10em;
+   height: 13.5em;
+   box-shadow: 0.1em 0.1em 0.2em 0.1em #555;
+}
+
+
+.card[data-rank="10"] { /* 10 is column number 10 - 2 because we start from 0 and first card is sprite is 2. The multiplier is (15 - 1) is because we have 15 columns. -1 is because % in CSS is weird like that. */
+   background-position-x: calc(100% / (15 - 1) * (10 - 2));
+}
+.card[data-rank="K"] { /* King will be number 13 in rank */
+   background-position-x: calc(100% / (15 - 1) * (13 - 2));
+}
+
+.card[data-suit="H"] { /* Hears row position is 1 (because we count from 0). Multiplier (4 - 1) is because we have 4 rows and -1 is because % in CSS is weird like that. */
+   background-position-y: calc(100% / (4 - 1) * (1));
+}
+.card[data-suit="C"] { /* Clubs row position is 2 */
+   background-position-y: calc(100% / (4 - 1) * (2));
+}
+</pre><p>Now if you want to see these cards, we can put them in some specific component for example hand, and there we can define layout and sizing just for hand
+</p><pre>.hand .card {
+  font-size: 2.4rem;
+  display: inline-block;
+}
+</pre><p>Working example: <a class="external free" href="https://codepen.io/VictoriaLa/pen/rNwgWrB" rel="nofollow">https://codepen.io/VictoriaLa/pen/rNwgWrB</a>
+</p><pre>&lt;?php
+// this simple script generates sprite css
+// it has no params - fix inline to change what it generates
+
+$from=1; // from index
+$to=40+4; // to index
+$maxcol=4; // number of columns in the sprite
+$scol=$maxcol-1;
+$srow=((int)(($to-$from)/$maxcol));
+for ($num=$from;$num&lt;=$to;$num++) {
+    $index=$num-$from;
+    $row=(int)($index/$maxcol);
+    $col=$index%$maxcol;
+    echo ".tech_E_$num { background-position: calc(100% / $scol * $col) calc(100% / $srow * $row);}\n";
+}
+?&gt;
+</pre><p><br/>
+</p><p><br/>
+And now if you want to user to have preferece for what deck style to use its just matter of change class from "classic_deck" to "fancy_deck" in our game parent div and adding in CSS
+</p><pre>.fancy_deck .card {
+   background-image: url('https://x.boardgamearena.net/data/others/cards/FULLREZ_CARDS_DESIGN_COLORED.jpg');
+}
+</pre><h2><span class="mw-headline" id="Generating_Dom_Elements">Generating Dom Elements</span></h2><p>There are multiple ways to generate dom elements, few of the methods described below - they are alternatives, i.e. you only pick one of those.
+</p><h3><span class="mw-headline" id="Static_-_basic">Static - basic</span></h3><p>You basically write all your cards in .tpl file. Just cut &amp; paste you template and fix few classes. That is easiest!
+In your js code you never create new element, you just move existing element inside dome. If you need a copy for tooltips, logs or button you can clone
+one of them change id and add/remove class if needed.
+</p><pre>  &lt;div id="limbo" class="limbo"&gt;
+    &lt;div id="card_H_10" class="card" data-suit='H' data-rank="10"&gt; &lt;/div&gt;
+    &lt;div id="card_C_K" class="card" data-suit='C' data-rank="K"&gt; &lt;/div&gt;
+... rince and repeat ...
+  &lt;/div&gt;
+</pre><h3><span class="mw-headline" id="Dynamic_using_a_template_string">Dynamic using a template string</span></h3><pre>
+
+ let cardTemplate = (suit, rank) =&gt; `&lt;div id="card_${suit}_${rank}" class="card card_${suit}_${rank}" data-suit="${suit}" data-rank="${rank}"&gt;&lt;/div&gt;`;
+ let suit = 'H';
+ let rank = 'A';
+ document.getElementById('hand').insertAdjacentHTML('beforeend', cardTemplate(suit, rank)); // place in hand for example
+</pre><h3><span class="mw-headline" id="Dynamic_not_using_a_template_string">Dynamic not using a template string</span></h3><pre>let suit = 'H';
+let rank = 'A';
+let div = document.createElement('div');
+div.id = `card_${suit}_${rank}`;
+div.className = `card card_${suit}_${rank}`;
+div.setAttribute('data-suit',suit);
+div.setAttribute('data-rank',rank);
+//console.log(div);
+$('hand').appendChild(div);
+</pre><p>As you can see this is not most compact method, so you if you do that a lot probably create a function that generates this (which also would set a click handler and tooltip for example)
+</p><h2><span class="mw-headline" id="Layout">Layout</span></h2><p>You can use all web resources and power of css to do any sort of fancy layout for your cards, you not bound to any predefined layouts.
+The simplest would be display: inline-block  as we already did above. You can also add margins to overlap cards for example.
+</p><pre>.tableau {
+   position: relative;
+   width: 50em;
+   height: 30em;
+   outline: dashed 1px green;
+   transform: rotate(-90deg) scale(0.5); 
+   padding: 1em;
+   display: flex;
+   justify-content: center;
+   flex-direction: row;
+   flex-wrap: wrap;
+}
+
+.tableau .card{
+  margin-right: -2em;
+}
+
+</pre><p>In this example cards on tableu are smaller, rotated 90 degrees and overlaping.
+</p><p><br/>
+<a class="image" href="/File:Deck_Layouts_-_codepen.io.png"><img alt="Deck Layouts - codepen.io.png" decoding="async" height="788" src="/images/4/46/Deck_Layouts_-_codepen.io.png" width="620"/></a>
+</p><h2><span class="mw-headline" id="Selection_and_Click_Handlers">Selection and Click Handlers</span></h2><p>To hookup selection or clicking, you have to manually hook up handler to all cards, which is easy
+</p><pre>document.querySelectorAll(".card").forEach(node=&gt;node.addEventListener("click", (event) =&gt; {
+  var target = event.target;
+  target.classList.toggle('selected');
+  }
+}));
+</pre><p>And you define class for selected in css
+</p><pre> .selected {
+    outline: dashed blue 0.1em;
+ }
+</pre><p>Now if you need to do some action based on selection this can be in your "do something" button handler (this example below will create array of ids of cards)
+</p><pre>  const card_ids = Array.from(document.querySelectorAll('.card.selected')).map(x=&gt;x.id);
+</pre><p>If you need single selection, just add a call to remove all previous 'selected' from all card, before adding it.
+</p><h2><span class="mw-headline" id="Animation">Animation</span></h2><p>The animation is the only tricky part because it does not come for free. The proper animation function is pretty lengthy so I won't even put it here.
+Basically you would have to reparent our object without visual movement and then you can run animation on positions, and after it is done remove absolute positioning.
+</p><p><br/>
+And more complex method moves "phantom" object on oversurface  (which is neither parent of original object nor destination), code can found here (to use this your need 2 js methods for movement and classes for oversurface and oversurfacew &gt; * from css):
+<a class="external free" href="https://codepen.io/VictoriaLa/pen/PojvWEV" rel="nofollow">https://codepen.io/VictoriaLa/pen/PojvWEV</a>
+</p></div></body>
+</html>

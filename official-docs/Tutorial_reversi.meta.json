@@ -1,0 +1,15 @@
+{
+  "title": "Tutorial reversi",
+  "source_html": "Tutorial_reversi.html",
+  "clean_html": "Tutorial_reversi.html",
+  "url": "https://en.doc.boardgamearena.com/Tutorial_reversi",
+  "depth": 1,
+  "sha256_raw": "1925904345c42e40485542ebb5e25a7db502a5e6dcb0a630da3fccddf6aea5b1",
+  "sha256_clean": "e3f530c701177a67cfde2cdaee95e9b5b7884e4942ff494ff2e12d81f6680357",
+  "word_count": 5028,
+  "code_block_count": 49,
+  "table_count": 0,
+  "image_count": 5,
+  "heading_count": 42,
+  "cleaned_at": "2026-07-06T06:38:20.147402+00:00"
+}

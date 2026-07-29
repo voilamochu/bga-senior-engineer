@@ -1,0 +1,15 @@
+{
+  "title": "Studio FAQ",
+  "source_html": "Studio_FAQ.html",
+  "clean_html": "Studio_FAQ.html",
+  "url": "https://en.doc.boardgamearena.com/Studio_FAQ",
+  "depth": 1,
+  "sha256_raw": "1de0ab8148c15d1d0ec65426044b186fdb903091d46625c3d51aadaa8b2b3447",
+  "sha256_clean": "4cf90aaf6727f593a97aa08d0fec791978092a63fa0340c9d46737c3723056bb",
+  "word_count": 662,
+  "code_block_count": 0,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 10,
+  "cleaned_at": "2026-07-06T06:38:19.779564+00:00"
+}

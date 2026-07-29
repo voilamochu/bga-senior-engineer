@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Game replay - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Game_replay rootpage-Game_replay action-view"><div class="article"><p><br/>
+</p><p>Game replay is managed by the framework. You do not need to do anything special about it in your code, except taking care of updating the client interface through the framework notification system (and not for example, by using the callback function of an ajaxcall / the promise of the bgaPerformAction method).
+</p><ul><li>The static files for the game at the time of the game start are archived</li>
+<li>All notifications sent to the browser are added to the archive</li>
+<li>When replaying, the static files are loaded in the browser, then notifications are sent back to replay the game moves.</li></ul><p>So in essence, the replay works like an exact recording.
+</p><h3><span class="mw-headline" id="Preview_Videos">Preview Videos</span></h3><p>Example games are periodically selected from which videos are generated to show off the game on the game panel.
+</p><h3><span class="mw-headline" id="Hiding_UI_elements_from_preview_video">Hiding UI elements from preview video</span></h3><p>Some games have pop-up modals which are displayed in some cases, these should be hidden for the replay video so you can show off the gameplay right from the game page!
+</p><p>Previews are generated with a query variable set <code>target=video</code>. You can check for this query param in the following way:
+</p><pre>const searchParams = new URLSearchParams(window.location.search);
+if (searchParams) {
+    const target = searchParams.get('target');
+    if (target === "video") {
+        // Hide modal popups...
+    }
+}
+</pre></div></body>
+</html>

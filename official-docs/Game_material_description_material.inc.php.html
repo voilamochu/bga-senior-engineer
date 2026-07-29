@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Game material description: material.inc.php - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Game_material_description_material_inc_php rootpage-Game_material_description_material_inc_php action-view"><div class="article"><p><br/>
+</p><h2><span class="mw-headline" id="Overview">Overview</span></h2><p><b>IMPORTANT NOTE</b>: This file is not generated anymore by default, but you can still create it (the name is important as only a <code>material.inc.php</code> file at the root of your project will be automatically loaded) to describe the material of your game.
+</p><p>This file is included by the constructor of your main game logic (yourgame.game.php), and then the variables defined here are accessible everywhere in your game logic file (and also view.php file).
+</p><h2><span class="mw-headline" id="Definition">Definition</span></h2><p>Example from "Eminent Domain": 
+</p><pre>$this-&gt;token_types = [
+ 'card_role_survey' =&gt; [
+   'type' =&gt; 'card_role',
+   'name' =&gt; clienttranslate("Survey"),
+   'tooltip' =&gt; clienttranslate("ACTION: Draw 2 Cards&lt;br/&gt;&lt;br/&gt;ROLE: Look at &lt;div class='icon survey'&gt;&lt;/div&gt; - 1 planet cards, keep 1&lt;br/&gt; &lt;span class='yellow'&gt;Leader:&lt;/span&gt; Look at 1 additional card"),
+   'b'=&gt;0,
+   'p'=&gt;'',
+   'i'=&gt;'S',
+   'v'=&gt;0,
+   'a'=&gt;'dd',
+   'r'=&gt;'S', 
+   'l'=&gt;'v',
+  ],
+
+ 'card_tech_1_51' =&gt; [
+   'type' =&gt; 'tech',
+   'name' =&gt; clienttranslate("Improved Trade"),
+   'b' =&gt; 3,
+   'p' =&gt; 'E',
+   'i' =&gt; 'TP',
+   'v' =&gt; 0,
+   'a' =&gt; 'i',
+   'side' =&gt; 0,
+   'tooltip' =&gt; clienttranslate("Collect 1 Influence from the supply."),
+ ],
+
+...
+];
+</pre><p>So this defines all info about cards, including types, names, tooltips (to be show on client), rules, payment cost, etc.
+</p><pre>if (!defined('TAPESTRY')) { // guard since this included multiple times
+    define("TAPESTRY", 0);
+    define("TRACK_EXPLORATION", 1);
+    define("TRACK_SCIENCE", 2);
+    define("TRACK_MILITARY", 3);
+    define("TRACK_TECHNOLOGY", 4);
+}
+</pre><h2><span class="mw-headline" id="Access">Access</span></h2><h3><span class="mw-headline" id="Data_fields">Data fields</span></h3><p>To access this in PHP side:
+</p><pre> $type = $this-&gt;token_types['card_tech_1_51']['type'];
+</pre><p>To access on JS side you have to send all variables from material file via getAllDatas first:
+</p><pre>   protected function getAllDatas() {
+       $result = array ();
+       $result ['token_types'] = $this-&gt;token_types;
+       ...
+       return $result;
+   }
+ 
+</pre><p>Then you can access it in similar way:
+</p><pre> var type = this.gamedatas.token_types['card_tech_1_51'].type; // not translatable
+ var name = _(this.gamedatas.token_types['card_tech_1_51'].name); // to be shown to user (NOI18N)
+</pre><p>To send this in notification from PHP side:
+</p><pre> $this-&gt;notifyAllUsers('gainCard',clienttranslate('player gains ${card_name}'), [
+      'i18n'=&gt;['card_name'],
+      'card_id' =&gt; $card_id,
+      'card_name' =&gt; $this-&gt;token_types[$card_id]['name']
+ ]);
+</pre><h3><span class="mw-headline" id="PHP_constants">PHP constants</span></h3><p>If you also want to access constants in JS side, you can send them via getAllData like this
+</p><pre>       $cc = get_defined_constants(true)['user'];
+       $result['constants']=$cc; // this will be all constants though, you may have to filter some stuff out for security reasons
+</pre><p>Alternately you can include a material.inc.php in local php file and call this method to print constants in JS format, then include this file in JS, you may have to synchronize this manually, but its better for auto-complete also.
+</p><pre>       // this needs to be run locally after including materal file (see example in testing below)
+       $cc = get_defined_constants(true)['user'];
+       foreach ($cc as $key =&gt; $value) {          
+           print ("const $key = $value;\n");
+       }
+</pre><h2><span class="mw-headline" id="Testing">Testing</span></h2><p>If you screw up your material file such as by missing some brackets, it is very hard to diagnose. But you can test it locally like this:
+</p><pre>&lt;?php
+class material_test {
+    function __construct() {
+        include '../material.inc.php';
+        var_dump($this-&gt;token_types); // whatever your var
+    }
+}
+// stub
+function clienttranslate($x) { return $x; }
+
+new material_test();
+</pre><h2><span class="mw-headline" id="Adjusting_material">Adjusting material</span></h2><p>In rare cases expansions of the game changes the materials of the original game. In such cases (for example, the same card was re-printed with a different text/rules),
+can you keep same card and have material adjust based on selected game options? It is possible with some trickery.
+</p><pre>    /**
+     * This is called before every action, unlike constructor this method has initialized state of the table so it can
+     * access db
+     *
+     * @Override
+     */
+    protected function initTable() {
+        // this fiddles with material file depending on the extension selected
+        $this-&gt;adjustMaterial();
+    }
+
+    function adjustMaterial($force = false) {
+        if ( !$force &amp;&amp; $this-&gt;token_types_adjusted)
+            return;
+        $this-&gt;token_types_adjusted = true;
+        ... // fiddle with data in material file
+    }
+</pre><p>To adjust material itself - you can do it in any number of ways I personally use this method: for modified values I specify key posfix that match my game option, and adjustment function re-write my keys, for example
+</p><pre> 'card_tech_1_51' =&gt; [
+   'name' =&gt; clienttranslate("Improved Trade"),
+   'name@e3' =&gt; clienttranslate("Much Improved Trade"),
+   'cost' =&gt; 3,
+   'cost@p2' =&gt; 2
+</pre><p>In this example if player selects game expansion 3, the key name@e2 would override key name, and if there is 2 players, cost@p2 will override cost. If you need exact code, check adjustMaterial in Ultimate Railroads
+</p><pre>$this-&gt;decks = array (
+        'g' =&gt; array ('id' =&gt; 'green','name' =&gt; clienttranslate('Green'),'num' =&gt; 1 ),
+        'r' =&gt; array ('id' =&gt; 'red','name' =&gt; clienttranslate('Red'),'num' =&gt; 3 ),
+        'v' =&gt; array ('id' =&gt; 'violet','name' =&gt; clienttranslate('Violet'),'num' =&gt; 4 ),
+        'y' =&gt; array ('id' =&gt; 'yellow','name' =&gt; clienttranslate('Yellow'),'num' =&gt; 2 ) )
+;
+    
+$this-&gt;dcolor_map = array();
+// reverse map
+foreach ($this-&gt;decks as $info) {
+    $this-&gt;dcolor_map[$info['num']]=$info['id'];
+}
+</pre><h2><span id="Move_it_to_modules.2Fphp"></span><span class="mw-headline" id="Move_it_to_modules/php">Move it to modules/php</span></h2><p>You can move the file to any modules/php folder/subfolder, but it will not be included automatically, you'll need to import it.
+</p><pre>class Game extends Table {
+    private array $DECKS; // so the IDE knows you define an array called DECKS on the material file
+    
+	function __construct()
+	{
+        parent::__construct();
+
+        require 'material.inc.php'; // your material.inc.php in modules/php folder contains $this-&gt;DECKS = [...]
+
+        $this-&gt;initGameStateLabels([]);
+	}
+
+    protected function getAllDatas(): array
+    {
+        // ...
+        // use it the same way
+        $result['DECKS'] = $this-&gt;DECKS;
+  
+        return $result;
+    }
+</pre><p>Note: this way, you can use any file name and even split you material in multiple files if you want to.
+</p></div></body>
+</html>

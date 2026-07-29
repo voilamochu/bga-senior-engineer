@@ -1,0 +1,15 @@
+{
+  "title": "Stock",
+  "source_html": "Stock.html",
+  "clean_html": "Stock.html",
+  "url": "https://en.doc.boardgamearena.com/Stock",
+  "depth": 1,
+  "sha256_raw": "8abced4f7b1f8e79e934153b56bf21e5b03cf54cd152d19a65ffe3656328a9b4",
+  "sha256_clean": "d9b091d4c85dc59af9ca25f4be0384c064ba9939bb595edf31a76395e700e1e6",
+  "word_count": 2547,
+  "code_block_count": 27,
+  "table_count": 0,
+  "image_count": 3,
+  "heading_count": 12,
+  "cleaned_at": "2026-07-06T06:38:19.713679+00:00"
+}

@@ -1,0 +1,506 @@
+@import "cards.zoo";
+@import "cards.action";
+
+.ark-log-card-name {
+    font-family: "MyriadPro-Semibold";
+    text-align: center;
+    color: #070002;
+    position: relative;
+    .help-marker {
+        top: -11px;
+        left: auto;
+        right: -18px;
+    }
+}
+.action-button.bgabutton.bgabutton_blue .ark-log-card-name {
+    color: white;
+}
+
+.zoo-card-tooltip {
+    display: flex;
+    max-width: 700px;
+
+    .ark-card {
+        .ark-card-wrapper {
+            .ark-card-middle {
+                .ark-card-exp-icon {
+                    display: block;
+                }
+            }
+        }
+
+        flex-shrink: 0;
+    }
+
+    .card-status {
+        [data-helper-playable="1"] & {
+            display: none;
+        }
+        width: 200px;
+        padding-left: 15px;
+        padding-right: 5px;
+        list-style-position: initial;
+
+        li {
+            list-style: disc;
+            margin-bottom: 7px;
+
+            ul {
+                margin-top: 3px;
+                padding-left: 15px;
+                list-style-position: initial;
+                li {
+                    list-style: circle;
+                    margin-bottom: 2px;
+                }
+            }
+        }
+
+        .badge-icon {
+            width: 15px;
+            height: 15px;
+            display: inline-block;
+            border-radius: 50%;
+            vertical-align: middle;
+            border: 1px solid #393939;
+            margin-left: 1px;
+        }
+
+        .fa-check {
+            color: green;
+        }
+        .fa-times {
+            color: red;
+        }
+    }
+}
+
+.ark-card {
+    position: relative;
+
+    &.unselectable {
+        cursor: not-allowed;
+        // }
+        // [data-filter="0"] &.unselectable {
+        filter: grayscale(80%);
+        -webkit-transform: translateZ(0);
+        -webkit-perspective: 1000;
+        -webkit-backface-visibility: hidden;
+    }
+
+    &.selectable {
+        cursor: pointer;
+        &:hover {
+            transform: scale(1.1);
+        }
+    }
+
+    &.selected {
+        border: 2px solid red;
+        margin: -2px;
+        box-shadow: 0px 0px 10px 0px red;
+        border-radius: 4px;
+
+        &.selectedToKeep {
+            border-color: #5ec15e;
+            box-shadow: 0px 0px 10px 0px #2be32b;
+
+            .ark-card-wrapper::before {
+                content: "\f00c";
+                position: absolute;
+                left: 100px;
+                right: 100px;
+                top: 100px;
+                bottom: 250px;
+                background: #e1e1e1c4;
+                z-index: 10;
+                font: normal normal normal 14px/1 FontAwesome;
+                font-size: 140px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: green;
+                border-radius: 20px;
+            }
+        }
+        &.selectedToMark {
+            border-color: #0059ff;
+            box-shadow: 0px 0px 10px 3px #0059ff;
+
+            .ark-card-wrapper::before {
+                content: "\f1b2";
+                position: absolute;
+                left: 100px;
+                right: 100px;
+                top: 100px;
+                bottom: 250px;
+                background: #6dddffe3;
+                z-index: 10;
+                font-family: var(--fa-style-family, "Font Awesome 6 Free");
+                font-weight: var(--fa-style, 900);
+                font-size: 140px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: black;
+                border-radius: 20px;
+            }
+        }
+    }
+
+    &.selectedToDiscard,
+    &.selectedToMap10 {
+        border: 2px solid red;
+        margin: -2px;
+        box-shadow: 0px 0px 10px 0px red;
+        border-radius: 4px;
+
+        // [data-filter="0"] & .ark-card-wrapper {
+        filter: grayscale(1);
+        -webkit-transform: translateZ(0);
+        -webkit-perspective: 1000;
+        -webkit-backface-visibility: hidden;
+        // }
+
+        .ark-card-wrapper::before {
+            content: "\f1f8";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            background: #d1d1d1be;
+            z-index: 10;
+            font: normal normal normal 14px/1 FontAwesome;
+            font-size: 140px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+    &.selectedToMap10 {
+        .ark-card-wrapper::before {
+            content: "\f1f8  / \f062";
+        }
+    }
+
+    .ark-card-wrapper {
+        width: 373px;
+        height: 520px;
+        transform-origin: top left;
+        border-radius: 8px;
+        box-shadow: 2px 2px 5px -1px black;
+        background-image: url("img/card-backgrounds.jpg");
+        background-size: 700% 100%;
+        position: absolute;
+
+        .ark-card-top {
+            width: 373px;
+            height: 297px;
+            border-radius: 7px 7px 0px 0px;
+            display: flex;
+            overflow: hidden;
+
+            .ark-card-top-left {
+                min-width: 77px;
+            }
+
+            .ark-card-top-right {
+                display: flex;
+                padding-right: 13px;
+                flex-grow: 1;
+                justify-content: end;
+            }
+        }
+
+        .ark-card-middle {
+            height: 50px;
+            background: linear-gradient(
+                90deg,
+                rgba(235, 138, 0, 1) 15%,
+                rgba(252, 189, 26, 1) 50%,
+                rgba(235, 138, 0, 1) 85%
+            );
+            position: relative;
+
+            .ark-card-exp-icon {
+                display: none;
+                position: absolute;
+                left: 8px;
+                top: 50%;
+                transform: translateY(-50%);
+
+                svg {
+                    width: 13px;
+                    height: 24px;
+                    fill: white;
+                    stroke: black;
+                    opacity: 0.7;
+                }
+            }
+            .ark-card-title-wrapper {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                padding: 2px 20px;
+                box-sizing: border-box;
+
+                .ark-card-title {
+                    font-family: "Espera";
+                    text-transform: uppercase;
+                    text-align: center;
+                    color: #070002;
+                    font-size: 21px;
+                    font-weight: bold;
+                }
+                .ark-card-subtitle {
+                    font-family: "MyriadPro-CondIt";
+                    text-align: center;
+                }
+            }
+
+            .ark-card-number {
+                width: 30px;
+                height: 50px;
+                float: right;
+                writing-mode: vertical-rl;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-family: "MyriadPro-Cond";
+            }
+        }
+
+        .ark-card-bottom {
+            height: 173px;
+            padding: 0px 15px;
+        }
+    }
+
+    &.fake-card .ark-card-wrapper {
+        background-position-x: 50%;
+    }
+
+    &[data-pouch]::before {
+        content: attr(data-pouch);
+        position: absolute;
+        background: #e1e1e1;
+        z-index: 10;
+        font-size: 41px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: black;
+        border-radius: 9px;
+        width: 38px;
+        height: 65px;
+        transform: scale(var(--arkNovaZooCardScale));
+        transform-origin: top right;
+        border: 2px solid black;
+        right: 1px;
+        top: 1px;
+    }
+}
+
+.player-board-hand {
+    .zoo-card.animal-card {
+        order: 1;
+    }
+    .zoo-card.sponsor-card {
+        order: 2;
+    }
+    .zoo-card.project-card {
+        order: 3;
+    }
+}
+
+#floating-hand-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    transition: transform 0.8s;
+    z-index: 1000;
+    --arkNovaZooCardScale: 0.4;
+    &:not(.active) {
+        display: none;
+    }
+    &[data-open] {
+        transform: translateY(0px);
+    }
+
+    transform: translateY(calc(100% - var(--arkNovaZooCardScale) * 140px));
+    box-shadow: 0 0 10px 1px #ff0;
+    background-color: rgba(40, 39, 36, 0.78);
+    border-top: 1px solid #7c5d45;
+    border-right: 1px solid #7c5d45;
+    border-top-right-radius: 8px;
+
+    #floating-hand-button-container {
+        position: absolute;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: flex-start;
+        // .mobile_version & {
+        //     justify-content: flex-start;
+        // }
+        z-index: 2;
+        transition: top 0.8s;
+
+        #floating-hand-button,
+        #floating-scoring-hand-button,
+        #floating-stored-hand-button {
+            border: 1px solid black;
+            border-radius: 50%;
+            box-shadow: 2px 2px 5px black;
+            background-color: gray;
+            margin: 0px 5px;
+            margin-top: -38px;
+            cursor: pointer;
+            transform: translateY(0);
+            transition:
+                transform 0.4s,
+                margin 0.4s;
+            &:hover {
+                transform: translateY(-10px);
+            }
+
+            .icon-hand,
+            .icon-scoring-hand,
+            .icon-stored {
+                width: 40px;
+                height: 40px;
+                margin: 4px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 32px;
+
+                i {
+                    display: none;
+                }
+            }
+        }
+    }
+    &[data-open="hand"] #floating-hand-button-container #floating-hand-button {
+        margin-top: -58px;
+        margin-bottom: 20px;
+        .icon-hand {
+            background: none;
+
+            i {
+                display: block;
+            }
+        }
+
+        &:hover {
+            .icon-hand {
+                font-size: 34px;
+            }
+        }
+    }
+    &[data-open="scoringHand"] #floating-hand-button-container #floating-scoring-hand-button {
+        margin-top: -58px;
+        margin-bottom: 20px;
+        .icon-scoring-hand {
+            background: none;
+
+            i {
+                display: block;
+            }
+        }
+
+        &:hover {
+            .icon-scoring-hand {
+                font-size: 34px;
+            }
+        }
+    }
+    &[data-open="storedHand"] #floating-hand-button-container #floating-stored-hand-button {
+        margin-top: -58px;
+        margin-bottom: 20px;
+        .icon-stored {
+            background: none;
+
+            i {
+                display: block;
+            }
+        }
+
+        &:hover {
+            .icon-stored {
+                font-size: 34px;
+            }
+        }
+    }
+
+    #floating-hand {
+        width: 100%;
+        height: 100%;
+        margin-top: calc(-1 * var(--arkNovaZooCardScale) * 12px);
+        padding-top: calc(var(--arkNovaZooCardScale) * 12px);
+        min-width: calc(var(--arkNovaZooCardScale) * 375px);
+
+        .player-board-hand,
+        .player-board-scoring-hand,
+        .player-board-stored-hand {
+            display: flex;
+            max-width: 99vw;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+
+            .ark-card {
+                margin: 4px;
+                flex-shrink: 0;
+
+                &.selected {
+                    margin: 2px;
+                }
+
+                &:hover {
+                    z-index: 4;
+                }
+            }
+        }
+
+        .player-board-scoring-hand {
+            display: none;
+        }
+        .player-board-stored-hand {
+            display: none;
+        }
+    }
+
+    &[data-open="scoringHand"] #floating-hand {
+        .player-board-scoring-hand {
+            display: flex;
+        }
+
+        .player-board-stored-hand,
+        .player-board-hand {
+            display: none;
+        }
+    }
+
+    &[data-open="storedHand"] #floating-hand {
+        .player-board-stored-hand {
+            display: flex;
+        }
+
+        .player-board-scored-hand,
+        .player-board-hand {
+            display: none;
+        }
+    }
+
+    .player-board-stored-hand {
+        min-height: calc(var(--arkNovaZooCardScale) * 522px);
+        width: calc(3 * var(--arkNovaZooCardScale) * 375px + 24px);
+
+        .icon-container-stored {
+            display: none;
+        }
+    }
+}

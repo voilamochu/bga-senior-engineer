@@ -1,0 +1,15 @@
+{
+  "title": "Game database model: dbmodel.sql",
+  "source_html": "Game_database_model_dbmodel.sql.html",
+  "clean_html": "Game_database_model_dbmodel.sql.html",
+  "url": "https://en.doc.boardgamearena.com/Game_database_model:_dbmodel.sql",
+  "depth": 1,
+  "sha256_raw": "2c7a95caf56f02122c6d8427d0c14e3a1a33652fada6c7014b6f06a65c50957f",
+  "sha256_clean": "540f00e94230620c2d4c67619e519dc6b660eee919b9ca1cfc0f378ba30ae1ab",
+  "word_count": 1053,
+  "code_block_count": 5,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 9,
+  "cleaned_at": "2026-07-06T06:38:18.854214+00:00"
+}

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>State classes: State directory - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-State_classes_State_directory rootpage-State_classes_State_directory action-view"><div class="article"><p><br/>
+</p><h2><span class="mw-headline" id="Overview">Overview</span></h2><p>The file in php/States directory describe the state machine of your game (all the game states properties, and the transitions to get from one state to another).
+</p><p>State classes allow to create a PHP class for each game state.
+</p><p><br/>
+</p><h2><span class="mw-headline" id="Example">Example</span></h2><p>The State class in <code>modules/php/States/PlayerTurn.php</code> will have this structure:
+</p><pre>&lt;?php
+declare(strict_types=1);
+
+namespace Bga\Games\&lt;MyGameName&gt;\States;
+
+use Bga\GameFramework\StateType;
+use Bga\GameFramework\States\GameState;
+use Bga\GameFramework\States\PossibleAction;
+use Bga\Games\&lt;MyGameName&gt;\Game;
+
+class PlayerTurn extends GameState
+{
+    function __construct(
+        protected Game $game,
+    ) {
+        parent::__construct($game,
+            id: 2,
+            type: StateType::ACTIVE_PLAYER,
+
+            // optional
+            description: clienttranslate('${actplayer} must play a card or pass'),
+            descriptionMyTurn: clienttranslate('${you} must play a card or pass'),
+            transitions: [],
+            updateGameProgression: false,
+            initialPrivate: null,
+        );
+    }
+
+    public function getArgs(): array
+    {
+        // the data sent to the front when entering the state
+        return [];
+    } 
+
+    function onEnteringState(int $activePlayerId) {
+        // the code to run when entering the state
+    }   
+
+    #[PossibleAction]
+    public function actPlayCard(int $cardId, int $activePlayerId, array $args): string
+    {
+        // the code to run when the player triggers actPlayCard with bgaPerformAction
+    }
+
+    function zombie(int $playerId): string {
+        // the code to run when the player is a Zombie
+    }
+}
+</pre><p>The state must extends <code>Bga\GameFramework\States\GameState</code> and follow the same <code>__construct</code> function as the example.
+</p><h2><span class="mw-headline" id="Name_Parameters_of_Game_State_constructor">Name Parameters of Game State constructor</span></h2><p>Only game, id and type are mandatory, other parameters are optional. Parameter name can be specified, by default it will be the class name (including capitalization).
+</p><h3><span class="mw-headline" id="id">id</span></h3><p>(<b>Mandatory</b>)
+</p><p>It must be positive integer and unique between all your states (i.e. you must not use the same ID twice).
+</p><p>Number 99 is reserved for the last game state (end of the game) (and you must not modify it).
+</p><p>Note²: When a game is in prod and you change the ID of a state, all active games (including many turn based) will behave unpredictably.
+</p><h3><span class="mw-headline" id="type">type</span></h3><p>(<b>Mandatory</b>)
+</p><ul><li>StateType::ACTIVE_PLAYER: One player is active and must play ('activeplayer' if using the old array notation).</li>
+<li>StateType::MULTIPLE_ACTIVE_PLAYER: Multiple players can be active and must play ('multipleactiveplayer' if using the old array notation).</li>
+<li>StateType::PRIVATE: During multiactive states players can independently move to different private parallel states ('private' if using the old array notation). See more details <a href="#Private_parallel_states">here</a>.</li>
+<li>StateType::GAME: No player is active. This is a transitional state to do something automatic specified by the game rules ('game' if using the old array notation).</li></ul><h3><span class="mw-headline" id="name">name</span></h3><p>The name of a game state is used to identify the state in your game logic. Default: class name (as is).
+</p><p>Warning! Do not put spaces and other weird characters in the name (i.e. stick to identifier). This could cause unexpected problems.
+</p><pre>
+
+// Get current game state
+$state = $this-&gt;gamestate-&gt;getCurrentMainState();
+if( $state['name'] == 'myGameState' )
+{
+...
+}
+
+</pre><p>JS example:
+</p><pre>        onEnteringState: function( stateName, args )
+        {
+            console.log( 'Entering state: '+stateName );
+            
+            switch( stateName )
+            case 'myGameState':
+            
+                // Do some stuff at the beginning at this game state
+                ....
+                
+                break;
+</pre><h3><span class="mw-headline" id="description">description</span></h3><p>The description is the string that is displayed in the main action bar (top of the screen) when the state is active to ALL players except active.
+</p><pre> 		clienttranslate('${actplayer} must play a card or pass')
+</pre><p>In the description string, you can use ${actplayer} to refer to the active player.
+</p><p>Example of custom field:
+</p><pre>
+
+I.e:
+     clienttranslate('${actplayer} must choose ${nbr} identical energies')
+
+
+Args method:
+    function getArgs(): array
+    {
+        return [
+            'nbr' =&gt; 2  // In this case ${nbr} in the description will be replaced by "2"
+        ];    
+    }
+</pre><p>Note: You may omit this for game states
+</p><p>Note3: you can use ${otherplayer} to refer to some other player if you want this to be shown in player's color, but you must provide otherplayer_id as argument (along with otherplayer) to specify this player's id in this case or game won't load.
+</p><h3><span class="mw-headline" id="descriptionMyTurn">descriptionMyTurn</span></h3><p><b>Mandatory</b> when the state type is ACTIVE_PLAYER or MULTIPLE_ACTIVE_PLAYER
+</p><p>In general, we have this situation:
+</p><pre>        description: clienttranslate('${actplayer} can take some actions')
+        descriptionMyTurn: clienttranslate('${you} can take some actions')
+</pre><p>Note: you can use ${you} in descriptionMyTurn so the description will display "You" instead of the name of the player.
+</p><p>I.e.
+</p><pre>clienttranslate('${you} can follow action of ${otherplayer}')
+</pre><p>And this will have to be state arguments for this
+</p><pre>    function getArgs(){
+        return ['otherplayer'=&gt; $this-&gt;getLeaderPlayerName(),
+                'otherplayer_id'=&gt; $this-&gt;getLeaderPlayerId()
+        ];
+    }
+</pre><h3><span class="mw-headline" id="transitions">transitions</span></h3><p>With "transitions" you specify which game state(s) you can jump to from a given game state.
+</p><pre>        
+        transitions: [
+            'nextPlayer' =&gt; 27,
+            'endRound' =&gt; 39,
+        ])
+       
+    }
+</pre><p><br/>
+</p><pre>    actPlayCard() {
+      ...
+      return 'nextPlayer';
+    }
+</pre><p>Important: "nextPlayer" is the name of the transition, and NOT the name of the target game state. Multiple transitions can lead to the same game state.
+</p><p><br/>
+</p><h3><span class="mw-headline" id="updateGameProgression">updateGameProgression</span></h3><p>Default: false
+</p><p><i>At least one</i> of your game states (any one) must specify true
+</p><h3><span class="mw-headline" id="initialPrivate">initialPrivate</span></h3><p>Default: null
+</p><p><br/>
+The parameter can be null or an int as before, and also accept a class name as value <code>initialPrivate: PlaceCard::class</code>
+</p><h2><span class="mw-headline" id="Initial_state">Initial state</span></h2><p>To indicate your initial state, add <code>return PlayerTurn::class;</code> to the code of <code>setupNewGame</code> function in Game.php (well replace with actual state you want to be first).
+</p><pre>   protected function setupNewGame($players, $options = []) {
+       // ... create your game stuff
+       return GameDispatch::class; // this is state to switch to
+   }
+</pre><p>If you don't return anything its state 2 (*to be confirmed*)
+</p><h2><span class="mw-headline" id="Function_getArgs">Function getArgs</span></h2><p>This function should return the necessary information for the front to display the information related to this state.
+</p><ul><li><code>int $activePlayerId</code> (or <code>int $active_player_id</code>) will be filled by the id of the active player. To be used on ACTIVE_PLAYER states only.</li>
+<li><code>int $activePlayerNo</code> (or <code>int $active_player_no</code>) will be filled by the no of the active player. To be used on ACTIVE_PLAYER states only.</li>
+<li><code>int $playerId</code> (or <code>int $player_id</code>/<code>int $currentPlayerId</code>/<code>int $current_player_id</code>) will be filled by the player id of the current PRIVATE state. To be used on PRIVATE states only.</li>
+<li><code>int $playerNo</code> (or <code>int $player_no</code>/<code>int $currentPlayerNo</code>/<code>int $current_player_no</code>) will be filled by the player no of the current PRIVATE state. To be used on PRIVATE states only.</li></ul><h4><span class="mw-headline" id="Private_info_in_args">Private info in args</span></h4><p>By default, all data provided through this method are PUBLIC TO ALL PLAYERS. Please do not send any private data with this method, as a cheater could see it even it is not used explicitly by the game interface logic.
+</p><p>Example:
+</p><pre>    function getArgs(int $activePlayerId): array  {
+        return [
+            '_private' =&gt; [   // all data inside this array will be private
+                $activePlayerId =&gt; [   // will be sent only to that player   
+                    'somePrivateData' =&gt; $this-&gt;getSomePrivateData($activePlayerId)   
+                ]
+            ],
+
+            'possibleMoves' =&gt; $this-&gt;getPossibleMoves()   // will be sent to all players
+        ];
+    }
+</pre><p>Inside the js file, these variables will be available through `args.args._private`. (e.g. `args.args._private.somePrivateData`)
+</p><p>If you add <code>_merge_private =&gt; true</code> next to <code>_private</code>, the private informations will be accessible in `args.args` instead of `args.args._private`.
+If you want all your <code>_private</code> objects to be merged (state args and notif args), call <code>$this-&gt;bga-&gt;notify-&gt;alwaysMergePrivate();</code> in your Game constructor instead of adding the <code>_merge_private</code> flag on each arg.
+</p><h4><span class="mw-headline" id="Flag_to_indicate_a_skipped_state">Flag to indicate a skipped state</span></h4><p>By default, The front-end will be notified of entering/leaving all states. To speed up the front-end chaining of automatically passed states, you can disable this state change notification, so the front-end doesn't trigger the preparation steps for a state that you know will be automatically skipped, and it may reduce sent args. In this case, define the <b>_no_notify</b> flag to true in the state args.
+</p><pre>function getArgs(int $activePlayerId): array {
+  $playableCardsIds = ...;
+  return [
+    'playableCardsIds' =&gt; $playableCardsIds,
+    '_no_notify' =&gt; count(playableCardsIds) === 0,
+  ];
+}
+function onEnteringState(int $activePlayerId ,array $args): void {
+  if ($args['_no_notify']) {
+    return $this-&gt;actPass($activePlayerId); // return the redirection sent by the action!
+  }
+}
+</pre><p>In this example, it might avoid a blinking message "You must play a card" (quickly replaced by the next state message) when you cannot play a card and the game automatically skips this state.
+</p><p>Note that if you play synced notifications during a skipped state, it will display the notifications on the previous state. For example, for an endScore state width description "Computing end score..." sending a lot of animated notifications, you should NOT use this flag so the description is visible.
+</p><h2><span class="mw-headline" id="Function_onEnteringState">Function onEnteringState</span></h2><p>This function will be triggered when you enter the state.
+</p><ul><li><code>array $args</code>  will be filled by the result of $this-&gt;getArgs().</li>
+<li><code>int $activePlayerId</code> (or <code>int $active_player_id</code>) will be filled by the id of the active player. To be used on ACTIVE_PLAYER states only.</li>
+<li><code>int $activePlayerNo</code> (or <code>int $active_player_no</code>) will be filled by the no of the active player. To be used on ACTIVE_PLAYER states only.</li>
+<li><code>int $playerId</code> (or <code>int $player_id</code>/<code>int $currentPlayerId</code>/<code>int $current_player_id</code>) will be filled by the player id of the current PRIVATE state. To be used on PRIVATE states only.</li>
+<li><code>int $playerNo</code> (or <code>int $player_no</code>/<code>int $currentPlayerNo</code>/<code>int $current_player_no</code>) will be filled by the player id of the current PRIVATE state. To be used on PRIVATE states only.</li></ul><p>This function can do state redirection by returning a value :
+</p><ul><li>a class name will redirect to the state declared in that class</li></ul><pre> return NextPlayer::class;
+</pre><ul><li>a state id will redirect to the state of that id. It must be typed as int, numbers in a string won't work.</li></ul><pre> return StateConstants::ST_END_GAME;
+</pre><p>or
+</p><pre> return 99;
+</pre><ul><li>a transition name will redirect to the transition of that name (requires <code>transitions</code> to be declared in the constructor).</li></ul><pre> return 'nextPlayer';
+</pre><p><br/>
+</p><pre>    function onEnteringState(int $active_player_id) {
+        $next_player_id = (int)$this-&gt;getPlayerAfter($active_player_id);
+        $this-&gt;giveExtraTime($next_player_id);
+        $this-&gt;incStat(1, 'turns_number', $next_player_id);
+        $this-&gt;incStat(1, 'turns_number');
+        $this-&gt;gamestate-&gt;changeActivePlayer($next_player_id);
+        return 'next';
+    }
+</pre><p>Usually, for a GAME state type, this method is used to perform automatic functions specified by the rules (for example: check victory conditions, deal cards for a new round, go to the next player, etc.) and then jump to another game state.
+</p><p>Example in player state:
+</p><pre>    function onEnteringState() {
+        $this-&gt;gamestate-&gt;setAllPlayersMultiactive();
+        return; // no value
+    }
+</pre><p><b>Warning</b>: Do not override stGameEnd() and argGameEnd() in Game.php. It may cause game never end and always stuck in "Recording game results + computing statistics in progress...".
+</p><h2><span id="Functions_act.2A"></span><span class="mw-headline" id="Functions_act*">Functions act*</span></h2><p>These functions will be triggered when you call them from the front using bgaPerformAction. They must be prefixed by <code>act</code>.
+</p><p>It accepts "magic" params that will be automatically filled by the framework:
+</p><ul><li><code>array $args</code>  will be filled by the result of $this-&gt;getArgs().</li>
+<li><code>int $activePlayerId</code> (or <code>int $active_player_id</code>) will be filled by the id of the active player (not necessarily the one triggering the action!). To be used on ACTIVE_PLAYER states only.</li>
+<li><code>int $activePlayerNo</code> (or <code>int $active_player_no</code>) will be filled by the no of the active player (not necessarily the one triggering the action!). To be used on ACTIVE_PLAYER states only.</li>
+<li><code>int $currentPlayerId</code> (or <code>int $current_player_id</code>) will be filled by the id of the player who triggered the action.</li>
+<li><code>int $currentPlayerNo</code> (or <code>int $current_player_no</code>) will be filled by the no of the player who triggered the action.</li></ul><p>The return value works the same way as onEnteringState.
+</p><p>The actions as auto-wire using the function name and parameter types, see details description in 
+<a class="external free" href="https://en.doc.boardgamearena.com/Main_game_logic:_Game.php#Actions_(autowired)" rel="nofollow">https://en.doc.boardgamearena.com/Main_game_logic:_Game.php#Actions_(autowired)</a>
+</p><pre>
+
+    #[PossibleAction] // a PHP attribute that tells BGA "this method describes a possible action that the player could take", so that you can call that action from the front (the client)
+    public function actPlayCard(int $cardId, int $activePlayerId)
+    {
+        $game = $this-&gt;game;
+        $currentCard = $game-&gt;cards-&gt;getCard($cardId);
+        if (!$currentCard) {
+            throw new \BgaSystemException("Invalid move $cardId");
+        }
+        // Rule checks
+        $playable_cards = $game-&gt;getPlayableCards($activePlayerId);
+        if (!in_array($cardId, $playable_cards)) {
+            throw new \BgaUserException(clienttranslate("You cannot play this card now"));
+        }
+
+        $game-&gt;cards-&gt;moveCard($cardId, 'cardsontable', $activePlayerId);
+
+        // And notify
+        $game-&gt;notify-&gt;all(
+            'playCard',
+            clienttranslate('${player_name} plays ${value_displayed} ${color_displayed}'),
+            [
+                'i18n' =&gt; array('color_displayed', 'value_displayed'),
+                'card' =&gt; $currentCard,
+                'player_id' =&gt; $activePlayerId,
+                'player_name' =&gt; $game-&gt;getActivePlayerName(),
+                'value_displayed' =&gt; $game-&gt;card_types['types'][$currentCard['type_arg']]['name'],
+                'color_displayed' =&gt; $game-&gt;card_types['suites'][$currentCard['type']]['name']
+            ]
+        );
+        return NextPlayer::class;
+    }
+</pre><h2><span class="mw-headline" id="Function_zombie">Function zombie</span></h2><p>In non GAME states, the <code>zombie</code> function is mandatory. The first parameter <code>int $playerId</code> will be filled by the Zombified player id. If the first parameter is called <code>int $playerNo</code> / <code>int $player_no</code>, it will send the player no instead of the player id.
+</p><p>It accepts "magic" params that will be automatically filled by the framework:
+</p><ul><li><code>array $args</code>  will be filled by the result of $this-&gt;getArgs().</li></ul><p>The return value works the same way as onEnteringState.
+</p><pre>   public function zombie(int $playerId)
+   {
+       $playable_cards = $this-&gt;game-&gt;getPlayableCards($playerId);
+       if (count($playable_cards) == 0) {
+           return NextPlayer::class;
+       }
+       $zombieChoice = $this-&gt;getRandomZombieChoice($playable_cards); // random choice over possible moves
+       return $this-&gt;actPlayCard((int)$zombieChoice, $playerId);
+   }
+</pre><h2><span class="mw-headline" id="Implementation_Notes">Implementation Notes</span></h2><h3><span class="mw-headline" id="End_Score_state">End Score state</span></h3><p>You will often need to do some computation at the end of the game, for end score or for average stats. As you cannot modify the endGame state, it's recommended to create a state just before, that will do it.
+</p><h3><span class="mw-headline" id="Creating_subfolders_in_the_States_folder">Creating subfolders in the States folder</span></h3><p>When creating Classes in subfolders of the States folder, don't forget to make the namespace reflect the subfolders structure for autoloading to work.
+</p><h3><span class="mw-headline" id="Private_parallel_states">Private parallel states</span></h3><p>Private parallel states are useful when multiple players are active and their turn is very complex. In that case it is possible with parallel states for each player to be in a independent state. 
+</p><ul><li>Moving all players to different states together - this is limiting for faster players as they need to wait other players for each separate action. The more problematic thing is that it would be hard to implement an undo feature when one player wants to change their previous action. In that case all players should be moved back to previous state which will interrupt their flow.</li>
+<li>Using client states, by changing the state in which the player is in javascript - the problem with this approach is that players will lose their progress on browser refresh (F5). Furthermore the validation logic of specific actions should be implemented on both server side and client side and we cannot have specific args for each different action, but they should be calculated only at the beginning of the first action and possibly calculated on client side after each action, which again duplicates logic on client and server.</li></ul><p>With private parallel states, each specific action can be implemented as a parallel state. Parallel states are defined with the type PRIVATE and players are moved to those private states during one master MULTIPLE_ACTIVE_PLAYER state. 
+</p><pre>    function onEnteringState() {
+        $this-&gt;gamestate-&gt;setAllPlayersMultiactive();
+        
+        //this is needed when starting private parallel states; players will be transitioned to initialprivate state defined in master state
+        $this-&gt;gamestate-&gt;initializePrivateStateForAllActivePlayers(); 
+
+        // in some cases you can move immediately some or all players to different private states
+        if ($someCondition) {
+            //move all players to different state 
+            $this-&gt;gamestate-&gt;nextPrivateStateForAllActivePlayers("chooseSecond");
+            return;
+        }
+
+        if ($other condition) {
+            //move single player to different state
+            $this-&gt;gamestate-&gt;nextPrivateState($specificPlayerId, "chooseSecond");
+            return;
+        }
+    }
+</pre><p>When some action is done by a player, you can move them to the next private state:
+</p><pre>    function actToSecond() {
+        $this-&gt;gamestate-&gt;nextPrivateState($this-&gt;getCurrentPlayerId(), "chooseSecond"); //moving current player to different state
+    }
+</pre><p>Please check the detailed API <a class="mw-redirect" href="/Main_game_logic:_yourgamename.game.php#Private_parallel_states" title="Main game logic: yourgamename.game.php">here</a>.
+</p><h3><span class="mw-headline" id="Client_States">Client States</span></h3><p>Client state almost have nothing to do with server states, except they can simulate same experience without actually changing server states.
+</p><p>In many cases you can achive similar results by using client states vs private server states. The only caveat - when using client states during MULTIPLE_ACTIVE_PLAYER server state
+other player will trigger state changes (multiactive player set) which will call onUpdateActionButtons. Some measures have to be taken to preserve client state in this case.
+</p><h3><span class="mw-headline" id="Using_Named_Constants_for_States">Using Named Constants for States</span></h3><p>Using numeric constants is prone to errors. If you want you can declare state constants as PHP named constants. This way you can
+use them in the states file and in Game.php as well
+</p><p><br/>
+</p><pre>&lt;?php
+
+declare(strict_types=1);
+
+namespace Bga\Games\euro;
+
+class StateConstants {
+    const STATE_MULTI_PLAYER_TURN = 4;
+
+
+    const STATE_PLAYER_TURN_OP = 12;
+    const STATE_GAME_DISPATCH = 13;
+    const STATE_MULTI_PLAYER_TURN_OP = 14;
+    const STATE_PLAYER_TURN_CONF = 15;
+
+    const STATE_MACHINE_HALTED = 42;
+
+    // last state
+    const STATE_END_GAME = 99;
+}
+</pre><p>To use
+</p><pre>...
+        parent::__construct($game,
+            id: StateConstants::STATE_PLAYER_TURN_OP,
+            type: StateType::ACTIVE_PLAYER,
+
+</pre><h3><span class="mw-headline" id="Difference_between_Single_active_and_Multi_active_states">Difference between Single active and Multi active states</span></h3><p>In a classic ACTIVE_PLAYER state:
+</p><ul><li>You cannot change the active player DURING the state. This is to ensure that during 1 ACTIVE_PLAYER state, only ONE player is active</li>
+<li>As a consequence, you must set the active player BEFORE entering the ACTIVE_PLAYER state</li>
+<li>In such states on JS side onUpdateActionButtons is called before onEnteringState during game play (but after during reload, i.e. F5)</li>
+<li>Finally, during onEnteringState, on JS side, the active player is signaled as active and the information is reliable and usable.</li></ul><p><br/>
+In a MULTIPLE_ACTIVE_PLAYER state:
+</p><ul><li>You can (and must) change the active players DURING the state</li>
+<li>During such a state, players can be activated/deactivated anytime during the state, giving you the maximum of possibilities.</li>
+<li>You shouldn't set active player before entering the state. But you can set it in "state initializer" php function (see example above stMultiPlayerInit)</li>
+<li>Finally, during onEnteringState, on JS side, the active players are NOT active yet so you must use onUpdateActionButtons to perform the client side operation which depends on a player active/inactive status.</li></ul><p>Note: in some off cases other players can perform special actions even if they are not active, see example <a class="external free" href="https://en.doc.boardgamearena.com/BGA_Studio_Cookbook#Out-of-turn_actions%3A_Un-pass" rel="nofollow">https://en.doc.boardgamearena.com/BGA_Studio_Cookbook#Out-of-turn_actions%3A_Un-pass</a>. Do not abuse this technique!
+</p><h3><span class="mw-headline" id="Designing_states">Designing states</span></h3><p>As a general rule you state machine should resemble "round/turn overview" from the game rule-book. Normally if book say its player turn and player can do multiple things during their turn it is still only
+one player state (plus a game to switch player), not multiple states.
+</p><p><a class="image" href="/File:Simplestates.png"><img alt="Simplestates.png" decoding="async" height="219" src="/images/7/72/Simplestates.png" width="702"/></a>
+</p><p>For pair of active player/game states you can make player state first, which transitions to game state, or the other way around, you start with game state which transition to active player state, its loop in any case but depends on how you want to do "phase" initiazations.
+</p><h2><span class="mw-headline" id="Migrating_for_states_written_in_states.inc.php_and_Game.php">Migrating for states written in states.inc.php and Game.php</span></h2><h3><span class="mw-headline" id="Moved_elements">Moved elements</span></h3><ul><li>The function <code>getArgs</code> replaces the function that was declared as <code>"args" =&gt; "argXXX"</code> on states.inc.php.</li>
+<li>Same for the function <code>onEnteringState</code> that was <code>"action" =&gt; "stXXX"</code> on states.inc.php.</li>
+<li>The <code>zombie</code> function doesn't have the state as first parameter anymore, because it's not needed in this context.</li>
+<li>The possible actions for this states don't need to be declared as an array, they will be found with the tag <code>#[PossibleAction]</code> over each possible action.</li>
+<li>The functions declared in Game.php will be accessible with <code>$this-&gt;game</code> instead of <code>$this</code>.</li>
+<li>The Game sub-objects are available on the State class too, so you can write <code>$this-&gt;notif-&gt;all</code> without needing to pass through the game variable.</li></ul><h3><span class="mw-headline" id="New_elements">New elements</span></h3><p>The <code>getArgs</code>, <code>onEnteringState</code> and <code>actXXX</code> functions can set some predefined parameters that will be automatically filled (see chapter above).
+</p><p>The initialPrivate parameter of the constructor can be null or an int as before, but can now also accept a class name as value <code>initialPrivate: PlaceCard::class</code>
+</p><p>If all your classes are migrated to State classes, you can remove the states.inc.php file.
+</p></div></body>
+</html>

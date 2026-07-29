@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Using Typescript and Scss - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Using_Typescript_and_Scss rootpage-Using_Typescript_and_Scss action-view"><div class="article"><p>This page will help you set up your project to use Typescript client file and Scss style files, and automatically build Javascript files and CSS files so your project stay compatible to BGA framework requirements.
+You can use only TS or only SCSS part if you want, they are not linked.
+</p><p>Creating a new BGA project now setup most of the files for you. You'll just need to rename <code>src-disabled</code> to <code>src</code> to start using TypeScript in the project. As for any project, you can always refer to the <a class="external text" href="https://studio.boardgamearena.com/projects?game=emptygame" rel="nofollow">project template</a> to see the original setup.
+</p><h2><span class="mw-headline" id="Install_and_configure">Install and configure</span></h2><h3><span class="mw-headline" id="Install_dev_stack">Install dev stack</span></h3><p>Install node/npm.  Here is an example to activate auto-build in Visual Studio Code, if you use another tool I strongly recommend to find an equivalent so you don't have to launch build manually after each modification.
+</p><h3><span class="mw-headline" id="Configure_package.json_and_tsconfig.json">Configure package.json and tsconfig.json</span></h3><p>Create a file named <code>package.json</code> on the root folder, not on the src folder.
+</p><pre> {
+   "name": "yourgamename",
+   "version": "1.0.0",
+   "description": "",
+   "main": "modules/js/Game.js",
+   "scripts": {
+     "build:ts": "rollup -c",
+     "build:scss": "sass --no-source-map src/scss/Game.scss yourgamename.css",
+     "watch:ts": "rollup -c -w",
+     "watch:scss": "sass --watch src/scss/Game.scss yourgamename.css",
+     "watch": "npm run watch:ts &amp; npm run watch:scss",
+     "build": "npm run build:ts &amp;&amp; npm run build:scss"
+   },
+   "author": "yourname",
+   "license": "MIT",
+   "devDependencies": {
+    "@rollup/plugin-typescript": "^12.3.0",
+    "rollup": "^4.53.3",
+    "sass": "^1.71.0",
+    "tslib": "^2.8.1",
+    "typescript": "^6.0.3"
+   }
+ }
+</pre><p>Note: if you not using scss - remove corresponding scripts and deps.
+</p><p>IMPORTANT: exclude node_modules/ subfolder from auto-sync to remote folder (whatever system you use for that). Before next step! But keep uploading the src folder, so someone taking maintainance of your project can still use TypeScript :)
+</p><p><br/>
+</p><p><b>rollup.config.mjs</b>
+</p><pre>  import typescript from '@rollup/plugin-typescript';
+
+  export default {
+    input: 'src/ts/Game.ts',
+    output: {
+      file: 'modules/js/Game.js',
+      format: 'es',
+      sourcemap: false,
+      inlineDynamicImports: true,
+    },
+    plugins: [
+      typescript({
+        tsconfig: './tsconfig.json',
+        outDir: 'modules/js',
+      }),
+    ],
+    treeshake: false,
+  };
+</pre><p><b>tsconfig.json</b>
+</p><pre>  {
+    "compilerOptions": {
+      "target": "ES2020",
+      "module": "ES2022",
+      "moduleResolution": "bundler",
+      "strict": false,
+      "lib": ["dom", "esnext"],
+      "sourceMap": false,
+      "rootDir": "."
+    },
+    "include": [
+      "*.d.ts",
+      "src/ts/**/*.d.ts",
+      "src/ts/**/*.ts"
+    ]
+  }
+</pre><p>Note: The rootDir must be set to "." (not "src") otherwise TypeScript won't see *.d.ts files in the project root (such as bga-framework.d.ts). The outDir must also be set in the rollup plugin (not in tsconfig.json) because the rollup plugin requires outDir to be inside the same directory as the rollup output file.
+</p><h2><span class="mw-headline" id="Create_skeleton">Create skeleton</span></h2><p>When you create your game in BGA Studio, a JS and CSS file are generated. As we will overwrite them with autobuild. You can put the TS/SCSS files on a <code>src</code> folder to separate them from built files, but that's not mandatory.
+Note to myself: check if 'src' dir will be svn version control, if not cannot really use it (even if duplicated in git).
+</p><h3><span class="mw-headline" id="Typescript_file_skeleton">Typescript file skeleton</span></h3><p>Typescript example here have been stripped down of all comments for clarity. 
+Your TS code can be splitted in multiple files, you can have a look at <a class="external text" href="https://studio.boardgamearena.com/projects" rel="nofollow">castlecombo</a> code for inspiration.
+To make this page concise, I removed comments and code samples. If it's your first game, well - don't do it if your first game - you won't be able to apply other code samples from docs, they all using dojo style and have to completely rewritten.
+</p><pre>interface YourGameNamePlayer extends Player {
+    cards: Card[]; // any information you add on each result['players']
+}
+
+interface YourGameNameGamedatas extends Gamedatas&lt;YourGameNamePlayer&gt; {
+    // Add here variables you set up in getAllDatas
+    discardedCards: { [row: number]: Card[] };
+    remainingCardsInDecks: { [row: number]: number };
+    tableCards: { [row: number]: Card[] };
+}
+</pre><p>Note: the Generic typing is optional.
+Note 2: types.d.ts cannot be called Game.d.ts as it has different types, not related Game class
+</p><pre>export class Game {
+
+    public bga: Bga&lt;YourGameNamePlayer, YourGameNameGamedatas&gt;;
+    private gamedatas: YourGameNameGamedatas;
+
+     constructor(bga: Bga&lt;YourGameNamePlayer, YourGameNameGamedatas&gt;) {
+        this.bga = bga;
+     }
+
+     public setup(gamedatas: YourGameNameGamedatas) {
+         this.gamedatas = gamedatas;
+         this.setupNotifications();
+     }
+     public setupNotifications() {}
+}
+</pre><p><br/>
+Don't forget to sync the bga-framework.d.ts from your FTP folder regularly to get the last version.
+</p><h3><span class="mw-headline" id="SCSS_file">SCSS file</span></h3><p>Nothing special here, just write classic SCSS (will be compiled by Dart scss) and name it <b>src/scss/yourgamename.scss</b>.
+</p><pre>  @use 'variables' as v;
+
+
+  /* the other files */
+  @use "./Animations";
+  @use "./Board";
+
+  #ebd-body {
+    background-image: url(img/woodbg.jpg);
+    background-repeat: repeat;
+  }
+  @each $key, $val in v.$colors-list {
+    .fgcolor#{$key} {
+      color: #{$val};
+    }
+  }
+
+</pre><p><br/>
+Your SCSS code can be (should be) splitted in multiple files, for example:
+</p><pre>$colors-list: (
+  _6cd0f6: #6cd0f6, // blue
+  _ef58a2: #ef58a2, // pink
+  _ffcc02: #ffcc02, // yellow
+  _a0d28c: #a0d28c // green
+);
+</pre><h2><span class="mw-headline" id="Auto_build_and_auto_upload">Auto build and auto upload</span></h2><h3><span class="mw-headline" id="Auto_build_JS_and_CSS_files">Auto build JS and CSS files</span></h3><p>To build and watch (i.e. re-build continuously changed files) run in terminal:
+</p><pre> npm run watch
+</pre><p>Alternately you can make vscode to do it for you by installing Run on Save extension, see details in <a href="Setting_up_BGA_Development_environment_using_VSCode.html" title="Setting up BGA Development environment using VSCode">Setting_up_BGA_Development_environment_using_VSCode</a>
+</p><pre> npm run build
+</pre><h3><span class="mw-headline" id="Auto-upload_generated_files">Auto-upload generated files</span></h3><p>You can setup standard file sync or use vscode SFTP extension, see details in <a href="Setting_up_BGA_Development_environment_using_VSCode.html" title="Setting up BGA Development environment using VSCode">Setting_up_BGA_Development_environment_using_VSCode</a>
+</p><pre>    "watcher": {
+        "files": "**/*.{js,css}",
+        "autoUpload": true,
+        "autoDelete": true
+    }
+</pre><h3><span class="mw-headline" id="Exclusions_from_auto-upload">Exclusions from auto-upload</span></h3><p>Make sure <code>.vscode</code> and <code>node_modules</code> are in <code>.gitignore</code> if you commit your project somewhere.
+</p><h3><span class="mw-headline" id="Code_completion">Code completion</span></h3><p>To have a code completion for framework classes, dojo, stock, etc, you'll need to make sure bga-framework.d.ts file is added to your tsconfig.
+</p><h2><span class="mw-headline" id="Using_the_new_libs">Using the new libs</span></h2><p>To use the new front libs (bga-autofit, bga-score-sheet, ...), it's recommended to created a dedicated file that will be responsible of all imports, than you'll import when you need it
+</p><pre>import type { BgaAnimations as BgaAnimationsType } from "../bga-animations";
+import type { BgaCards as BgaCardsType } from "../bga-cards";
+
+const BgaAnimations: typeof BgaAnimationsType = await globalThis.importEsmLib('bga-animations', '1.x');
+const BgaCards: typeof BgaCardsType = await globalThis.importEsmLib('bga-cards', '1.x');
+
+export { BgaAnimations, BgaCards };
+</pre><p>Then you can use them in your files using import:
+</p><pre>import { BgaCards } from './libs';
+export class MyCardManager extends BgaCards.Manager&lt;Card&gt; { ... }
+</pre><p>For class property typings, use:
+</p><pre>    public animationManager: InstanceType&lt;typeof BgaAnimations.Manager&gt;;
+
+    // in your setup:
+    this.animationManager = new BgaAnimations.Manager({ ... });
+</pre><p>If you need to load old libs, you can do it this way:
+</p><pre>const [Counter, Stock] = await importDojoLibs(["ebg/counter", "ebg/stock"]);
+
+export { Counter, Stock };
+</pre><h2><span id="Migrating_from_old_way_.28ES5_build_to_gamename.js.29"></span><span class="mw-headline" id="Migrating_from_old_way_(ES5_build_to_gamename.js)">Migrating from old way (ES5 build to gamename.js)</span></h2><p>the new setup described in this page use explicit import/export that were not used before. But we don't need to explicitely list all files anymore.
+</p><p><b>MyCardManager.ts</b>
+</p><pre>export class MyCardManager { ... }
+</pre><p><b>MyGame.ts</b>
+</p><pre>import { MyCardManager } from "./MyCardManager";
+
+export class Game {
+    public cardManager: MyCardManager;
+</pre><h2><span class="mw-headline" id="Browser_console_info">Browser console info</span></h2><p>Using ES modules, your game object is no longer merged into the <code>gameui</code> global. Instead, your game object is available as <code>gameui.GameModule</code>.
+</p><h2><span class="mw-headline" id="Referenced_Projects">Referenced Projects</span></h2><ul><li><a class="external free" href="https://github.com/thoun/bga-ts-example" rel="nofollow">https://github.com/thoun/bga-ts-example</a></li>
+<li><a class="external free" href="https://github.com/elaskavaia/bga-dojoless" rel="nofollow">https://github.com/elaskavaia/bga-dojoless</a> - complete setup, new template Typescript/Scss, unit tests for typescript</li></ul></div></body>
+</html>

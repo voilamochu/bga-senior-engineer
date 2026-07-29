@@ -1,0 +1,241 @@
+.dijitTooltipContainer,
+.arknova-tooltip {
+  --arkNovaZooCardScale: 1;
+}
+
+.ark-card.zoo-card {
+  width: calc(var(--arkNovaZooCardScale) * 375px);
+  height: calc(var(--arkNovaZooCardScale) * 522px);
+
+  .ark-card-wrapper {
+    transform: scale(var(--arkNovaZooCardScale));
+
+    .ark-card-top {
+      .ark-card-top-left {
+        .zoo-card-prerequisites {
+          margin-top: 5px;
+          position: relative;
+          z-index: 3;
+
+          .zoo-card-badge {
+            width: 70px;
+            height: 51px;
+            margin: 3px 0px;
+            border-radius: 0px 25px 25px 0px;
+            background: #dd5749;
+            display: flex;
+            justify-content: flex-end;
+            box-shadow: 1px 1px 3px black;
+            &.double-badge {
+              width: 122px;
+            }
+
+            &.badge-appeal {
+              width: 30px;
+              border-radius: 0px;
+            }
+
+            .badge-icon {
+              width: 47px;
+              height: 47px;
+              border-radius: 50%;
+              border: 2px solid white;
+
+              & ~ .badge-icon {
+                margin-left: 5px;
+              }
+
+              &[data-type="Appeal"] {
+                width: 40px;
+                margin-right: -30px;
+                border-radius: 0;
+                background: none;
+                border: none;
+
+                .icon-appeal {
+                  width: 40px;
+                  height: 51px;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  font-size: 17px;
+                }
+              }
+
+              &[data-type="Reputation"] {
+                text-align: center;
+                font-family: "MyriadPro-Bold";
+                letter-spacing: -1px;
+                text-indent: -1px;
+                color: white;
+                font-size: 28px;
+                line-height: 42px;
+              }
+            }
+          }
+        }
+      }
+
+      .ark-card-top-right {
+        .zoo-card-badge {
+          width: 55px;
+          height: 73px;
+          margin: 0px 3px;
+          border-radius: 0px 0px 28px 28px;
+          background: #d9dde8;
+          display: flex;
+          align-items: end;
+          box-shadow: 1px 1px 3px black;
+
+          .badge-icon {
+            width: 51px;
+            height: 51px;
+            border-radius: 50%;
+            border: 2px solid white;
+          }
+        }
+
+        .ark-card-reef-ability {
+          position: absolute;
+          top: 85px;
+          right: -24px;
+          width: 124px;
+          height: 64px;
+          clip-path: polygon(-10px -20px, 100px -10px, 100px 80px, -10px 80px);
+          box-shadow: 0px 0px 6px 0px white;
+          border-top-left-radius: 33px;
+          border-bottom-left-radius: 30px;
+          font-size: 36px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
+          &.trade {
+            font-size: 28px;
+            text-shadow: 1px 1px 2px white;
+            width: 110px;
+            padding-right: 14px;
+            .icon-money {
+              text-shadow: none;
+            }
+          }
+          &.boost {
+            font-size: 28px;
+            width: 110px;
+            padding-right: 14px;
+            .icon-container-strength {
+              font-size: 18px;
+              margin: -0.3em;
+              border: 2px solid white;
+              position: relative;
+              z-index: 2;
+              box-shadow: 0px 0px 2px white;
+            }
+          }
+
+          // REEF
+          background: url("img/icons.png"), #ffffff9e;
+          background-position: 13.44% 69.24257932446264%;
+          background-size: 1183.815028901734%;
+
+          .icon-money {
+            border: 2px solid white;
+          }
+        }
+      }
+    }
+
+    .ark-card-bottom {
+      .ark-card-wave {
+        float: right;
+        shape-outside: polygon(0px 0px, 0px 14px, 40px 14px, 40px 0px);
+        height: 100%;
+        margin-right: -15px;
+        margin-top: -6px;
+        width: 80px;
+        overflow: hidden;
+        font-size: 16px;
+
+        & ~ .zoo-card-bonuses {
+          margin-right: -65px;
+        }
+      }
+
+      .zoo-card-bonuses {
+        float: right;
+        height: 100%;
+        display: flex;
+        align-items: flex-end;
+        shape-outside: polygon(0px 90px, 0px 167px, 67px 167px, 67px 90px);
+        &[data-size="2"] {
+          shape-outside: polygon(0px 90px, 0px 167px, 134px 167px, 134px 90px);
+        }
+        &[data-size="3"] {
+          shape-outside: polygon(0px 90px, 0px 167px, 201px 167px, 201px 90px);
+        }
+
+        .zoo-card-bonus {
+          width: 77px;
+          height: 70px;
+          background: url("img/zoo-card-bonuses.png");
+          background-size: 400% 132%;
+          background-position-x: 66.66666%;
+          margin-right: -10px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-family: "MyriadPro-Bold";
+          font-size: 30px;
+
+          &.reputation {
+            background-position-x: 100%;
+            color: white;
+          }
+          &.conservation {
+            background-position-x: 33.33333%;
+          }
+          &.appeal {
+            background-position-x: 0%;
+          }
+        }
+      }
+    }
+  }
+}
+
+@import "cards.zoo.animals";
+@import "cards.zoo.projects";
+@import "cards.zoo.scoring";
+@import "cards.zoo.sponsors";
+
+[data-disable-snake="1"] {
+  @each $cId in $snakeCards {
+    @if $cId == "S203_Veterinarian" {
+      .zoo-card[data-id="#{$cId}"] {
+        .ark-card-wrapper {
+          background-image: url("img/sponsors/S203_Veterinarian_placeholder.jpg") !important;
+        }
+      }
+    } @else {
+      .zoo-card[data-id="#{$cId}"] {
+        .ark-card-wrapper .ark-card-top {
+          background-image: url("img/animals/placeholder.png") !important;
+          background-size: 100% auto !important;
+        }
+      }
+    }
+  }
+}
+
+.badge-icon {
+  background-image: url("img/zoo-card-badges.jpg");
+  background-size: 500% 700%;
+
+  @each $cId in $cardBadges {
+    $i: index($cardBadges, $cId) - 1;
+    &[data-type="#{$cId}"] {
+      background-position-x: ($i % 5) * 100% / 4;
+      background-position-y: (($i - ($i % 5)) / 5) * 100% / 6;
+    }
+  }
+}

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>BGA Undo policy - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-BGA_Undo_policy rootpage-BGA_Undo_policy action-view"><div class="article"><p>Introducing "Undo" features in games can lead to bugs and/or bad interface design.
+</p><p><br/>
+</p><h1><span class="mw-headline" id="What_you_must_NEVER_do">What you must NEVER do</span></h1><p>When you are restoring a game situation A from a game situation B:
+</p><ul><li>The Undo action must <b>never change the active player</b>. In other words, if player X clicks on "Undo", it must NOT make player Y active.</li>
+<li>If several players did game actions between A and B, you must NEVER provide an undo. In other words, an "Undo" action must NEVER force another player to redo some moves.</li>
+<li>No hidden (or private) information must have been revealed between A and B.</li>
+<li>No random event with a visible effect must have been triggered between A and B. This includes cards shuffling, dice roll, elements picking, ...</li></ul><p><br/>
+</p><h1><span id="When_to_propose_to_Undo.3F"></span><span class="mw-headline" id="When_to_propose_to_Undo?">When to propose to Undo?</span></h1><p>As a rule of thumb, on BGA we advise you to not undo moves.
+</p><p>In many cases, proposing an "Undo" means also adding an extra step, which is not good for the game interface.
+</p><ul><li>To allow players to take back a move following a "misclick" that may ruin their game.</li>
+<li>To allow players to take back a very complex series of actions.</li></ul><h2><span id="About_Undo_to_avoid_.22misclick.22"></span><span class="mw-headline" id='About_Undo_to_avoid_"misclick"'>About Undo to avoid "misclick"</span></h2><p>In most cases, you don't need this: players must pay attention :)
+</p><ul><li>If the <b>zone to click is very small</b>, or close to other zones, misclicks may happened frequently. Note that if this only happens on mobile, you can propose the Undo to mobile users only.</li>
+<li>If <b>there is already another step</b> after the step you want to undo. In this case, adding an "Undo" does not add an extra step.</li>
+<li>If you are in the middle of a real "game action". For example, on Chess, it is normal to allow to undo the selection of a piece in order to select another one, as the move hasn't been done already.</li>
+<li>The action done by the player is obviously a mistake (in this case, please also consider adding a confirmation before the action).</li></ul><p>On the contrary, you must be reluctant to add an Undo if:
+</p><ul><li>This adds an extra step.</li>
+<li>The game action is clear and the zone to click is large.</li></ul><p>To conclude: we may allow a player to undo a move caused by a "misclick", but we shouldn't allow a player to undo a bad move he plays consciously.
+</p><h2><span class="mw-headline" id="About_Undo_to_take_back_moves_from_a_complex_series_of_actions">About Undo to take back moves from a complex series of actions</span></h2><p>Games with a complex serie of actions are an "exception" to BGA Undo policy.
+</p><p>However, in some games, it is commonly admitted that players are allowed to take back a move. The typical example is a complex strategy game with a long serie of actions during your turn. "Through the Ages" or "Tzolk'in" are 2 good examples.
+</p><p>Note: in this situation it is also possible to use client side undo, instead of server side, see "Russian Railroads" for example (implemented using setClientState method).
+</p><h1><span class="mw-headline" id="How_to_implement_Undo">How to implement Undo</span></h1><p>There are 2 ways to implement Undo:
+</p><ul><li>The framework undoSavePoint/undoRestorepoint methods, <a class="mw-redirect" href="/Main_game_logic:_yourgamename.game.php#Undo_moves" title="Main game logic: yourgamename.game.php"> documented here</a>.</li>
+<li>Your own method.</li></ul><p>As a rule of thumb, it is way better to use your own method to provide an Undo. The reasons are:
+</p><ul><li>The framework method is quite heavy to use (it saves the WHOLE situation). To cancel a simple move, it is way more efficient for you to execute the opposite move.</li>
+<li>The framework method is doing a full "reset" of the game interface. It is way more smooth and clear to play the opposite move from a player point of view.</li>
+<li>The framework Undo provides only ONE save point. If you want to provide a complex Undo (i.e.: the possibility to undo all the previous steps one by one), you must implement it by yourself.</li></ul><p>However, the framework is very handy to use (only 2 methods), so this should be your first choice if some moves are very difficult to reverse on client side.
+</p><h2><span id="How_does_undoSavePoint.2FundoRestorepoint_works.3F"></span><span class="mw-headline" id="How_does_undoSavePoint/undoRestorepoint_works?">How does undoSavePoint/undoRestorepoint works?</span></h2><p>The undoSavePoint method makes a full copy of the game database state.
+</p><ul><li>restores the game database</li>
+<li>removes all your game HTML + the player panels</li>
+<li>restores the game HTML + the player panels according to their state at the initial game loading</li>
+<li>calls your "setup" method</li></ul><p><b>Important</b>: because undoRestorePoint is calling your "setup" method, you must ensure that your whole game state can be restored from there. In particular, all your member variables must be initialized inside the "setup" method (and not only in the constructor !).
+</p><h2><span class="mw-headline" id="Adding_simple_Undo_action_to_your_game">Adding simple Undo action to your game</span></h2><h3><span class="mw-headline" id="Step_1:_Declare_in_gameinfos">Step 1: Declare in gameinfos</span></h3><p>Add  'db_undo_support' =&gt; true in gamesinfo.inc.php
+</p><h3><span class="mw-headline" id="Step_2:_Insert_savepoint">Step 2: Insert savepoint</span></h3><p>Determine where you want to save the undo state. Must be single active player state
+</p><ul><li>Begging of new user turn</li>
+<li>Every time new information revealed such as
+<ul><li>dice roll</li>
+<li>card is drawn</li>
+<li>anything else hidden is shown</li></ul></li></ul><p>Insert
+</p><pre>$this-&gt;undoSavepoint();
+</pre><h3><span class="mw-headline" id="Step_3:_Create_undo_action_in_server">Step 3: Create undo action in server</span></h3><p>in game.game.php
+</p><pre>   #[CheckAction(false)] // do not do checkAction - its on purpose - do not need to add undo as possible action to every state
+   function actUndo() {
+       $this-&gt;undoRestorePoint();
+   }
+</pre><h3><span class="mw-headline" id="Step_4:_Create_undo_action_in_client">Step 4: Create undo action in client</span></h3><p>in game.js
+add this to onUpdateActionButton regardless of state but inside isCurrenPlayerAction
+</p><pre>			this.addActionButton('button_undo', _('Undo'), () =&gt; this.onUndo(), undefined, undefined, 'red');
+</pre><p>and onUndo would be like this
+</p><pre>    onUndo: function (event) {
+      const action = "actUndo";
+      this.ajaxcall(
+        "/" + this.game_name + "/" + this.game_name + "/" + action + ".html",
+        [],
+        this,
+        (result) =&gt; {},
+        (err) =&gt; {
+          if (err) return;
+          this.setMainTitle(_("Undo requested..."));
+          dojo.empty("generalactions");
+        },
+        true
+      );
+    },
+</pre><h3><span class="mw-headline" id="Step_5:_Make_it_fancy">Step 5: Make it fancy</span></h3><p>If you want you can add extra styling to the Undo button such as it will appeat at right of all buttons
+in game.css
+</p><pre>#button_undo {
+    float: right;
+    background-color: red;
+    background-image: none;
+}
+</pre></div></body>
+</html>

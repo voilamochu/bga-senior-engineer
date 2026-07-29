@@ -1,0 +1,15 @@
+{
+  "title": "Zone",
+  "source_html": "Zone.html",
+  "clean_html": "Zone.html",
+  "url": "https://en.doc.boardgamearena.com/Zone",
+  "depth": 1,
+  "sha256_raw": "86bf31a2921517f8abc604874387feff18e64d1a51c17f948c4d7c2f8f167ed5",
+  "sha256_clean": "ae2fc78c8e9c767d9e296db607cadb8d70d36027e12ff36e0d333def148dcbc2",
+  "word_count": 1257,
+  "code_block_count": 13,
+  "table_count": 0,
+  "image_count": 4,
+  "heading_count": 9,
+  "cleaned_at": "2026-07-06T06:38:20.355786+00:00"
+}

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Scrollmap - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Scrollmap rootpage-Scrollmap action-view"><div class="article"><p><br/>
+</p><p>In some games, players are building the main game area with tiles or cards and it has no boundaries.
+This causes an additional difficulty for the adaptation, because we have to display an infinite game area into a finite space on the screen. 
+This is where Scrollmap component can help you.
+</p><p><br/>
+</p><h2><span class="mw-headline" id="Scrollmap_in_action">Scrollmap in action</span></h2><p>Examples of game that use Scrollmap (try on BGA or watch):
+</p><ul><li>Carcassonne</li>
+<li>Saboteur</li>
+<li>Taluva</li></ul><p>In these games, you can see that there are arrow controls around the main game area, so that players can use them to scroll the view. You can also use Panning (i.e drag'n'drop the game area to scroll).
+</p><p>Check <b>Alternative implementations of BGA modules</b> of <b><a href="BGA_Code_Sharing.html" title="BGA Code Sharing">BGA Code Sharing</a></b> for more information.
+</p><h2><span class="mw-headline" id="How_to_use_Scrollmap">How to use Scrollmap</span></h2><p>Open your template (TPL) file and add this HTML code:
+</p><pre>    &lt;div id="map_container"&gt;
+    	&lt;div id="map_scrollable"&gt;&lt;/div&gt;
+        &lt;div id="map_surface"&gt;&lt;/div&gt;
+        &lt;div id="map_scrollable_oversurface"&gt;&lt;/div&gt;
+
+        &lt;div class="movetop"&gt;&lt;/div&gt; 
+	&lt;div class="movedown"&gt;&lt;/div&gt; 
+	&lt;div class="moveleft"&gt;&lt;/div&gt; 
+	&lt;div class="moveright"&gt;&lt;/div&gt; 
+    &lt;/div&gt;
+</pre><p>There are also some lines to add to your CSS stylesheet. Please note that you can adapt it to your needs, especially the default width of the scrollable area.
+Do not change position and width/height of map_surface - it suppose to fill be exactly as container size.
+</p><pre>/** Scrollable area **/
+
+#map_container {
+    position: relative;
+    overflow: hidden;
+
+    width: 100%;
+    height: 400px;
+}
+#map_scrollable, #map_scrollable_oversurface {
+    position: absolute;
+}
+#map_surface {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    cursor: move;
+}
+
+/** This is some extra stuff to extend the container **/
+
+#map_footer {
+    text-align: center;
+}
+
+/** Move arrows **/
+
+.movetop,.moveleft,.moveright,.movedown {
+    display: block;
+    position: absolute;
+    background-image: url('../../../img/common/arrows.png');
+    width: 32px;
+    height: 32px;
+}
+
+.movetop {
+    top: 0px;
+    left: 50%;
+    background-position: 0px 32px;
+}
+.moveleft {
+    top: 50%;
+    left: 0px;
+    background-position: 32px 0px;
+}
+.moveright {
+    top: 50%;
+    right: 0px;
+    background-position: 0px 0px;
+}
+.movedown {
+    bottom: 0px;
+    left: 50%;
+    background-position: 32px 32px;
+}
+
+</pre><p>Now in the Javascript file, add "ebg/scrollmap" as a dependency:
+</p><pre>const [scrollmap] = await importDojoLibs(['ebg/scrollmap']);
+</pre><p><br/>
+Finally, to link your HTML code with your Javascript, place this in your Javascript "Setup" method:
+</p><pre>        this.scrollmap = new ebg.scrollmap(); // declare an object (this can also go in constructor)
+   	// Make map scrollable        	
+        this.scrollmap.create( $('map_container'),$('map_scrollable'),$('map_surface'),$('map_scrollable_oversurface') ); // use ids from template
+        this.scrollmap.setupOnScreenArrows( 150 ); // this will hook buttons to onclick functions with 150px scroll step
+
+</pre><p>This is it! Now, you should see on your game interface a scrollable game area. This is not really impressive though, because you didn't add anything on the game area yet. This is the next step.
+</p><h2><span class="mw-headline" id="Scrollable_area_layers">Scrollable area layers</span></h2><p>There are two and only two places where you should place your elements in your scrollable area:
+</p><ul><li>inside "map_scrollable" div</li>
+<li>inside "map_scrollable_oversurface" div</li></ul><p>The difference is very important: "map_scrollable" is beneath the surface that is used to pan scroll ("map_surface"), and "map_scrollable_oversurface" is above this surface. In practice:
+</p><ul><li>If some element on the game area need to be clicked (or any kind of user interaction), you should place it in map_scrollable_oversurface, otherwise no click can reach it.</li>
+<li>If some element on the game area don't need to be clicked, you'd better place it in "map_scrollable", so it is possible pan scroll from a point on this element.</li></ul><p>Of course, all layers are scrolled synchronously.
+</p><p>The other layer is 'map_surface' - it is what user would use to pan scroll. If this div is not visible because 'map_scrollable_oversurface' covering it completely - panning will be impossible (unless you apply some css trickery, see 'Fall-through mouse events on oversurface' below).
+</p><p>Simple example of placing element (normally you would use slideObject  and such...):
+</p><pre>  dojo.create("div",{innerHTML: "hello" },"map_scrollable_oversurface");
+</pre><p>This is the layers of the scrollmap, it is not how it looks like, its just to visually demonstrate what is what:
+</p><p>If you wondering on how to make this picture - I added transform: translateZ to layers to visually split them and removed visibily: hidden from the container to show that "map_scrollable" is the one that can grow without bounds and parts of it can be hidden because view port (the map_container) can be much smaller. Also you can see that map_scrollable_oversurface and map_scrollable are the layers that syncronized on position and size,
+and map_surface is same size as map_container.
+</p><h2><span class="mw-headline" id="Customizations">Customizations</span></h2><h3><span class="mw-headline" id="Disable_move_arrows">Disable move arrows</span></h3><p>The buttons already defined in css and the buttons handler already defined in the scrollmap control just make sure you call function setupOnScreenArrows (and in .tpl file buttons have to be defined with exact these classes verbatim). If you don't want the buttons, do not call function setupOnScreenArrows() and remove them from template (you can also remove just some of them, i.e. only leave left and right).
+</p><h3><span class="mw-headline" id="Enable_scrollmap_zone_extension">Enable scrollmap zone extension</span></h3><p>This is optional, when there can be unused screen space under the scrollmap that a player might want to use.
+Add this in your .tpl after the scrollmap div (the matching css rules has already been defined):
+</p><pre>&lt;div id="map_footer" class="whiteblock"&gt;
+    &lt;a href="#" id="enlargedisplay"&gt;↓  {LABEL_ENLARGE_DISPLAY}  ↓&lt;/a&gt;
+&lt;/div&gt;
+</pre><p>In your javascript, define the following function:
+</p><pre>        onIncreaseDisplayHeight(evt) {
+            console.log('Event: onIncreaseDisplayHeight');
+            evt.preventDefault();
+        	
+            var cur_h = toint(dojo.style( $('map_container'), 'height'));
+            dojo.style($('map_container'), 'height', (cur_h + 300) + 'px');
+        },
+</pre><p>and connect them to the 'enlargedisplay' link in your setup:
+</p><pre>dojo.connect( $('enlargedisplay'), 'onclick', this, 'onIncreaseDisplayHeight' );
+</pre><p>In your view.php file, define the template variable LABEL_ENLARGE_DISPLAY so that it gets substituted with appropriate translatable text:
+</p><pre>$this-&gt;tpl['LABEL_ENLARGE_DISPLAY'] = self::_("Enlarge display");
+</pre><p><br/>
+</p><h3><span class="mw-headline" id="Fall-through_mouse_events_on_oversurface">Fall-through mouse events on oversurface</span></h3><p>What if you have some non-square shapes on the surface and there is a lot of space in between the elemenets that can be
+used to pan scrolling but it currently not possible to grab on to map_scrollable_oversurface?
+To do that you have to make mouse click "fall-though" that layer, but stick on children. Add this to your css to solve this problem:
+</p><pre>#map_scrollable_oversurface {
+	pointer-events: none;
+}
+#map_scrollable_oversurface &gt; *{
+	pointer-events: initial;
+}
+
+</pre><p><br/>
+</p><h3><span class="mw-headline" id="Avoid_scrolling_on_touch_devices">Avoid scrolling on touch devices</span></h3><p>When a scrollmap is used on touch devices (such as a smartphone), by default scrolling will scroll the entire page (and the elements in the scrollmap won't move).
+To avoid this, simply add the following in your CSS file:
+</p><pre>#map_container {
+    touch-action: none;
+}
+</pre><p><br/>
+</p><h3><span class="mw-headline" id="Zooming">Zooming</span></h3><p><b>Ingredients:</b> ggg_ggg.tpl, ggg.js
+</p><p><b>ggg_ggg.tpl</b>
+</p><pre>        &lt;div id="zoomplus"&gt;&lt;/div&gt;
+        &lt;div id="zoomminus"&gt;&lt;/div&gt;
+</pre><p><br/>
+<b>Game.js</b>
+</p><pre>setup(gamedatas) {
+     [...]
+     this.trl_zoom = 1;
+     dojo.connect($('zoomplus'), 'onclick', () =&gt; this.onZoomButton(0.1));
+     dojo.connect($('zoomminus'), 'onclick', () =&gt; this.onZoomButton(-0.1));
+     [...]
+}
+
+onZoomButton(deltaZoom) {
+    zoom = this.trl_zoom + deltaZoom;
+    this.trl_zoom = zoom &lt;= 0.2 ? 0.2 : zoom &gt;= 2 ? 2 : zoom;
+    dojo.style($('map_scrollable'), 'transform', 'scale(' + this.trl_zoom + ')');
+    dojo.style($('map_scrollable_oversurface'), 'transform', 'scale(' + this.trl_zoom + ')');
+}
+</pre><p>Note: you may also link this to a user preference (see <a class="mw-redirect" href="/Game_options_and_preferences:_gameoptions.inc.php#Updating_preference_from_code" title="Game options and preferences: gameoptions.inc.php">this page</a> for more information).
+</p><h2><span class="mw-headline" id="API_Reference">API Reference</span></h2><h3><span class="mw-headline" id="Constructor">Constructor</span></h3><dl><dt>ebg.scrollmap()</dt>
+<dd>return newly created scrollmap object</dd></dl><h3><span class="mw-headline" id="Properties">Properties</span></h3><p>no public properties
+</p><h3><span class="mw-headline" id="Methods">Methods</span></h3><dl><dt>create( container_div, undersurface_div, surface_div, onsurface_div )</dt>
+<dd>Object initializer, must be called before usage.</dd>
+<dd>Parameters:
+<dl><dd>[HTMLElement] container_div - dom node of the container</dd>
+<dd>[HTMLElement] undersurface_div - dom node of the layer under the scrollable surface, called map_scrollable in the template example</dd>
+<dd>[HTMLElement] surface_div - dom node of the area inside the container that is used for panning</dd>
+<dd>[HTMLElement] onsurface_div - dom node of the layer above the scrollable surface, called map_scrollable_oversurface in the template example</dd></dl></dd>
+<dd>Note: this method also calles scrollto(0,0) which has animation, if you want to play with positioning you have to wait for it to finish (i.e. 350 ms for now).</dd></dl><dl><dt>scroll( dx, dy [, duration [, delay ]])</dt>
+<dd>Scroll content using relative offset (animated)</dd>
+<dd>Parameters:
+<dl><dd>[Number] dx - x offset</dd>
+<dd>[Number] dy - y offset</dd>
+<dd>[Number] duration - animation duration, default is 350</dd>
+<dd>[Number] delay - animation duration, default is 0</dd></dl></dd></dl><p><br/>
+</p><dl><dt>scrollto( x, y [, duration [, delay ]])</dt>
+<dd>Scroll the board to make it centered on given position (0,0 will scroll to center)</dd>
+<dd>Parameters:
+<dl><dd>[Number] x - position relative to center</dd>
+<dd>[Number] y - position relative to center</dd>
+<dd>[Number] duration - animation duration, default is 350</dd>
+<dd>[Number] delay - animation duration, default is 0</dd></dl></dd></dl><dl><dt>disableScrolling()</dt>
+<dd>Disable scrolling (that disable both scrolling and panning)</dd></dl><dl><dt>enableScrolling()</dt>
+<dd>Enable scrolling (re-enable scrolling)</dd></dl></div></body>
+</html>

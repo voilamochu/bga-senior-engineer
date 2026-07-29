@@ -1,0 +1,15 @@
+{
+  "title": "BgaDice",
+  "source_html": "BgaDice.html",
+  "clean_html": "BgaDice.html",
+  "url": "https://en.doc.boardgamearena.com/BgaDice",
+  "depth": 1,
+  "sha256_raw": "43303e8428e0d6af541fb2d30f6803e9fa257020f6e49b6a9b6430a776791e85",
+  "sha256_clean": "a8aa35dca902ff632be1cf0e653f60be4af776e988a59aceb646cb7ffbde0c3c",
+  "word_count": 367,
+  "code_block_count": 5,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 5,
+  "cleaned_at": "2026-07-06T06:38:18.520383+00:00"
+}

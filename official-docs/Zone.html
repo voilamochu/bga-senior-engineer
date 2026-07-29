@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Zone - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Zone rootpage-Zone action-view"><div class="article"><p><br/>
+</p><p>The Zone component is meant to organise items of the same type inside a predefined space.
+</p><h2><span class="mw-headline" id="Zone_in_action">Zone in action</span></h2><p>If you want to see how Zone works, please try "Can't Stop" or "Niagara" on BGA, or watch a game in progress or game replay.
+</p><p>In Niagara, it is used to display the canoes over the circles going down the river (custom mode).
+</p><h2><span class="mw-headline" id="How_to_use_Zone">How to use Zone</span></h2><p>At first, don't forget to add "ebg/zone" as a dependency:
+</p><pre>const [zone] = await importDojoLibs(['ebg/zone']);
+</pre><p>Then, declare a new variable in your class for the Zone object:
+</p><pre>        constructor(){
+        console.log('yourgame constructor');
+              
+        // Zone control        	
+        this.myZone = new ebg.zone();
+</pre><p>Now, in your template file, you must add a div that will host this zone:
+</p><pre>    &lt;div id="my_zone"&gt;&lt;/div&gt;
+</pre><p>And set its width (and optionally, height and position) in CSS:
+</p><pre>
+
+#my_zone {
+  width: 100px;
+}
+
+</pre><p>Then in your Javascript setup, attach your Zone component to the div and define its properties :
+</p><pre>            zone.create( this.bga.gameui, 'my_zone', &lt;item_width&gt;, &lt;item_height&gt; );
+            zone.setPattern( &lt;mode&gt; );
+</pre><ul><li>&lt;item_width&gt; is an integer for the width of the objects you want to organise in the zone</li>
+<li>&lt;item_height&gt; is an integer for the height of the objects you want to organise in the zone</li>
+<li>&lt;mode&gt; is one of 'grid' (objects will be put on lines from top left to bottom right, wrapping when there is not enough space left on the line, relatively to the width you have defined) 'diagonal' (objects will be organised on a top left to bottom right diagonal, overlapping each other) or 'custom' (objects will be organised depending upon their number and the coordinates that you provide - see below)</li></ul><p>Since the width of the Zone is defined statically, beware of not letting items overflow on small screens. If you need a design-responsive component, consider using the Stock component instead.
+</p><p>After creating an object that you want to add to the zone as a classic HTML template (dojo.place / this.format_block), you can simply use:
+</p><pre>   zone.placeInZone( &lt;object_id&gt;, &lt;weight&gt; );
+</pre><ul><li>&lt;object_id&gt; is the string identifier for your object 'my_object_id'</li>
+<li>&lt;weight&gt; is an optional parameter used to sort items</li></ul><p>To remove an item, use:
+</p><pre>   zone.removeFromZone( &lt;object_id&gt;, &lt;destroy?&gt;, &lt;to&gt; );
+</pre><ul><li>&lt;object_id&gt; is the string identifier for your object 'my_object_id'</li>
+<li>&lt;destroy?&gt; is a boolean indicating if the object should be destroyed after being removed</li>
+<li>&lt;to&gt; is the destination the object must be slided to when being removed (before being eventually destroyed)</li></ul><p>You can also:
+</p><ul><li>remove all items from the zone (and destroy them) using zone.removeAll();</li>
+<li>get the number of items in your zone using zone.getItemNumber();</li>
+<li>get an array of the ids of all the items using zone.getAllItems();</li></ul><h2><span class="mw-headline" id="Patterns:_positioning_items_within_your_zone">Patterns: positioning items within your zone</span></h2><p>full source is available here : <a class="external free" href="https://x.boardgamearena.net/data/themereleases/220811-1000/js/modules/zone.js" rel="nofollow">https://x.boardgamearena.net/data/themereleases/220811-1000/js/modules/zone.js</a>
+</p><pre>  zone.setPattern('pattern_name')  // ...where 'pattern_name' is actually one of the many pre-formatted patterns of the package
+</pre><p>The patterns that are currently available as part of the ebg/zone package are: 
+</p><ul><li>'grid' (which is the default, if you never actually call setPattern)</li>
+<li>'diagonal'</li>
+<li>'verticalfit'</li>
+<li>'horizontalfit'</li>
+<li>'ellipticalfit'</li>
+<li>'custom'</li></ul><h3><span class="mw-headline" id="grid">grid</span></h3><p>This is the default pattern for all zones when they are created. With enough horizontal space to fit all items in the zone, this pattern will simply arrange the items in a single horizontal row (as in the first zone in the image below). 
+</p><pre>dojo.style('grid_zone_2', 'max-width', '175px');</pre><p><a class="image" href="/File:Zone_grid.jpg"><img alt="Zone grid.jpg" decoding="async" height="295" src="/images/9/95/Zone_grid.jpg" width="494"/></a>
+</p><h3><span class="mw-headline" id="diagonal">diagonal</span></h3><p>This pattern is great for creating the illusion of stacks (e.g., decks, counters, etc), because it will place each successive item in the zone a certain number of pixels below, and that same number of pixels to the right of the previous item in the zone. The exact number of pixels that are used for these offsets are controlled by the zone object attribute 'item_margin' (which defaults to 5, as in the first zone in the image below). The behavior of this pattern does not appear to be affected by whether or not the zone is allotted enough horizontal or vertical space to display all items, as is demonstrated in the second zone of the image below, which was allotted less vertical and horizontal space (49px by 49px) than is required for displaying just one of the components (50px by 50px).
+</p><pre>// For the third diagonal example:
+this.zone.diagonal_zone_3.item_margin = 2;
+
+// For the fourth diagonal example (with enough margin to fully display each component):
+this.zone.diagonal_zone_4.item_margin = 36;
+</pre><p><a class="image" href="/File:Zone_diagonal.jpg"><img alt="Zone diagonal.jpg" decoding="async" height="697" src="/images/2/25/Zone_diagonal.jpg" width="606"/></a>
+</p><h3><span class="mw-headline" id="verticalfit">verticalfit</span></h3><p>This pattern is useful if you want all items in your zone to be arranged in a single column, regardless of whether there is enough space to display each item fully. In the first zone in the image below, no min-height or max-height was set for the zone (thus, the zone has the max-height of its first component), so all items were stacked upward on top of the original component, with item_margin (5px by default) vertical distance between each component, similar to how it was done for the diagonal pattern zones.  
+</p><pre>// For the second verticalfit example, with overlap:
+dojo.style('verticalfit_zone_2', 'max-height', '100px');
+
+// For the third verticalfit example, with just enough space to display all components:
+// (component height = 50px, multiplied by 5 components = 250px)
+dojo.style('verticalfit_zone_3', 'min-height', '250px');
+</pre><p><a class="image" href="/File:Zone_verticalfit_1.jpg"><img alt="Zone verticalfit 1.jpg" decoding="async" height="624" src="/images/5/57/Zone_verticalfit_1.jpg" width="873"/></a>
+</p><p><a class="image" href="/File:Zone_verticalfit_2.jpg"><img alt="Zone verticalfit 2.jpg" decoding="async" height="510" src="/images/6/68/Zone_verticalfit_2.jpg" width="889"/></a>
+</p><h3><span class="mw-headline" id="horizontalfit">horizontalfit</span></h3><p>This pattern is useful if you want all items in your zone to be arranged in a single row, regardless of whether there is enough space to display each item fully. If the width of this type of zone is not explicitly set, then it will be assumed to be then same as its parent element (which could lead to the items being centered within another one of your divs, as in the first zone of the image below). 
+</p><pre>// For the second horizontalfit example:
+dojo.style('horizontalfit_zone_2', 'max-width', '100px');
+
+// For the third horizontalfit example:
+dojo.style('horizontalfit_zone_3', 'min-width', '250px');
+</pre><p>And, just as in the example for the default of this pattern, if the allotted horizontal space for the zone is greater than what is required by the items, then the row of items will be centered within the 'min-width' of the zone (as shown in the fourth zone of the image below, which has a max-width of 450px).
+</p><h3><span class="mw-headline" id="ellipticalfit">ellipticalfit</span></h3><p>This pattern will arrange all items in the zone in a circular (or elliptical) arrangement, with equal radial distance between each item. With enough vertical and horizontal space to fit all items in the zone into a single non-overlapping circle, this pattern will do just that. 
+</p><p>However, if the zone is not allotted enough vertical and horizontal space to fully display each zone item in a single circle, then the items that do not fit into the original circle will begin to form an additional concentric circle around the original circle.
+</p><p>In this second circle, items *will* overlap if there is not enough space for them all to be fully displayed.
+</p><h3><span class="mw-headline" id="custom">custom</span></h3><p>If you want complete control on how your objects are laid out inside the Zone, you can determine their coordinates after their number when being added to the zone. 
+</p><p>Here is how to do it, when defining your Zone properties in the javascript setup:
+</p><pre>                this.zone.setPattern( 'custom' );
+                
+                this.zone.itemIdToCoords = function( i, control_width ) {
+                    if( i%8==0 )
+                    {   return {  x:1,y:19, w:60, h:30 }; }
+                    else if( i%8==1 )
+                    {   return {  x:30,y:38, w:60, h:30 }; }
+                    else if( i%8==2 )
+                    {   return {  x:42,y:8, w:60, h:30 }; }
+                    else if( i%8==3 )
+                    {   return {  x:5,y:58, w:60, h:30 }; }
+                    else if( i%8==4 )
+                    {   return {  x:5,y:24, w:60, h:30 }; }
+                    else if( i%8==5 )
+                    {   return {  x:35,y:43, w:60, h:30 }; }
+                    else if( i%8==6 )
+                    {   return {  x:47,y:13, w:60, h:30 }; }
+                    else if( i%8==7 )
+                    {   return {  x:10,y:63, w:60, h:30 }; }
+                };
+</pre></div></body>
+</html>

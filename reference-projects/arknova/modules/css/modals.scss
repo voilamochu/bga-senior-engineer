@@ -1,0 +1,491 @@
+#popin_showSettings,
+#popin_showBreak,
+#popin_chooseCards,
+#popin_showScoreboard,
+#popin_showTour {
+    background-color: #ebd5bd;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px black;
+    position: relative;
+
+    .arknova_popin_closeicon {
+        background-color: #a47a77;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: -18px;
+        right: -18px;
+        font-size: 90%;
+        color: white !important;
+        border: 1px solid #35302d;
+        z-index: 2;
+
+        &:hover {
+            text-decoration: none;
+            color: #ccc !important;
+            transform: scale(1.1);
+        }
+
+        i {
+            margin-top: -2px;
+        }
+    }
+
+    h2 {
+        font-family: MyriadPro-Semibold;
+        text-align: center;
+        font-size: 25px;
+        margin: 0px;
+        background: #b79570;
+        border-radius: 8px 8px 0px 0px;
+        padding: 11px 0px 3px;
+        border-bottom: 1px solid #734f2a;
+    }
+}
+
+#break-details {
+    width: 600px;
+    padding: 10px 15px;
+    text-align: justify;
+
+    .break-details-phase {
+        clear: both;
+        margin-top: 10px;
+        // display: grid;
+        // grid-template-columns: auto auto;
+        // grid-template-rows: auto auto;
+        // column-gap: 10px;
+
+        h3 {
+            grid-column: 1 / span 2;
+        }
+
+        .phase-image {
+            background: url("img/break-steps.jpg");
+            background-size: auto 100%;
+            width: 200px;
+            height: 100px;
+            float: left;
+            margin-right: 15px;
+            margin-bottom: 10px;
+
+            &.phase-1 {
+                width: 73px;
+            }
+            &.phase-2 {
+                width: 102px;
+                background-position-x: -73px;
+            }
+            &.phase-3 {
+                width: 119px;
+                background-position-x: -175px;
+            }
+            &.phase-4 {
+                width: 114px;
+                background-position-x: -295px;
+            }
+            &.phase-5 {
+                width: 236px;
+                background-position-x: -411px;
+            }
+            &.phase-6 {
+                width: 117px;
+                background-position-x: -648px;
+            }
+        }
+
+        .phase-desc {
+            text-align: justify;
+        }
+    }
+}
+
+#popin_startBreak_underlay {
+    background-color: #3c3b3b !important;
+}
+#popin_startBreak {
+    font-size: 4em;
+}
+
+#popin_showScoreboard {
+    width: 1400px;
+    background: none;
+
+    #popin_showScoreboard_close {
+        background-color: #735145;
+        border-color: #462b21;
+        top: -23px;
+        right: -23px;
+    }
+
+    #arknova-scoreboard {
+        width: 1400px;
+        height: 640px;
+        background-image: url("img/solo/ticket-25.jpg"), url("img/score-board.jpg");
+        background-size:
+            40px 64px,
+            100% auto;
+        background-position:
+            1345px 380px,
+            0px 0px;
+        background-repeat: no-repeat;
+        [data-starting-appeal="10"] & {
+            background-image: url("img/solo/ticket-35.jpg"), url("img/score-board.jpg");
+            background-position:
+                890px 380px,
+                0px 0px;
+        }
+        [data-starting-appeal="20"] & {
+            background-image: url("img/solo/ticket-45.jpg"), url("img/score-board.jpg");
+            background-position:
+                435px 380px,
+                0px 0px;
+        }
+
+        border-radius: 8px;
+        border: 1px solid black;
+        box-sizing: border-box;
+        display: grid;
+        grid-template-columns: repeat(30, 1fr);
+        padding: 27px 10px 15px 21px;
+        grid-template-rows: 70px 137px 70px 73px 70px 73px 70px auto;
+        position: relative;
+
+        .icon-cylinder {
+            transition: transform 0.5s;
+            transform: translateY(0);
+        }
+        &:hover .icon-cylinder {
+            transform: translateY(-50%);
+        }
+
+        .appeal-slot {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-flow: column-reverse;
+
+            .icon-cylinder ~ .icon-cylinder {
+                margin-bottom: -15px;
+            }
+        }
+        &:hover .appeal-slot .icon-cylinder {
+            &:nth-child(2) {
+                transform: translateY(-70%);
+            }
+            &:nth-child(3) {
+                transform: translateY(-90%);
+            }
+            &:nth-child(4) {
+                transform: translateY(-110%);
+            }
+        }
+
+        .conservation-slot {
+            align-items: flex-start;
+            display: flex;
+            flex-flow: row;
+            justify-content: center;
+
+            &:not(.wide) {
+                .icon-cylinder:nth-child(4) {
+                    margin-left: -30px;
+                    margin-top: -11px;
+                }
+            }
+
+            &#conservation-0:not(.wide) {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+
+                .icon-cylinder {
+                    margin-top: -80px;
+                    &:nth-child(2) {
+                        margin-top: -85px;
+                    }
+                    &:nth-child(3) {
+                        margin-top: -90px;
+                    }
+                    &:nth-child(4) {
+                        margin-top: -95px;
+                        margin-left: 0px;
+                    }
+                }
+            }
+        }
+
+        .scoreboard-bonus {
+            position: absolute;
+            top: 126px;
+            width: 82px;
+            height: 80px;
+            font-size: 26px;
+
+            &.permanent,
+            &#scoreboard-bonus-10-0 {
+                .arknova-bonus-container {
+                    width: 100%;
+                    height: 100%;
+                    .arknova-bonus {
+                        display: none;
+                    }
+                }
+            }
+        }
+
+        #scoreboard-bonus-2-0 {
+            left: 114px;
+        }
+        #scoreboard-bonus-2-1 {
+            left: 210px;
+        }
+
+        #scoreboard-bonus-5-0,
+        #scoreboard-bonus-8-0 {
+            left: 457px;
+            width: 40px;
+            height: 40px;
+            top: 166px;
+        }
+        #scoreboard-bonus-5-1 {
+            left: 374px;
+        }
+        #scoreboard-bonus-5-2 {
+            left: 497px;
+        }
+
+        #scoreboard-bonus-8-0 {
+            left: 731px;
+        }
+        #scoreboard-bonus-8-1 {
+            left: 649px;
+        }
+        #scoreboard-bonus-8-2 {
+            left: 771px;
+        }
+
+        #scoreboard-bonus-10-0 {
+            left: 892px;
+        }
+    }
+}
+
+#popin_chooseCards {
+    max-width: 800px;
+    --arkNovaZooCardScale: 0.4;
+
+    #choose-cards,
+    #discard-other-content {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        padding: 10px 15px;
+
+        .ark-card {
+            margin: 3px 5px;
+        }
+    }
+
+    #choose-cards-footer {
+        display: flex;
+        justify-content: end;
+        background: #f0f0e9;
+        border-top: 1px solid black;
+        padding: 0px 15px;
+        border-bottom-right-radius: 8px;
+        border-bottom-left-radius: 8px;
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    #discard-other-content:empty {
+        padding: 0px;
+    }
+    #discard-other-content:not(:empty) {
+        border-top: 1px solid black;
+    }
+}
+
+#popin_showTour {
+    width: auto;
+    border: 1px solid black;
+    h2 {
+        padding: 5px 0px 3px;
+    }
+
+    #tour-slider-container {
+        margin-bottom: 15px;
+
+        .slide {
+            width: 500px;
+            padding: 10px 15px;
+            box-sizing: border-box;
+
+            .bubble {
+                position: relative;
+                margin: 5px 20px 30px 0px;
+                background: white;
+                border: 2px solid black;
+                border-radius: 10px;
+                padding: 4px 8px;
+
+                &::before {
+                    content: "";
+                    position: absolute;
+                    width: 46px;
+                    height: 50px;
+                    bottom: -29px;
+                    right: -25px;
+                    background-image: url("img/help/owl.png");
+                    background-size: contain;
+                    background-repeat: no-repeat;
+                    background-position: center center;
+                }
+            }
+
+            &.inactive {
+                display: none;
+            }
+
+            div.split-hor {
+                display: flex;
+
+                &.centered {
+                    align-items: center;
+                }
+            }
+
+            ul {
+                padding-left: 25px;
+                li {
+                    list-style-type: disc;
+                    margin-bottom: 4px;
+                }
+            }
+
+            .tour-btn {
+                text-align: right;
+                button {
+                    width: auto;
+                    margin-bottom: 0px;
+                }
+            }
+
+            .tour-remark {
+                font-style: italic;
+                background: rgba(255, 255, 255, 0.4);
+                padding: 4px 7px;
+                border-radius: 5px;
+                border: 1px solid gray;
+                font-size: 15px;
+            }
+            .tour-remark + .tour-remark {
+                margin-top: 8px;
+            }
+
+            .tour-img {
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: center center;
+                margin: 5px 10px;
+
+                &#img-panelInfo {
+                    width: 250px;
+                    height: 370px;
+                    background-image: url("img/help/panel-info.png");
+                }
+
+                &#img-player-panel {
+                    width: 240px;
+                    height: 255px;
+                    background-image: url("img/help/player-panel.png");
+                }
+
+                &#img-zooMap {
+                    width: 525px;
+                    height: 385px;
+                    background-image: url("img/help/zoo-map.jpg");
+                    margin: 0px;
+                }
+
+                &#img-tableau {
+                    width: 400px;
+                    height: 430px;
+                    background-image: url("img/help/tableau.jpg");
+                    margin: -37px auto -10px;
+                }
+
+                &#img-hand-btn {
+                    width: 409px;
+                    height: 80px;
+                    margin: -20px auto 0px;
+                    background-image: url("img/help/hand-btn.jpg");
+                }
+
+                &#img-display {
+                    width: 500px;
+                    height: 150px;
+                    margin: 0px auto 10px;
+                    background-image: url("img/help/display.jpg");
+                }
+
+                &#img-association {
+                    width: 470px;
+                    height: 300px;
+                    margin: 0px auto 10px;
+                    background-image: url("img/help/association.jpg");
+                }
+            }
+
+            &#tour-slide-intro {
+                button {
+                    width: auto;
+                    display: block;
+                }
+            }
+
+            &#tour-slide-panelInfo {
+                width: 700px;
+            }
+            &#tour-slide-panel {
+                width: 700px;
+            }
+            &#tour-slide-zooMap {
+                width: 800px;
+            }
+            &#tour-slide-tableau {
+                width: 600px;
+            }
+            &#tour-slide-display {
+                width: 600px;
+            }
+            &#tour-slide-association {
+                width: 800px;
+            }
+            &#tour-slide-majorChanges {
+                width: 600px;
+            }
+            &#tour-slide-bugs {
+                width: 600px;
+            }
+        }
+    }
+
+    #tour-slide-footer {
+        min-height: 30px;
+        background-color: #e6e6e6d1;
+        border-top: 1px solid #6a4b2f;
+        margin: 0px;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+        text-align: right;
+        padding: 5px 15px 0px;
+    }
+}

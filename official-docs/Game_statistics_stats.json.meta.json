@@ -1,0 +1,15 @@
+{
+  "title": "Game statistics: stats.json",
+  "source_html": "Game_statistics_stats.json.html",
+  "clean_html": "Game_statistics_stats.json.html",
+  "url": "https://en.doc.boardgamearena.com/Game_statistics:_stats.json",
+  "depth": 1,
+  "sha256_raw": "34539735de9652bd9bb76272c17ba0d19c87703a39e90031998ed1b2c79113c8",
+  "sha256_clean": "63d1bc73e4bd0fe2dd598beb960931de9e88cb92ba2177fd2702611889ef0518",
+  "word_count": 693,
+  "code_block_count": 5,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 5,
+  "cleaned_at": "2026-07-06T06:38:19.213091+00:00"
+}

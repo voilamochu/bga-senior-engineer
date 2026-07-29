@@ -1,0 +1,15 @@
+{
+  "title": "ExpandableSection",
+  "source_html": "ExpandableSection.html",
+  "clean_html": "ExpandableSection.html",
+  "url": "https://en.doc.boardgamearena.com/ExpandableSection",
+  "depth": 1,
+  "sha256_raw": "4c292b09cf2bf3f5c0bd7067c629636f4256505d3ba3aef12e3ae7fd55542d2a",
+  "sha256_clean": "5248c4bf7c49b4d3a79ac8628b983b6f0a29e9e58c38144375103e4cd52f454f",
+  "word_count": 175,
+  "code_block_count": 5,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 3,
+  "cleaned_at": "2026-07-06T06:38:18.776038+00:00"
+}

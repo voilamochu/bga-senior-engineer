@@ -1,0 +1,15 @@
+{
+  "title": "Scrollmap",
+  "source_html": "Scrollmap.html",
+  "clean_html": "Scrollmap.html",
+  "url": "https://en.doc.boardgamearena.com/Scrollmap",
+  "depth": 1,
+  "sha256_raw": "12ed87e0bf1658fb88408eddf8e9d97394c74ace4ad83a54a15dae4d87eea8c7",
+  "sha256_clean": "6c3430e7c5da0baa68e4de92c39e14f810a3741f448b2a19383b7054b5c4f906",
+  "word_count": 1316,
+  "code_block_count": 13,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 13,
+  "cleaned_at": "2026-07-06T06:38:19.601592+00:00"
+}

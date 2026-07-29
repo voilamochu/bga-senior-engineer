@@ -1,0 +1,15 @@
+{
+  "title": "ChromeExtension",
+  "source_html": "ChromeExtension.html",
+  "clean_html": "ChromeExtension.html",
+  "url": "https://en.doc.boardgamearena.com/ChromeExtension",
+  "depth": 2,
+  "sha256_raw": "e5371f5e2c72ef9c153eee9bd8af616772f06b2d570605e53f3fe2bf4196df43",
+  "sha256_clean": "6205d015a36031fdea87c1dfa951dc24c6f098eb9191d1b946b5c969cb422ba0",
+  "word_count": 1532,
+  "code_block_count": 7,
+  "table_count": 1,
+  "image_count": 18,
+  "heading_count": 12,
+  "cleaned_at": "2026-07-06T06:38:18.587546+00:00"
+}

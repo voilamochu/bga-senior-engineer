@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Post-release phase - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Post-release_phase rootpage-Post-release_phase action-view"><div class="article"><p><br/>
+</p><p>Your game is now on BGA: congrats!
+</p><p>Don't be afraid: you're still allowed to modify your game. You just have to pay attention to the points below.
+</p><h2><span class="mw-headline" id="Bugs_reporting">Bugs reporting</span></h2><p>Bugs are reported on the <a class="external text" href="https://boardgamearena.com/bugs" rel="nofollow">BGA bugs page</a>.
+</p><h2><span class="mw-headline" id="Documentation_for_Bug_Reports">Documentation for Bug Reports</span></h2><p>You can provide a wiki page for the attention of bug reporters.
+</p><p>You will be presented with an "Edit bug clarifications Wiki page" button, where you can edit the page.
+</p><h2><span id="How_to_submit_changes.3F"></span><span class="mw-headline" id="How_to_submit_changes?">How to submit changes?</span></h2><p>There are steps to make your changes visible on BGA (from your game Control Panel, i.e. <a class="external free" href="https://studio.boardgamearena.com/studiogame?game=mygamename" rel="nofollow">https://studio.boardgamearena.com/studiogame?game=mygamename</a>):
+</p><ul><li>In Build a new release version section
+<ul><li>Enter some notes about the release (i.e. fixed bug xxx, added feature yyy)</li>
+<li>Press "Commit &amp; build a new version now"</li>
+<li>Do not dismiss the build dialog right away, make sure it does not have Errors. If there are error build has failed.</li></ul></li>
+<li>Deploy your new version in production
+<ul><li>Find your newly build version (should be latest, but check release note to make sure)</li>
+<li>Press "Deploy to production" button</li>
+<li>Do not dismiss the deploy dialog right away, make sure it does not have Errors. If there are error the deploy has failed.</li></ul></li>
+<li>To check - the version of deployed game should be updated in "Online version" of control panel and also in section Credits page of the running game</li>
+<li>Go to Group page of your game and post update anouncement (usually using release notes from the deployment)</li></ul><p>Note: if your game is very popular it will be pretty drammatic if it breaks, you can use two tricks to help your users
+</p><ul><li><a class="external text" href="https://en.doc.boardgamearena.com/BGA_Studio_Cookbook#Disable_/_lock_table_creation_for_new_deploy" rel="nofollow">Disable / lock table creation for new deploy</a></li>
+<li><a class="external text" href="https://en.doc.boardgamearena.com/BGA_Studio_Cookbook#Force_players_to_refresh_after_new_deploy" rel="nofollow">Force players to refresh after new deploy</a></li></ul><h2><span id="What_can_be_modified_after_release.3F"></span><span class="mw-headline" id="What_can_be_modified_after_release?">What can be modified after release?</span></h2><p>Everything can be modified. BUT, some items requires a special attention, and you must inform us in some cases:
+</p><h3><span class="mw-headline" id="Changes_that_breaks_the_games_in_progress">Changes that breaks the games in progress</span></h3><p>Some changes will break the games in progress at the moment the release/the hotfix will be performed. Each time you make a change, you should ask you the question "it is safe to make this change in a game in progress", and if the answer is "no" you have to inform us.
+</p><ul><li>Changes in the database schema of the game (dbmodel.sql).</li>
+<li>New global variable or game option accessed during the game (if it's only used during setup, it should be safe).</li>
+<li>Change ID of existing game states (adding new game states is fine).</li>
+<li>Changing flow of game states (for example, if you change 1 -&gt; 2 -&gt; 3 -&gt; 4 to 1 -&gt; 3 -&gt; 2 -&gt; 4, players at state 2 will skip state 3)</li></ul><p>Of course, as a rule of thumb, you should avoid to introduce changes that break a game in progress. Sometimes however, you do not have any other choice. In this case:
+</p><ul><li>Try to group all your updates in one version, thus we won't have to block your game several times.</li>
+<li>Tell us explicitly that you introduce some update that can break games in progress so we can block the game during a short time.</li></ul><p>Note: in the near future, we will introduce the possibility for you to block/unblock a game directly from your Control Panel in order to perform all the process by yourself.
+</p><h3><span class="mw-headline" id="Updating_game_options">Updating game options</span></h3><ul><li>If you add options, you should let us know which value should be used for the arena mode, so that we can update the arena configuration.</li>
+<li>If you remove an option or change a option ID, it will break the arena configuration and prevent creating new arena games, so you should let us know so that we can synchronize to update the configuration at the same time as you deploy the new version.</li>
+<li>Do not change option IDs once the game is in production, it will break ongoing games and audience option statistics.</li></ul><h3><span class="mw-headline" id="Updating_Statistics">Updating Statistics</span></h3><p>You should be careful when updating a statistics:
+</p><ul><li>If you want to add a new statistic, please be aware that for ongoing games this statistic won't always be correct since it has not been counted from the start of that game.</li>
+<li>If you want to update a statistic, please update it and do not remove/create another one. Otherwise, the statistic won't keep the same ID and players will lose all the historical statistics data.</li>
+<li>If your game is published on BGA, please don't remove any statistics (historical data will be lost).</li></ul><h3><span class="mw-headline" id="Updating_the_database_schema">Updating the database schema</span></h3><p>If you want to update the database schema of the game (dbmodel.sql) and your game is already open to everyone on BGA (from BETA onwards), you should inform us before releasing the new version (see "<a href="#Changes_that_breaks_the_games_in_progress">changes that breaks the games in progress</a>").
+</p><pre> function upgradeTableDb( $from_version ){
+ 
+ if( $from_version &lt;= YYMMDDHHMM ){ // where your CURRENT version in production has number YYMMDD-HHMM
+ 
+           // You DB schema update request.
+           // Note: all tables names should be prefixed by "DBPREFIX_" to be compatible with the applyDbUpgradeToAllDB method you should use below
+           $sql = "CREATE TABLE DBPREFIX_xxxxxxx ....";
+ 
+           // The method below is applying your DB schema update request to all tables, including the BGA framework utility tables like "zz_replayXXXX" or "zz_savepointXXXX".
+           // You should really use this request, in conjunction with "DBPREFIX_" in your $sql, so ALL tables are updated. All utility tables MUST have the same schema than the main table, otherwise the game may be blocked.
+           self::applyDbUpgradeToAllDB( $sql ); 
+ }}
+</pre><p>Note1: of course you need to change your dbmodel.sql accordingly, so that new games get your updated scheme.
+</p><ul><li>if your game is already open to everyone on BGA (from BETA onwards), it may be worth contacting us before, so we can stop the realtime games during the update (this way, only turn based games are concerned by the DB live upgrade).</li>
+<li>if you can avoid it... try to avoid it :)</li></ul><p>Note3: testing on the studio is possible by following the following procedure:
+</p><ul><li>make sure the current state of your project is correctly committed</li>
+<li>revert to the revision currently in production using the version control tools ("Display commit log" -&gt; find the revision matching the current version in production, then "Overwrite working copy with this revision" to get back the matching code)</li>
+<li>launch a game with this code</li>
+<li>revert to your code latest version using the version control tools (use "Overwrite working copy with this revision" with "head" for the revision)</li>
+<li>access the game database</li>
+<li>in the "global" table, find the row with id 300. Its value is 999999999 by default on the studio. Change it to the current production version number</li>
+<li>hit refresh to reload your game page. Your upgradeTableDb() function will be run and the global value will be updated again to the studio value</li>
+<li>check the database to see if your changes have been correctly applied.</li></ul><p>Note4: consider that if your game has some undo support capability through "db_undo_support": true, in the gameinfos.jsonc, calling the undoRestorePoint() could restore to a prior game version and the upgradeTableDb() could be called again. In that case, it's better to secure the SQL Alter Table Request with something like: 
+</p><pre>      function upgradeTableDb( $from_version ){
+        if( $from_version &lt;= YYMMDDHHMM )
+        {
+          // ! important ! Use DBPREFIX_&lt;table_name&gt; for all tables
+          // test first the new column existance since it can exists from a previous call to upgradeTableDb while an undo was performed
+          $result = self::getUniqueValueFromDB("SHOW COLUMNS FROM tablename LIKE 'new_column'");
+          if (empty($result))
+              self::applyDbUpgradeToAllDB("ALTER TABLE DBPREFIX_tablename ADD `new_column` tinyint(4)  unsigned NOT NULL DEFAULT '0';");
+        }
+      }
+</pre><h3><span class="mw-headline" id="Updating_string_to_be_translated">Updating string to be translated</span></h3><p>When you update a string that has been marked to be translatable, please keep in mind that all current translations done by the BGA community will be lost.
+</p><ul><li>Is it just an English misspelling? In this case, it is better to fix the English translation of the string than the original string to be translated.</li>
+<li>Has the meaning of the string changed? If yes, you HAVE to change the original string in order to invalidate all translations that has been done already.</li>
+<li>Is there a similar string already used elsewhere in my game? In this case, you'd better use it again to enjoy immediately all translations already available.</li></ul><h3><span id="Tell_the_community_about_your_changes_:.29"></span><span class="mw-headline" id="Tell_the_community_about_your_changes_:)">Tell the community about your changes :)</span></h3><p>The player's community is always happy to know that someone is taking care of their preferred game :)
+</p><p>When you fix a bug or add something, do not hesitate to tell the players about this in this group: you'll get the "thank you" you deserved :)
+</p><h3><span class="mw-headline" id="Major_changes">Major changes</span></h3><p>If you do some major changes to your game like:
+</p><ul><li>Introducing a new expansion.</li>
+<li>Major code rewriting/refactoring.</li></ul><p>... please tell us. In this case, we can:
+</p><ul><li>Make your game back from "gold" to "public beta", to incite player to report bugs.</li>
+<li>And eventually, publish a news about it :)</li></ul><h2><span class="mw-headline" id="Avoiding_version_mismatches">Avoiding version mismatches</span></h2><p>Be advised about the timing of deployments: Your new PHP backend code takes effect <b>immediately</b>, but your new JS/HTML/CSS frontend code does not take effect unless current players reload the page (F5). This can lead to unexpected behavior and difficult-to-reproduce bugs caused by old JS client code interacting with new PHP server code.
+</p></div></body>
+</html>

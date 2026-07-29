@@ -1,0 +1,15 @@
+{
+  "title": "BgaAutofit",
+  "source_html": "BgaAutofit.html",
+  "clean_html": "BgaAutofit.html",
+  "url": "https://en.doc.boardgamearena.com/BgaAutofit",
+  "depth": 1,
+  "sha256_raw": "e964d8285a1c0c293aba8e36f9f8bb84c799782ff71d7f958de43d882c86acdf",
+  "sha256_clean": "cbea182120672790544ac6d4c0526e4d5bab0b7006e1d0d2990e1d990ee25e31",
+  "word_count": 248,
+  "code_block_count": 5,
+  "table_count": 0,
+  "image_count": 0,
+  "heading_count": 5,
+  "cleaned_at": "2026-07-06T06:38:18.474615+00:00"
+}

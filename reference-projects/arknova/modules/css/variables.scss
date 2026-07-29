@@ -1,0 +1,90 @@
+:root {
+  --arkNovaZooCardScale: 0.35;
+  --arkNovaActionCardScale: 1;
+  --arkNovaLeftColumnScale: 1;
+  --arkNovaAssociationBoardScale: 1;
+}
+
+$pColors: "30a638" "1863a5" "7f4e30" "000000" "5a5856" "ffffff" "d1c81c" "b91b1b" "c028d3" "cb7b19";
+
+$cardBadges: "AnimalsI" "AnimalsII" "BuildI" "BuildII" "CardsI" "CardsII" "SponsorsI" "SponsorsII" "WorkerI" "WorkerII"
+  "Africa" "Americas" "Asia" "Australia" "Europe" "Partner-Zoo" "Reputation" "Science" "Fac" "Upgrade" "Primate" "Bear"
+  "Bear2" "Bird" "Predator" "Herbivore" "Reptile" "Pet" "Pet2" "SeaAnimal" "ANIMAL-SIZE-4" "ANIMAL-SIZE-2" "Appeal"
+  "Rock" "Water";
+
+$actionCards: "Animals" "Build" "Cards" "Sponsors" "Association";
+
+$animalCards: "A401_Cheetah" "A402_Lion" "A403_Leopard" "A404_Caracal" "A405_FennecFox" "A406_SiberianTiger"
+  "A407_SumatranTiger" "A408_SlothBear" "A409_SunBear" "A410_YellowthroatedMarten" "A411_GrizzlyBear" "A412_Jaguar"
+  "A413_Cougar" "A414_SouthAmericanCoati" "A415_Raccoon" "A416_EurasianBrownBear" "A417_Wolf" "A418_EurasianLynx"
+  "A419_EuropeanBadger" "A420_Stoat" "A421_NewZealandFurSeal" "A422_AustralianSeaLion" "A423_NewZealandSeaLion"
+  "A424_AustralianDingo" "A425_TasmanianDevil" "A426_AfricanBushElephant" "A427_WhiteRhinoceros" "A428_NorthernGiraffe"
+  "A429_GrevysZebra" "A430_PygmyHippopotamus" "A431_AsianElephant" "A432_IndianRhinoceros" "A433_GiantPanda"
+  "A434_RedPanda" "A435_MalayanTapir" "A436_AmericanBison" "A437_Muskox" "A438_Reindeer" "A439_Llama"
+  "A440_MountainTapir" "A441_EuropeanBison" "A442_Moose" "A443_RedDeer" "A444_AlpineIbex" "A445_CrestedPorcupine"
+  "A446_Dugong" "A447_RedKangaroo" "A448_Koala" "A449_Platypus" "A450_CommonWombat" "A451_ProboscisMonkey"
+  "A452_SenegalBushbaby" "A453_CollaredMangabey" "A454_RingtailedLemur" "A455_MantledGuereza" "A456_BarbaryMacaque"
+  "A457_Mandrill" "A458_JapaneseMacaque" "A459_RedshankedDouc" "A460_DuskyleafMonkey" "A461_HorsfieldsTarsier"
+  "A462_NorthernPlainsGrayLangur" "A463_PanamanianWhitefacedCapuchin" "A464_BrownSpiderMonkey" "A465_GoldenLionTamarin"
+  "A466_BolivianRedHowler" "A467_EcuadorianSquirellMonkey" "A468_CottontopTamarin" "A469_NileCrocodile"
+  "A470_WesternGreenMamba" "A471_AfricanSpurredTortoise" "A472_RockMonitor" "A473_CommonAgama" "A474_IndianRockPython"
+  "A475_IndianCobra" "A476_KomodoDragon" "A477_VeiledChameleon" "A478_ChineseWaterDragon" "A479_AmericanAlligator"
+  "A480_BroadsnoutedCaiman" "A481_GalApagosGiantTortoise" "A482_Anaconda" "A483_BoaConstrictor"
+  "A484_EuropeanPondTurtle" "A485_CommonEuropeanAdder" "A486_CommonWallLizard" "A487_EuropeanGrassSnake" "A488_SlowWorm"
+  "A489_SaltwaterCrocodile" "A490_GouldsMonitor" "A491_FrilledLizard" "A492_InlandTaipan" "A493_ThornyDevil"
+  "A494_AfricanOstrich" "A495_SecretaryBird" "A496_Marabou" "A497_LesserFlamingo" "A498_Shoebill"
+  "A499_CinereousVulture" "A500_LongbilledVulture" "A501_IndianPeafowl" "A502_GreatHornbill" "A503_SnowyOwl"
+  "A504_AndeanCondor" "A505_BaldEagle" "A506_KingVulture" "A507_GreaterRhea" "A508_ScarletMacaw" "A509_GoldenEagle"
+  "A510_WhiteStork" "A511_GreaterFlamingo" "A512_EurasianEagleowl" "A513_BarnOwl" "A514_Emu" "A515_AustralianPelican"
+  "A516_NorhternCassowary" "A517_LaughingKookaburra" "A518_LesserBirdofparadise" "A519_domesticGoat" "A520_Sheep"
+  "A521_Horse" "A522_Donkey" "A523_DomesticRabbit" "A524_Mangalica" "A525_GuineaPig" "A526_Alpaca"
+  "A527_CoconutLorikeet" "A528_BennettsWallaby" "A529_MagnificentSeaAnemone" "A530_OrangeClownfish"
+  "A531_PaletteSurgeonfish" "A532_Zooplankton" "A533_BlacksideHawkfish" "A534_SouthernBlueringedOctopus"
+  "A535_SharknoseGoby" "A536_LonghornCowfish" "A537_BlackbarTriggerfish" "A538_DevilFirefish"
+  "A539_AmericanWhitespottedFilefish" "A540_GuineafowlPuffer" "A541_BluespottedRibbontailRay" "A542_HumpheadWrasse"
+  "A543_CoastalMantaRay" "A544_CaribbeanReefShark" "A545_LongcombSawfish" "A546_SandTigerShark"
+  "A547_MediterraneanRainbowWrasse" "A548_ShortsnoutedSeahorse" "A549_CommonOctopus" "A550_CompassJellyfish"
+  "A551_LoggerheadSeaTurtle" "A552_GreenSeaTurtle" "A553_Tambaqui" "A554_AfricanPenguin" "A555_GoldenSnubnosedMonkey"
+  "A556_Wolverine" "A557_VietnamesePotbelliedPig" "A558_NorthernMuriqui" "A559_CoquerelsSifaka" "A560_BrahminyKite";
+
+$projectCards: "P101_SpeciesDiversity" "P102_HabitatDiversity" "P103_Africa" "P104_Americas" "P105_Australia"
+  "P106_Asia" "P107_Europe" "P108_Primates" "P109_Reptiles" "P110_Predators" "P111_Herbivores" "P112_Birds"
+  "P113_ReleaseBavarian" "P114_ReleaseYosemite" "P115_ReleaseAngthong" "P116_ReleaseSerengeti"
+  "P117_ReleaseBlueMountain" "P118_ReleaseSavanna" "P119_ReleaseLowMountain" "P120_ReleaseBambooForest"
+  "P121_ReleaseSeacave" "P122_ReleaseJungle" "P123_BirdBreeding" "P124_PredatorBreeding" "P125_ReptileBreeding"
+  "P126_HerbivoreBreeding" "P127_PrimateBreeding" "P128_Aquatic" "P129_Geological" "P130_SmallAnimals"
+  "P131_LargeAnimals" "P132_Research" "P133_SeaAnimals" "P134_PredatorManagementPlan" "P135_BirdManagementPlan"
+  "P136_ReptileManagementPlan" "P137_HerbivoreManagementPlan" "P138_SeaAnimalManagementPlan"
+  "P139_PrimateManagementPlan";
+
+$snakeCards: "A470_WesternGreenMamba" "A474_IndianRockPython" "A475_IndianCobra" "A482_Anaconda" "A483_BoaConstrictor"
+  "A485_CommonEuropeanAdder" "A486_CommonWallLizard" "A487_EuropeanGrassSnake" "A488_SlowWorm" "A492_InlandTaipan"
+  "S203_Veterinarian" "P109_Reptiles" "P125_ReptileBreeding";
+
+$scoringCards: "F001_LargeAnimalZoo" "F002_SmallAnimalZoo" "F003_ResearchZoo" "F004_ArchitecturalZoo"
+  "F005_ConservationZoo" "F006_NaturalistsZoo" "F007_FavoriteZoo" "F008_SponsoredZoo" "F009_DiverseSpeciesZoo"
+  "F010_ClimbingPark" "F011_AquaticPark" "F012_DesignerZoo" "F013_SpecializedHabitatZoo" "F014_SpecializedSpeciesZoo"
+  "F015_CateredPicnicAreas" "F016_AccessibleZoo" "F017_InternationalZoo";
+
+$sponsorCards: "S201_ScienceLab" "S202_Spokesperson" "S203_Veterinarian" "S204_ScienceMuseum"
+  "S205_GorillaFieldResearch" "S206_MedicalBreakthrough" "S207_BasicResearch" "S208_ScienceLibrary"
+  "S209_TechnologyInstitute" "S210_ExpertOnTheAmericas" "S211_ExpertOnEurope" "S212_ExpertOnAustralia"
+  "S213_ExpertOnAsia" "S214_ExpertOnAfrica" "S215_BreedingCooperation" "S216_TalentedCommunicator" "S217_Engineer"
+  "S218_BreedingProgram" "S219_DiversityResearcher" "S220_FederalGrants" "S221_Archeologist" "S222_ReleaseOfPatents"
+  "S223_ScienceInstitute" "S224_MigrationRecording" "S225_QuarantineLab" "S226_ForeignInstitute"
+  "S227_WazaSpecialAssignment" "S228_WazaSmallAnimalProgram" "S229_ExpertInSmallAnimals" "S230_ExpertInLargeAnimals"
+  "S231_SponsorshipPrimates" "S232_SponsorshipReptiles" "S233_SponsorshipVultures" "S234_SponsorshipLions"
+  "S235_SponsorshipElephants" "S236_Primatologist" "S237_Herpetologist" "S238_Ornithologist" "S239_ExpertInPredators"
+  "S240_ExpertInHerbivores" "S241_Hydrologist" "S242_Geologist" "S243_MeerkatDen" "S244_PenguinPool" "S245_Aquarium"
+  "S246_CableCar" "S247_BaboonRock" "S248_RhesusMonkeyPark" "S249_BarredOwlHut" "S250_SeaTurtleTank"
+  "S250_SeaTurtleTank_MW" "S251_PolarBearExhibit" "S252_SpottedHyenaCompound" "S253_OkapiStable" "S254_ZooSchool"
+  "S255_AdventurePlayground" "S256_WaterPlayground" "S257_SideEntrance" "S258_NativeSeabirds" "S259_NativeLizards"
+  "S260_NativeFarmAnimals" "S261_GuidedSchoolTours" "S262_Explorer" "S263_WazaLargeAnimalProgram"
+  "S264_FreerangeNewWorldMonkeys" "S274_VictoryColumn" "S281_Arcade" "S265_FranchiseBusiness" "S266_MarineBiologist"
+  "S267_FarmCat" "S268_ConferenceOnEurope" "S269_ConferenceOnAustralia" "S270_MarineResearchExpedition"
+  "S271_ExcavationSite" "S272_ExpansionArea" "S273_Publications" "S274_MascotStatue" "S275_HorseWhisperer"
+  "S276_LandscapeGardener" "S277_FieldResearchTypeDOrcas" "S278_AmazonHouse" "S279_UnderwaterTunnel"
+  "S280_Reconstruction";
+
+$maxAppealSponsorCards: "S207_BasicResearch" "S222_ReleaseOfPatents" "S258_NativeSeabirds" "S259_NativeLizards"
+  "S260_NativeFarmAnimals" "S264_FreerangeNewWorldMonkeys" "S267_FarmCat";

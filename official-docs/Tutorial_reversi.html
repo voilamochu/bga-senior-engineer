@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="en">
+<head><meta charset="utf-8"/><title>Tutorial reversi - Board Game Arena</title><meta content="telephone=no" name="format-detection"/><meta content="width=1000" name="viewport"/></head>
+<body class="ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Tutorial_reversi rootpage-Tutorial_reversi action-view"><div class="article"><h2><span class="mw-headline" id="Introduction">Introduction</span></h2><p>Using this tutorial, you can build a complete working game on the BGA environment: Reversi.
+</p><ul><li>Read the overall presentations of the BGA Framework (<a href="Studio.html" title="Studio">see here</a>).</li>
+<li>Know the <a class="external text" href="http://en.wikipedia.org/wiki/Reversi#Rules" rel="nofollow">rules of Reversi</a>.</li>
+<li>Know the languages used on BGA: PHP, SQL, HTML, CSS, Javascript</li>
+<li><b>Setup your development environment</b> <a class="external text" href="http://en.doc.boardgamearena.com/First_steps_with_BGA_Studio" rel="nofollow">First Steps with BGA Studio</a></li></ul><p>Note: If you get stuck and you need the source code for this project you can get read only access to project reversi from the Studio projects page : <a class="external free" href="https://studio.boardgamearena.com/projects?game=reversi" rel="nofollow">https://studio.boardgamearena.com/projects?game=reversi</a>, only check "Already published" to see the real project. <i>There might be some slight differences as we simplified the tutorial compared to the full production project.</i>
+</p><h3><span class="mw-headline" id="Javascript_or_Typescript">Javascript or Typescript</span></h3><p>If your not familiar with Typescript, we recommend to follow the tutorial using the Javascript version.
+</p><p>Any difference between the Javascript and the Typescript version of this tutorial will be <span style="outline: 3px solid #3178C6; padding: 5px;margin: 5px;"><span style="background: #3178C6; color: white; margin-right: 5px;">TS</span>outlined with this color</span>.
+</p><h2><span class="mw-headline" id="Create_your_first_game">Create your first game</span></h2><p><i>Note: you should already have created a project following instructions in <a href="/First_steps_with_BGA_Studio#Create_a_new_game_project" title="First steps with BGA Studio">Create a new game project</a>.</i>
+</p><ul><li>Go to your <a class="external text" href="https://studio.boardgamearena.com/controlpanel" rel="nofollow">studio Control panel</a>, then Manage games and select your initial project. <i>Note: there are warnings displayed about a missing BGG_ID and presentation text. You can ignore that for now.</i></li>
+<li>Click the Play link next to your project name. This will open the Play page and offer to create a new table for your project. <i>Optional: click the Heart icon to add your project to your favorite games list.</i></li>
+<li>On the Play page, on the top of the page, make sure that your settings are "Simple game", "Real time" and "Manual".</li>
+<li>Click "Create table" to create a table of your project.</li>
+<li>For now, we are going to work with one player only, so use the (-) button to set the number of players to 2. Most of the time it is simpler to proceed with only one player during the early phase of development of your game, as it's easy and fast to start/stop games. By default the game requires 2 players, so press "Express Start". It will open another tab with another of your players.</li>
+<li>Reminder: Always use the "Express Start" button to start the game.</li></ul><p>Thus, you can start a "Reversi" game, and arrive on a void, empty game. Yeah.
+</p><p><b>If you don't want to use TypeScript in your project,</b> you can delete the package.json, tsconfig.json, rollup.config.mjs files and the src-disabled folder.
+</p><h2><span id="Editing_the_game_information_.28Optional.29"></span><span class="mw-headline" id="Editing_the_game_information_(Optional)">Editing the game information (Optional)</span></h2><p>This step is optional and will fix the warnings on the project page (missing BGG_ID and presentation).
+</p><h4><span class="mw-headline" id="Edits_to_fix_Errors">Edits to fix Errors</span></h4><ul><li>Edit your local copy of the <code>gameinfos.jsonc</code> file:
+<ul><li>Change the <code>bgg_id</code> value from <code>0</code> to <code>2389</code> - that's around line 26.</li>
+<li>Add <code>1,</code> to the players array (so you can start 1-player games while testing) - that's around line 29.</li></ul></li>
+<li>Upload the <code>gameinfos.jsonc</code> file to the SFTP server (see <a href="/First_steps_with_BGA_Studio#Connect_to_your_SFTP_folder" title="First steps with BGA Studio">Connect to your SFTP folder</a>).</li></ul><h4><span class="mw-headline" id="Test_your_Edits">Test your Edits</span></h4><ul><li>Go back to your project page, and in the the local version, click Game page and check if the information match what you changed in the gameinfos file. <a class="image" href="/File:Studio_local_version_block.png"><img alt="Studio local version block.png" decoding="async" height="92" src="/images/thumb/1/1a/Studio_local_version_block.png/300px-Studio_local_version_block.png" srcset="/images/1/1a/Studio_local_version_block.png 1.5x" width="300"/></a></li></ul><h5><span id="Not_working.3F"></span><span class="mw-headline" id="Not_working?">Not working?</span></h5><p>Some changes will require bypassing the cache (adding/changing images). It is often worth doing a hard refresh (Ctrl+F5) to make sure the latest version is used.
+</p><h2><span class="mw-headline" id="Make_sure_the_IDE_is_properly_configured">Make sure the IDE is properly configured</span></h2><p>Try to add some invalid values in the framework names like this :
+</p><p>The error should be underlined if your IDE is properly configured. If it is not, check <a href="Setting_up_BGA_Development_environment_using_VSCode.html" title="Setting up BGA Development environment using VSCode">Setting up BGA Development environment using VSCode</a>
+</p><p>You can also check if the upload works as expected, the game should now work and display the error (Undefined property: Bga\Games\EmptyGame\Game::$bgaTEST ...).
+</p><h2><span class="mw-headline" id="Make_it_look_like_Reversi">Make it look like Reversi</span></h2><p>Let's start with the board. This will give you a good idea of how things will look and where tokens should go.
+</p><p>We will build the board in pure CSS, as it is simple shapes, and will be faster to load than an image. Later, we are going to use PNGs for tokens because they allow for transparency. We could maybe build them in CSS too, but we need an example of using images!
+</p><h4><span class="mw-headline" id="Add_the_board">Add the board</span></h4><ul><li>edit <code>modules/js/Game.js</code> to add the <code>div</code> for your board at the beginning of the setup function.</li></ul><p>Note: If you are building this game by following the tutorial, you will have a different project name than <code>reversi</code> (i.e. <code>mygame.css</code>). The file names in your project will be different than shown in this tutorial, replacing <code>reversi</code> with your project name. Be sure that any code (other than comments) that references <code>reversi</code> is changed to your actual project name.
+</p><div style="outline: 3px solid #3178C6; padding: 5px;margin: 5px;"><span style="background: #3178C6; color: white; margin-right: 5px;">TS</span>Whenever the tutorial mentions Game.js, change the src/ts/Game.ts instead. Make sure you have installed the necessary dependencies with <code>npm i</code> then trigger autobuild with <code>npm run build:ts</code> so the TS you change is built to modules/js/Game.js</div><p><br/>
+Edit the Game.js file and replace the code after <b>// Example to add a div on the game area</b> with the following:
+</p><pre>this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', `
+  &lt;div id="board"&gt;
+  &lt;/div&gt;
+`);
+</pre><p>Note: example above use backticks, aka string template literals. This technique used a lot in code of games as it allows to easily create html with strings substitutions, use quotes, double quotes and newlines. 
+If you don't know what it is check here
+<a class="external free" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals" rel="nofollow">https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals</a>
+</p><ul><li>edit your <code>reversi.css</code> file to transform it into a visible board:</li></ul><pre>#board {
+   width: 480px;
+   height: 480px;
+   border: 20px solid black;
+   background: black;
+   display: grid;
+   grid-template-columns: repeat(8, 1fr);
+}
+</pre><p>and remove the code in Game.js in method onEnteringState that refers to adding action buttons and remove the section under <code>// example of adding a div for each player"</code>. 
+</p><h4><span class="mw-headline" id="Code_the_Grid">Code the Grid</span></h4><p>Now, we need to create some HTML elements where squares are. These elements will be used as position references for the white and black tokens. 
+</p><h5><span class="mw-headline" id="Build_the_grid_of_squares">Build the grid of squares</span></h5><p>The board is 8 squares by 8 squares. This means we need 64 squares. To avoid writing 64 individual <code>div</code> elements on our template, we are going to generate the squares on JS <code>setup</code>.
+</p><pre>        // Dynamically generate board
+        const board = document.getElementById('board');
+        const board_size = 8;
+        for (let x = 1; x &lt;= board_size; x++) {
+            for (let y = 1; y &lt;= board_size; y++) {
+                board.insertAdjacentHTML(`beforeend`, `&lt;div id="square_${x}_${y}" data-x="${x}" data-y="${y}" class="square board"&gt;&lt;/div&gt;`);
+                document.getElementById(`square_${x}_${y}`).addEventListener('click', e =&gt; this.onPlayDisc(x, y));
+            }        
+        }
+</pre><h5><span class="mw-headline" id="Style_Those_Squares">Style Those Squares</span></h5><p>Now, to finish our work and check if everything works fine, we are going to style our square a little bit in our CSS stylesheet:
+</p><pre>  .square {
+    width: 58px;
+    height: 58px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: darkgreen;
+    transition: background-color 0.25s;
+  }
+</pre><p>To test the squares, you can set <code>background-color: red;</code> for testing. This allows us to see the invisible elements. (You could instead do something like <code>outline: 2px solid orange;</code> have fun and be creative)
+</p><ul><li>The display flex with center will place the disc in the center of the square.</li></ul><p>Let's refresh and check our (beautiful) squares:
+</p><p>Now that you know the squares are there, you can remove the test line <code>background-color: red;</code>  from your <code>.square</code> class in the CSS stylesheet.
+</p><h5><span id="Not_Working.3F_2"></span><span class="mw-headline" id="Not_Working?_2">Not Working?</span></h5><p>If the styled squares do not appear, inspect and check your css (Chrome DevTools: Application &gt; Frames &gt; top &gt; Stylesheets &gt; reversi.css).
+</p><h2><span class="mw-headline" id="The_Tokens">The Tokens</span></h2><p>Now, our board is ready for some tokens!
+</p><h3><span class="mw-headline" id="Build_the_Token">Build the Token</span></h3><p>There are quite a few steps before the tokens will appear. You may be used to testing after every change, but that won't work well here. The token will <b>not</b> show until you have add styles to the css, utility method in the js,  adjusted the php file, and added the token to the board in the js file.
+</p><h4><span class="mw-headline" id="Add_Token_to_img_directory">Add Token to img directory</span></h4><p>Here's a new piece of art with the tokens. We need transparency here so we are using a png file:
+</p><p>Upload this image file <code>tokens.png</code> in your <code>img/</code> directory (use lowercase file name). NB: may need to manually upload as have found that the automatic SFTP does't seem to pick up images.
+</p><h4><span class="mw-headline" id="Style_the_Tokens_in_.css_file">Style the Tokens in .css file</span></h4><pre>.disc {
+    position: relative;
+    width: 54px;
+    height: 54px;
+    z-index: 3;
+    transform-style: preserve-3d;
+}
+.disc .disc-faces { 
+    transform-style: preserve-3d;
+}
+.disc[data-color="000000"] .disc-faces { 
+    transform: rotateY(180deg);
+}
+
+.disc-face {
+    position: absolute;
+    width: 54px;
+    height: 54px;
+    background-image: url('img/tokens.png');
+    background-size: auto 100%;
+    backface-visibility: hidden;
+}
+.disc-face[data-side="white"] { 
+    background-position-x: 0%; 
+    transform: rotateY(0deg);
+}
+.disc-face[data-side="black"] { 
+    background-position-x: 100%; 
+    transform: rotateY(180deg);
+}
+</pre><p>With this CSS code, we can set and change the token color by changing the <code>data-color</code> attribute. Using data instead of a class ensures it can be only one of them (the disc cannot be black and white at the same time).
+We will create a disc-faces div in the disc containing 2 disc-face divs, to represent each face of the disc. It will allow us to have a nice flip animation!
+</p><h4><span class="mw-headline" id="Add_Token_Utility_Method_in_.js_file">Add Token Utility Method in .js file</span></h4><p>Now, let's make the first token appear on our board. Tokens are not visible at the beginning of the game: they appear dynamically during the game. For this reason, we are going to make them appear from our Javascript code, using a template string
+</p><pre>        async addDiscOnBoard( x, y, playerId, animate = true )
+        {
+            const color = this.gamedatas.players[ playerId ].color;
+            const discId = `disc_${x}_${y}`;
+
+            document.getElementById(`square_${x}_${y}`).insertAdjacentHTML('beforeend', `
+                &lt;div class="disc" data-color="${color}" id="${discId}"&gt;
+                    &lt;div class="disc-faces"&gt;
+                        &lt;div class="disc-face" data-side="white"&gt;&lt;/div&gt;
+                        &lt;div class="disc-face" data-side="black"&gt;&lt;/div&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            `);
+
+            if (animate) {
+                const element = document.getElementById(discId);
+                await this.animationManager.fadeIn(element, document.getElementById(`overall_player_board_${playerId}`));
+            }
+        }
+</pre><div style="outline: 3px solid #3178C6; padding: 5px;margin: 5px;"><span style="background: #3178C6; color: white; margin-right: 5px;">TS</span>Type the function parameters: <code>async addDiscOnBoard( x: number, y; number, playerId: number, animate: boolean = true )</code></div><p>For this to work, you will also need to initialize the animation manager. Include the function in your .js file by updating as outlined here: <a href="BgaAnimations.html" title="BgaAnimations">BgaAnimations</a>. Then add this in the setup function:
+</p><pre>
+
+            this.animationManager = new BgaAnimations.Manager({
+                animationsActive: () =&gt; this.bga.gameui.bgaAnimationsActive(),
+            });
+</pre><div style="outline: 3px solid #3178C6; padding: 5px;margin: 5px;"><span style="background: #3178C6; color: white; margin-right: 5px;">TS</span>Uncomment the code in libs.ts then add <code>import { BgaAnimations, BgaCards } from "./libs";</code> at the very beginning of the Game.ts file</div><h5><span class="mw-headline" id="Utility_Method_Explanation">Utility Method Explanation</span></h5><ul><li>with <code>element.insertAdjacentHTML</code> method, we create a HTML piece of code and insert it as a new child of the square div element.</li>
+<li>Immediately after, using <code>this.animationManager.fadeIn</code> BGA method, we make the disc slide in (with a fade in animation) from the player panel.</li></ul><p>Also note the trailing comma - this is needed because there may be other functions defined after this one, making <code>addDiscOnBoard</code> just one element in an array of functions.
+</p><h4><span id="Set_Token_Colors_in_setupNewGame_in_modules.2Fphp.2FGame.php_file"></span><span class="mw-headline" id="Set_Token_Colors_in_setupNewGame_in_modules/php/Game.php_file">Set Token Colors in setupNewGame in modules/php/Game.php file</span></h4><p>Before we can show a token, we need to set the player colors in the <code>setupNewGame</code> function in  <code>modules/php/Game.php</code>:
+</p><pre>$default_colors = ["ffffff", "000000"];
+</pre><p>Note: A few lines below, you may have to remove the line <code>this-&gt;reattributeColorsBasedOnPreferences( $players, $gameinfos['player_colors'] );</code>
+</p><h3><span class="mw-headline" id="Test_the_Token">Test the Token</span></h3><p>Now, to test if everything works fine we will call the <code>addTokenOnBoard()</code>  in .js file to Test
+</p><pre>this.addDiscOnBoard(2, 2, this.bga.players.getCurrentPlayerId(), false);
+</pre><p>Now restart the game.
+</p><p><a class="image" href="/File:Reversi3.jpg"><img alt="Reversi3.jpg" decoding="async" height="664" src="/images/3/38/Reversi3.jpg" width="1188"/></a>
+</p><h2><span class="mw-headline" id="The_database">The database</span></h2><p>We did most of the client-side programming, so let's have a look on the other side now. To design the database model of our game, you will need to access the database. You won't need to do anything in database UI, yet.
+</p><h3><span class="mw-headline" id="Accessing_the_Database">Accessing the Database</span></h3><p>To access the database, start a game, then click "Go to game database" link at the bottom of our game, to access the database directly with a PhpMyAdmin instance.
+</p><p><b>Note</b>: do not remove existing tables
+</p><h3><span class="mw-headline" id="Create_Table_in_.sql_file">Create Table in .sql file</span></h3><p>Now, you are able to create the table(s) you need for your game, and report every SQL command used in your <code>dbmodel.sql</code> file. 
+</p><pre>CREATE TABLE IF NOT EXISTS `board` (
+  `board_x` smallint unsigned NOT NULL,
+  `board_y` smallint unsigned NOT NULL,
+  `board_player` int unsigned DEFAULT NULL,
+  PRIMARY KEY (`board_x`,`board_y`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+</pre><p>Add the above SQL to <code>dbmodel.sql</code>. Pay special attention to the backtick <code>`</code> character vs. the single quote <code>'</code> when working with SQL.
+</p><h3><span class="mw-headline" id="Test_the_Table">Test the Table</span></h3><p>Now, a new database with a <code>board</code> table will be created each time we start a Reversi game. This is why after modifying our <code>dbmodel.sql</code> it's a good time to stop your current game &amp; start a new game.
+</p><h2><span class="mw-headline" id="Setup_the_initial_game_position">Setup the initial game position</span></h2><p><b>Note</b>: From now on, you must launch the game with <b>two players</b> to get two <code>player_id</code>s within the database. Otherwise, the game will crash.
+</p><h3><span id="Initialize_the_Board_in_modules.2Fphp.2FGame.php_file"></span><span class="mw-headline" id="Initialize_the_Board_in_modules/php/Game.php_file">Initialize the Board in modules/php/Game.php file</span></h3><p>Under <code>// TODO: setup the initial game situation here</code>, initialize the board
+</p><pre>list( $blackplayer_id, $whiteplayer_id ) = array_keys( $players );
+// Init the board
+$this-&gt;boardManager-&gt;initializeBoard(8, (int) $blackplayer_id, (int) $whiteplayer_id);
+</pre><p>Wait, is that all?
+</p><p>Create a BoardManager.php file next to Game.php, and put this code in it:
+</p><pre>&lt;?php
+declare(strict_types=1);
+
+namespace Bga\Games\Reversi;
+
+class BoardManager
+{
+    public function __construct(private Game $game)
+    {
+    }
+
+    public function initializeBoard(int $boardSize, int $blackPlayerId, int $whitePlayerId): void
+    {
+        $sqlValues = [];
+        $boardSizeHalf = (int) floor($boardSize / 2);
+
+        for ($x = 1; $x &lt;= $boardSize; $x++) {
+            for ($y = 1; $y &lt;= $boardSize; $y++) {
+                $discValue = 'NULL';
+                if (($x === $boardSizeHalf &amp;&amp; $y === $boardSizeHalf) || ($x === ($boardSizeHalf + 1) &amp;&amp; $y === ($boardSizeHalf + 1))) {
+                    $discValue = (string) $whitePlayerId;
+                } elseif (($x === $boardSizeHalf &amp;&amp; $y === ($boardSizeHalf + 1)) || ($x === ($boardSizeHalf + 1) &amp;&amp; $y === $boardSizeHalf)) {
+                    $discValue = (string) $blackPlayerId;
+                }
+
+                $sqlValues[] = "($x,$y,$discValue)";
+            }
+        }
+
+        $sql = "INSERT INTO `board` (`board_x`,`board_y`,`board_player`) VALUES " . implode(',', $sqlValues);
+        $this-&gt;game-&gt;DbQuery($sql);
+    }
+}
+</pre><p>Once the php file is created edit the namespace and change \Reversi to be the name of your project
+</p><p>Before the Game __construct, add
+</p><pre>  public BoardManager $boardManager;
+</pre><p><br/>
+At the end of the Game __construct, add
+</p><pre>  $this-&gt;boardManager = new BoardManager($this);
+</pre><p>Passing the game object to the constructor allows us to use its db functions.
+</p><h4><span class="mw-headline" id="Board_Initialization_Explanation">Board Initialization Explanation</span></h4><ul><li>We create one table entry for each square, with a <code>NULL</code> value which means "empty square"</li>
+<li>On 4 of the squares, we place an initial token.</li></ul><p>After this, we set <code>activeNextPlayer</code> to make the first player active at the beginning of the game (this line is already present in the default code template).
+</p><h3><span class="mw-headline" id="Show_the_Initial_Token_Setup">Show the Initial Token Setup</span></h3><p>Now, we need to make these tokens appear on the client side. The first step is to return the token positions with our <code>getAllDatas()</code> PHP method. <code>getAllDatas()</code> is called during each page reload.
+</p><pre>// Get reversi board token
+$result['board'] = $this-&gt;boardManager-&gt;getOccupiedDiscs();
+</pre><p>And in the board manager, add:
+</p><pre>    public function getOccupiedDiscs(): array
+    {
+        return $this-&gt;game-&gt;getObjectListFromDB(
+            "SELECT `board_x` `x`, `board_y` `y`, `board_player` `player`
+             FROM `board`
+             WHERE `board_player` IS NOT NULL"
+        );
+    }
+</pre><p>Next, you will modify the query that gets player information to also get the player's colors. Above the lines you just inserted in <code>getAllDatas()</code> notice how we've added <code>player_color color</code> to the sql query in the code below.
+</p><pre>$result["players"] = $this-&gt;getCollectionFromDb(
+    "SELECT `player_id` `id`, `player_score` `score`, `player_color` `color` FROM `player`"
+);
+</pre><p>We are using the BGA framework's <code>getObjectListFromDB()</code> that formats the result of this SQL query in a PHP array with x, y and player attributes. We add it to the result associative array with the key <code>board</code>.
+</p><p>This will result in a removal or edit of the previously added line <code>this.addDiscOnBoard(2, 2, this.bga.players.getCurrentPlayerId());</code>
+</p><pre>for( var i in gamedatas.board ) {
+    const square = gamedatas.board[i];
+    
+    if( square.player !== null ) {
+        this.addDiscOnBoard( square.x, square.y, square.player );
+    }
+}
+</pre><p>The <code>board</code> entry created in <code>getAllDatas()</code> is used here as <code>gamedatas.board</code>
+</p><h3><span class="mw-headline" id="Test_the_Game_Start">Test the Game Start</span></h3><p>Restart the game... and here we are:
+</p><p>It starts to feel like Reversi here...
+</p><h2><span class="mw-headline" id="State_Machine">State Machine</span></h2><p>Stop your game, again. You're about to start the core game logic.
+</p><p><a class="image" href="/File:Reversi6.jpg"><img alt="Reversi6.jpg" decoding="async" height="318" src="/images/3/31/Reversi6.jpg" width="224"/></a>
+</p><h3><span class="mw-headline" id="Build_your_States">Build your States</span></h3><p>And here are the classes we need to create on the <code>module/php/States</code> folder, according to this diagram (note - PlayerTurn is replaced by PlayDisc):
+</p><pre>&lt;?php
+
+declare(strict_types=1);
+
+namespace Bga\Games\Reversi\States;
+
+use Bga\GameFramework\StateType;
+use Bga\Games\Reversi\Game;
+
+class PlayDisc extends \Bga\GameFramework\States\GameState
+{
+    public function __construct(protected Game $game) {
+        parent::__construct($game, 
+            id: 10, 
+            type: StateType::ACTIVE_PLAYER,
+
+            description: clienttranslate('${actplayer} must play a disc'),
+            descriptionMyTurn: clienttranslate('${you} must play a disc'),
+        );
+    }
+
+    function zombie(int $playerId) {
+    }
+}
+</pre><p>(The <i>declare(strict_types=1)</i> is optional but recommended for new games). The <i>&lt;?php</i> at the beginning is necessary for your IDE to understand the php syntax. ) 
+</p><p><b>NextPlayer.php:</b>
+</p><pre>&lt;?php
+
+declare(strict_types=1);
+
+namespace Bga\Games\Reversi\States;
+
+use Bga\GameFramework\StateType;
+use Bga\Games\Reversi\Game;
+
+class NextPlayer extends \Bga\GameFramework\States\GameState
+{
+
+    public function __construct(protected Game $game) {
+        parent::__construct($game, 
+            id: 90, 
+            type: StateType::GAME,
+
+            updateGameProgression: true,
+        );
+    }
+}
+</pre><p>Note: state ids 1 and 99 are reserved by the framework for gameSetup and gameEnd. We don't need to describe those states as the framework will take care of that for us.
+</p><h3><span class="mw-headline" id="Test_Your_States">Test Your States</span></h3><p>... and start a new Reversi game.
+</p><p><a class="image" href="/File:Reversi7.jpg"><img alt="Reversi7.jpg" decoding="async" height="678" src="/images/1/13/Reversi7.jpg" width="1190"/></a>
+</p><h2><span class="mw-headline" id="The_rules">The rules</span></h2><p>We will use the <code>getPossibleMoves</code> PHP method to: 
+</p><ul><li>Indicate to the current player where she is allowed to play by returning a list of coordinates</li>
+<li>Check if the player has the right to play in the spot they choose</li></ul><p>This is pure PHP programming here, and there are no special things from the BGA framework that can be used. This is why we won't go into details here. The overall idea is: 
+</p><ul><li>Create a <code>getTurnedOverDiscs(x,y)</code> method that returns coordinates of discs that would be turned over if a token would be played at <code>x</code>,<code>y</code>.</li>
+<li>Loop through all free squares of the board and call the <code>getTurnedOverDiscs</code> method on each of them. If at least 1 token is turned over, this is a valid move.</li></ul><p>Take it from them BoardManager.php file of the reversi project. See the introduction on how to get read-only access to the real Reversi project.
+</p><p>If you want to look into details, please look at the "utility method" sections of <code>Game.php</code>. If building the tutorial yourself, copy the functions under "Utility functions" comment from the Reversi tutorial.
+</p><h2><span class="mw-headline" id="Display_allowed_moves">Display allowed moves</span></h2><p>Now we want to highlight the squares where the player can place a disc.
+</p><pre>function getArgs(int $activePlayerId): array
+{
+    return [
+        'possibleMoves' =&gt; $this-&gt;game-&gt;boardManager-&gt;getPossibleMoves($activePlayerId)
+    ];
+}
+</pre><p>Now we need to handle it on the JS side.
+Replace the state classes definition in the Game constructor by this:
+</p><pre>        // Declare the State classes
+        this.playDisc = new PlayDisc(this, bga);
+        this.bga.states.register('PlayDisc', this.playDisc);
+</pre><p>So it matches the state we described in PHP. The state name is the PHP class name, that we use in register to link them.
+</p><pre>class PlayDisc {
+    constructor(game, bga) {
+        this.game = game;
+        this.bga = bga;
+    }
+
+    onEnteringState(args, isCurrentPlayerActive) {
+        this.bga.statusBar.setTitle(isCurrentPlayerActive ? 
+            _('${you} must play a disc') :
+            _('${actplayer} must play a disc')
+        );
+      
+        if (isCurrentPlayerActive) {            
+            this.updatePossibleMoves(args.possibleMoves);
+        }
+    }
+}
+</pre><div style="outline: 3px solid #3178C6; padding: 5px;margin: 5px;"><span style="background: #3178C6; color: white; margin-right: 5px;">TS</span>In Typescript, we will split the classes in different files that will all be bundled in Game.js in the end. So put the PlayDisc class in src/ts/States/PlayDisc.ts and export the class, so it can be then imported into Game.ts
+<p>The typings to add
+</p>
+<pre>    constructor(private game: Game, private bga: Bga&lt;YourGameNamePlayer, YourGameNamePGamedatas&gt;) {
+    ...
+    onEnteringState(args: PlayDiscArgs, isCurrentPlayerActive: boolean) {
+</pre>
+<p>Also add in types.d.ts:
+</p>
+<pre>type PossibleMoves = {[x: number]: {[y: number]: boolean } };
+interface PlayDiscArgs {
+    possibleMoves: PossibleMoves;
+}
+</pre>
+</div><p><b>Note:</b> We set the title when entering the state, so you can now remove description/descriptionMyTurn in the PHP class that was just here for test purpose.
+</p><p>Each time we enter into a new game state, we use the <code>onEnteringState</code> Javascript method of the JS State class. This lets us use the data returned by the method above on the client side.
+</p><pre>updatePossibleMoves(possibleMoves) {
+    // Remove current possible moves
+    document.querySelectorAll('.selectable').forEach(div =&gt; div.classList.remove('selectable'));
+
+    for( let x in possibleMoves ) {
+        for( let y in possibleMoves[ x ] ) {
+            // x,y is a possible move
+            document.getElementById(`square_${x}_${y}`).classList.add('selectable');
+        }            
+    }
+                
+    this.bga.gameui.addTooltipToClass( 'selectable', '', _('Place a disc here') );
+}
+</pre><p>Here's what this does. At first, it removes all <code>selectable</code> classes currently applied with the very useful <code>document.querySelectorAll</code> method.
+</p><p>Finally, it uses the BGA framework <code>addTooltipToClass</code> method to associate a tooltip to all those highlighted squares so that players can understand their meaning.
+</p><div style="outline: 3px solid #3178C6; padding: 5px;margin: 5px;"><span style="background: #3178C6; color: white; margin-right: 5px;">TS</span>We can reuse the type <code>PossibleMoves</code> we defined before :
+<pre>updatePossibleMoves(possibleMoves: PossibleMoves) {
+</pre>
+</div><p>To see the possible moves we need to create a CSS class (<code>possibleMove</code>) that can be applied to a <code>square</code> element to highlight it:
+</p><pre>.square.selectable {
+    background-color: color-mix(in srgb, darkgreen, white 50%);
+    cursor: pointer;
+}
+</pre><p><br/>
+</p><p><a class="image" href="/File:Reversi8.jpg.jpg"><img alt="Reversi8.jpg.jpg" decoding="async" height="661" src="/images/1/1e/Reversi8.jpg.jpg" width="1189"/></a>
+</p><h2><span id="Let.27s_play"></span><span class="mw-headline" id="Let's_play">Let's play</span></h2><p>From now, it's better to restart a game with 2 players, because we are going to implement a complete Reversi turn. The summary of what we are going to do is:
+</p><ul><li>When we click on a square, check if it is a <code>possibleMove</code> and if so, send the move to the server.</li>
+<li>Server side, check the move is correct, apply Reversi rules and jump to next player.</li>
+<li>Client side, change the token position to reflect the move.</li></ul><p>Remember we added this after creating the squares in the <code>setup</code> method?
+</p><pre>document.getElementById(`square_${x}_${y}`).addEventListener('click', e =&gt; this.onPlayDisc(x, y));
+</pre><p>We need to write the "onPlayDisc" method, called each time someone clicks on a square.
+</p><pre>onPlayDisc(x, y) {
+        // The click does nothing when not active
+        if (!this.bga.players.isCurrentPlayerActive()) {
+            return;
+        }
+
+        if(!document.getElementById(`square_${x}_${y}`).classList.contains('selectable')) {
+            // This is not a possible move =&gt; the click does nothing
+            return;
+        }
+
+    this.bga.actions.performAction("actPlayDisc", {
+        x:x,
+        y:y,
+    });
+}
+</pre><p>What we do here is:
+</p><ul><li>We check that the current player is active</li>
+<li>We check that the clicked square has the <code>selectable</code> class, otherwise we know for sure that we can't play there.</li>
+<li>Finally, we make a call to the server using BGA <code>bgaPerformAction</code> method with argument x and y. This call will check that <code>actPlayDisc</code> action is possible, according to current game state (we will add the <code>PossibleAction</code> attribute on <code>actPlayDisc</code> just after). This check is important to avoid issues if a player double clicks on a square.</li></ul><p>Now, we have to manage this <code>actPlayDisc</code> action on the server side. Add a corresponding <code>actPlayDisc</code> method in our <code>PlayDisc</code> state class (<code>PlayDisc.php</code>):
+</p><pre>#[PossibleAction]
+function actPlayDisc( int $x, int $y, int $activePlayerId )
+{
+</pre><p>And add <code>use Bga\GameFramework\States\PossibleAction;</code> at the top of the file.
+</p><p>now, we are using the <code>getTurnedOverDiscs</code> method again to check that this move is possible:
+</p><pre>        // Now, check if this is a possible move
+        $board = $this-&gt;game-&gt;boardManager-&gt;getBoard();
+        $turnedOverDiscs = $this-&gt;game-&gt;boardManager-&gt;getTurnedOverDiscs( $x, $y, $activePlayerId, $board );
+        
+        if( count( $turnedOverDiscs ) === 0 ) {
+            throw new SystemException("Impossible move");
+        }
+</pre><p>we update the database to change the color of all turned over disc + the disc we just placed:
+</p><pre>            // Let's place a disc at x,y and return all "$returned" discs to the active player
+            
+            $this-&gt;game-&gt;boardManager-&gt;applyMove($activePlayerId, $x, $y, $turnedOverDiscs);
+</pre><p>We add this part to the BoardManager before going back to our act function:
+</p><pre>    public function applyMove(int $playerId, int $x, int $y, array $turnedOverDiscs): void
+    {
+        $positions = [];
+        foreach ($turnedOverDiscs as $turnedOver) {
+            $turnedX = (int) $turnedOver['x'];
+            $turnedY = (int) $turnedOver['y'];
+            $positions[] = "($turnedX,$turnedY)";
+        }
+        $positions[] = "($x,$y)";
+
+        $sql = "UPDATE `board` SET `board_player` = $playerId WHERE (`board_x`, `board_y`) IN (" . implode(',', $positions) . ")";
+        $this-&gt;game-&gt;DbQuery($sql);
+    }
+</pre><p>define what game statistics we want to record (for more details read <a href="/Game_statistics:_stats.json" title="Game statistics: stats.json">Game statistics: stats.json</a>), For this tutorial we need to edit the stats.json file and set it to the following:
+</p><pre>{
+  "table": [],
+  "player": {
+    "discPlayedOnCorner": {
+      "id": 10,
+      "name": "Discs played on a corner",
+      "type": "int"
+    },
+    "discPlayedOnBorder": {
+      "id": 11,
+      "name": "Discs played on a border",
+      "type": "int"
+    },
+    "discPlayedOnCenter": {
+      "id": 12,
+      "name": "Discs played on board center part",
+      "type": "int"
+    },
+    "turnedOver": {
+      "id": 13,
+      "name": "Number of discs turned over",
+      "type": "int"
+    }
+  }
+}
+</pre><p>back to actPlayDisc function... we manage game statistics:
+</p><pre>$this-&gt;bga-&gt;playerStats-&gt;inc('turnedOver', $disc_count, $activePlayerId);
+        $updatedStat = 'discPlayedOnCenter';
+        $board_size = 8;
+        if( ($x==1 &amp;&amp; $y==1) || ($x==$board_size &amp;&amp; $y==1) || ($x==1 &amp;&amp; $y==$board_size) || ($x==$board_size &amp;&amp; $y==$board_size) ) {
+            $updatedStat = 'discPlayedOnCorner';
+        } else if( $x==1 || $x==$board_size || $y==1 || $y==$board_size ) {
+            $updatedStat = 'discPlayedOnBorder';
+        }
+        $this-&gt;bga-&gt;playerStats-&gt;inc($updatedStat, 1, $activePlayerId);
+</pre><p>Notify the turned discs:
+</p><pre>            // Notify
+            $this-&gt;bga-&gt;notify-&gt;all( "playDisc", clienttranslate( '${player_name} plays a disc and turns over ${returned_nbr} disc(s)' ), array(
+                'player_id' =&gt; $activePlayerId,
+                'player_name' =&gt; $this-&gt;game-&gt;getPlayerNameById($activePlayerId),
+                'returned_nbr' =&gt; count( $turnedOverDiscs ),
+                'x' =&gt; $x,
+                'y' =&gt; $y
+            ) );
+
+            $this-&gt;bga-&gt;notify-&gt;all( "turnOverDiscs", '', array(
+                'player_id' =&gt; $activePlayerId,
+                'turnedOver' =&gt; $turnedOverDiscs
+            ) );
+</pre><p>Then we update the scores accordingly
+</p><pre>        $playerIds = array_keys($this-&gt;game-&gt;loadPlayersBasicInfos());
+        foreach ($playerIds as $playerId) {
+            $tokens = $this-&gt;game-&gt;boardManager-&gt;countDiscsForPlayer((int) $playerId);
+            $this-&gt;bga-&gt;playerScore-&gt;set($playerId, $tokens); // this will update the JS counter automatically
+        }
+</pre><p>In BoardManager, add:
+</p><pre>    public function countDiscsForPlayer(int $playerId): int
+    {
+        return (int) $this-&gt;game-&gt;getUniqueValueFromDB("SELECT COUNT(*) FROM `board` WHERE `board_player` = $playerId");
+    }
+</pre><p>We are using for that 2 notifications (<code>playDisc</code> and <code>turnOverDiscs</code>  that we are going to implement on client side later). Note that the description of the <code>playDisc</code> notification will be logged in the game log.
+</p><pre>        // Then, go to the next state
+        return NextPlayer::class;
+</pre><p><br/>
+To make the statistics work, we have to initialize them in <code>stats.json</code>:
+</p><pre>{
+  "player": {
+    "discPlayedOnCorner": {
+      "id": 10,
+      "name": "Discs played on a corner",
+      "type": "int"
+    },
+    "discPlayedOnBorder": {
+      "id": 11,
+      "name": "Discs played on a border",
+      "type": "int"
+    },
+    "discPlayedOnCenter": {
+      "id": 12,
+      "name": "Discs played on board center part",
+      "type": "int"
+    },
+    "turnedOver": {
+      "id": 13,
+      "name": "Number of discs turned over",
+      "type": "int"
+    }
+  }
+}
+</pre><p>A last thing to do on the server side is to activate the next player when we enter the <code>NextPlayer</code> game state (in the <code>modules/php/States/NextPlayer.php</code> file):
+</p><pre>    function onEnteringState(): void
+    {
+        // Active next player
+        $player_id = intval($this-&gt;game-&gt;activeNextPlayer());
+
+        // Check if both player has at least 1 discs, and if there are free squares to play
+        $player_to_discs = $this-&gt;game-&gt;getCollectionFromDb( "SELECT board_player, COUNT( board_x )
+                                                       FROM board
+                                                       GROUP BY board_player", true );
+
+        if( ! isset( $player_to_discs[ null ] ) )
+        {
+            // Index 0 has not been set =&gt; there's no more free place on the board !
+            // =&gt; end of the game
+            return ST_END_GAME;
+        }
+        else if( ! isset( $player_to_discs[ $player_id ] ) )
+        {
+            // Active player has no more disc on the board =&gt; he looses immediately
+            return ST_END_GAME;
+        }
+        
+        // Can this player play?
+
+        $possibleMoves = $this-&gt;game-&gt;getPossibleMoves( $player_id );
+        if( count( $possibleMoves ) == 0 )
+        {
+
+            // This player can't play
+            // Can his opponent play ?
+            $opponent_id = (int)$this-&gt;game-&gt;getUniqueValueFromDb( "SELECT player_id FROM player WHERE player_id!='$player_id' " );
+            if( count( $this-&gt;game-&gt;getPossibleMoves( $opponent_id ) ) == 0 )
+            {
+                // Nobody can move =&gt; end of the game
+                return ST_END_GAME;
+            }
+            else
+            {            
+                // =&gt; pass his turn
+                return NextPlayer::class;
+            }
+        }
+        else
+        {
+            // This player can play. Give him some extra time
+            $this-&gt;game-&gt;giveExtraTime( $player_id );
+            return PlayDisc::class;
+        }
+    }
+</pre><p>Now, when we play a token, the rules are checked and the token appears in the database.
+</p><p>Of course, as we don't manage notifications on client side, we need to press F5 after each move to see the changes on the board.
+</p><h2><span class="mw-headline" id="Make_the_move_appear_automatically">Make the move appear automatically</span></h2><p>Now, what we have to do is process the notifications sent by the server and make the move appear on the interface.
+</p><pre>        setupNotifications() {
+            console.log( 'notifications subscriptions setup' );
+
+            // automatically listen to the notifications, based on the `notif_xxx` function on this class.
+            this.bga.notifications.setupPromiseNotifications();
+        }
+</pre><p>We will associate each of our 3 notifications with a method prefixed with <code>notif_</code>. 
+</p><pre>        async notif_playDisc(args) {
+            // Remove current possible moves (makes the board more clear)
+            document.querySelectorAll('.possibleMove').forEach(div =&gt; div.classList.remove('possibleMove'));
+        
+            await this.addDiscOnBoard( args.x, args.y, args.player_id );
+        }
+</pre><p>No surprise here, we re-used some existing stuff to: 
+</p><ul><li>Remove the highlighted squares.</li>
+<li>Add a new disc on board, coming from player panel. That's where the async await part of <code>addDiscOnBoard</code> becomes useful.</li></ul><div style="outline: 3px solid #3178C6; padding: 5px;margin: 5px;"><span style="background: #3178C6; color: white; margin-right: 5px;">TS</span>In the same way we added the state args in the types.d.ts, add the following to types.d.ts :
+<pre>interface NotifPlayDiscArgs {
+    player_id: number;
+    x: number;
+    y: number;
+}
+</pre>
+<p>And the function signature becomes:
+</p>
+<pre>async notif_playDisc(args: NotifPlayDiscArgs) {
+</pre>
+</div><p>Now, here's the method that handles the <code>turnOverDiscs</code> notification:
+</p><pre>        async animateTurnOverDisc(disc, targetColor) {
+            const squareDiv = document.getElementById(`square_${disc.x}_${disc.y}`);
+            const discDiv = document.getElementById(`disc_${disc.x}_${disc.y}`);
+            
+            squareDiv.classList.add('flip-animation');
+            await this.bga.gameui.wait(500); // for the flip animation to finish
+
+
+            discDiv.dataset.color = targetColor;
+
+            const parallelAnimations = [{
+                keyframes: [ // flip the disc
+                    { transform: `rotateY(180deg)` },
+                    { transform: `rotateY(0deg)` },
+                ]
+            }, {
+                keyframes: [ // lift the disc
+                    { transform: `translate(0, -12px) scale(1.2)`, offset: 0.5 },
+                ]
+            }];
+
+            await this.animationManager.slideAndAttach(discDiv, squareDiv, { duration: 1000, parallelAnimations });
+            
+            squareDiv.classList.remove('flip-animation');
+            await this.bga.gameui.wait(500); // for the flip animation removal to finish
+        }
+        
+        async notif_turnOverDiscs(args) {
+            // Get the color of the player who is returning the discs
+            const targetColor = this.gamedatas.players[ args.player_id ].color;
+
+            // wait for the animations of all turned discs to be over before considering the notif done
+            await Promise.all(
+                args.turnedOver.map(disc =&gt; 
+                    this.animateTurnOverDisc(disc, targetColor)
+                )
+            );
+        }
+</pre><p>The list of the discs to be turned over has been made available by our server side code in <code>args.turnedOver</code> (see previous paragraph). We loop through all these discs, and trigger a single disc animation using <code>animateTurnOverDisc</code>. This function creates a complex animation using <a href="BgaAnimations.html" title="BgaAnimations">BgaAnimations</a> for the disc in parameter.
+</p><h2><span class="mw-headline" id="Implement_the_zombie_mode">Implement the zombie mode</span></h2><p>When a player leave the table, a Zombie (bot) will play for the leaver, so the table can continue. For that, we write code in the zombieTurn function.
+</p><p>Add this at the end of your PlayDisc.php file :
+</p><pre>    function zombie(int $playerId) {
+        // Zombie level 1
+        $possibleMoves = $this-&gt;game-&gt;boardManager-&gt;getPossibleMoves($playerId);
+        // transform the 2 dimensional array into a flat array of possible [$x, $y]
+        $possibleMovesArray = [];
+        foreach($possibleMoves as $x =&gt; $ys) {
+            foreach($ys as $y =&gt; $valid) {
+                $possibleMovesArray[] = [$x, $y];
+            }
+        }
+
+        $zombieChoice = $this-&gt;getRandomZombieChoice($possibleMovesArray);
+        return $this-&gt;actPlayDisc($zombieChoice[0], $zombieChoice[1], $playerId);
+    }
+</pre><p>And that's it ! Everytime a leaver should be playing, the Zombie will random play one of the possible moves, and the remaining player will be able to play the next move.
+</p><h2><span class="mw-headline" id="Add_a_debug_function_to_help_up_test_the_code">Add a debug function to help up test the code</span></h2><p>Add this at the end of your Game.php file :
+</p><pre>
+
+    function debug_playAutomatically(int $moves = 50) {
+        $this-&gt;bga-&gt;debug-&gt;playUntil(fn(int $count) =&gt; $count === $moves);
+    }
+
+    function debug_playToEndGame() {
+        $this-&gt;debug_playAutomatically(64); // reversi max moves is under 64 for the standard size board
+    }
+</pre><p>This function plays automatically until we reach the end of the game. The functions starting with "debug_" can be triggered in the Studio with a special menu.
+It uses the tool <code>$this-&gt;debug-&gt;playUntil</code> that will trigger zombie actions, but you could put any code in the debug function for the tests you need.
+</p><p>You can create as many debug function as you like!
+</p><h2><span class="mw-headline" id="Optional:_add_unit_tests">Optional: add unit tests</span></h2><p>Follow the instruction on <a class="external free" href="https://en.doc.boardgamearena.com/Testing_by_developer#PHP" rel="nofollow">https://en.doc.boardgamearena.com/Testing_by_developer#PHP</a> to setup phpunit and create the first Reversi unit tests that are given as examples there.
+</p><h2><span class="mw-headline" id="After_the_tutorial">After the tutorial</span></h2><p>You might want to check another tutorial, or start working on your first real project !
+</p></div></body>
+</html>
