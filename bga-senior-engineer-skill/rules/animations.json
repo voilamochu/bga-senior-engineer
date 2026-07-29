@@ -1,0 +1,256 @@
+{
+  "domain": "animations",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "ai-os/bga-senior-engineer-doctrine.md, ai-os/rule-partition-plan.md",
+  "rules": [
+    {
+      "id": "ANIM-001",
+      "priority": 4,
+      "rule": "Instantiate BgaAnimations.Manager once in main game setup. Pass it to all client Managers that render animated elements. Route every game animation through this single instance.",
+      "violation": [
+        "Each client Manager creates its own BgaAnimations.Manager instance",
+        "BgaAnimations.Manager is not instantiated during setup",
+        "Some animations bypass the Manager and execute via setTimeout or raw CSS transitions",
+        "Client Manager receives BgaAnimations.Manager but stores it as a global instead of a constructor parameter"
+      ],
+      "check": "Verify BgaAnimations.Manager is instantiated exactly once in setup. Verify every client Manager that renders animated content receives the Manager via its constructor. Verify no direct setTimeout or CSS-only animation paths exist for game-state-driven animations.",
+      "fix": "Create BgaAnimations.Manager in the main game setup function. Pass it as a constructor argument to every client Manager that needs animation support. Replace all ad-hoc animation calls with Manager-routed equivalents.",
+      "tags": ["animations", "architecture", "BgaAnimations", "setup"],
+      "applies_to": ["Client"],
+      "exceptions": [
+        "Purely decorative effects that do not convey game state (pulsing timer, highlight border) may use CSS transitions without the Manager"
+      ],
+      "see_also": ["CLNT-003", "CLNT-004", "MIGR-006"]
+    },
+    {
+      "id": "ANIM-002",
+      "priority": 4,
+      "rule": "Wire animationsActive() to the player preference for animation speed. The method returns true only when the player has not opted into fast-mode or reduced-motion.",
+      "violation": [
+        "animationsActive() is hardcoded to true, ignoring player preference",
+        "animationsActive() is hardcoded to false, disabling animations for all players",
+        "animationsActive() is not called before enqueueing animations, wasting queue resources",
+        "animationsActive() logic duplicates the preference check instead of calling the framework method"
+      ],
+      "check": "Locate animationsActive() and verify it reads from the player animation-speed preference. Verify every enqueue call on the Manager is guarded by animationsActive(). Assert that toggling the preference on/off changes animation behaviour without a page reload.",
+      "fix": "Implement animationsActive() to return the framework preference value. Guard every animation enqueue with an if (animationsActive()) check. Remove any hardcoded true/false overrides.",
+      "tags": ["animations", "preference", "degradation", "performance"],
+      "applies_to": ["Client"],
+      "exceptions": [],
+      "see_also": ["ANIM-001"]
+    },
+    {
+      "id": "ANIM-003",
+      "priority": 4,
+      "rule": "When fast-mode is active or animationsActive() returns false, skip all game-state animations. Do not enqueue them. Apply only the terminal DOM state immediately.",
+      "violation": [
+        "Fast-mode still enqueues animations but with zero duration instead of skipping entirely",
+        "Fast-mode skips animations but does not apply the terminal DOM state, leaving stale layout",
+        "Fast-mode guards the enqueue call but does not prevent animation-callback side effects",
+        "Fast-mode inconsistently applies to some animations but not others in the same notification handler"
+      ],
+      "check": "Verify that when animationsActive() returns false, notification handlers apply the terminal DOM state directly without going through the animation queue. Verify no animation promises are created. Verify the visual result matches the post-animation state.",
+      "fix": "In each notification handler, branch on animationsActive(). If false: call a synchronous applyTerminalState() method that sets the final DOM positions directly. If true: enqueue the animation sequence through the Manager.",
+      "tags": ["animations", "fast-mode", "degradation", "skip"],
+      "applies_to": ["Client"],
+      "exceptions": [],
+      "see_also": ["ANIM-002"]
+    },
+    {
+      "id": "ANIM-004",
+      "priority": 4,
+      "rule": "Animations execute sequentially within a notification handler. Each animation starts only after the previous one completes. Parallel animation across independent elements is allowed only when the elements do not interact.",
+      "violation": [
+        "Multiple animations in the same handler start simultaneously when they affect overlapping elements",
+        "Animation B starts while animation A is still running and they update the same DOM region",
+        "Animations that must run sequentially (card drawn then placed) are queued in parallel",
+        "Animation order within a handler depends on JavaScript promise scheduling rather than explicit sequencing"
+      ],
+      "check": "Review each notification handler that enqueues multiple animations. Verify animations are chained via .then() or the Manager's sequence() method. Verify that parallel animations only touch non-overlapping DOM subtrees. Assert the visual result is independent of timing variations.",
+      "fix": "Refactor multi-animation handlers to use the Manager's sequence() method. Group independent animations into parallel batches. Chain dependent animations sequentially. Remove any implicit scheduling that relies on promise microtask order.",
+      "tags": ["animations", "sequencing", "parallel"],
+      "applies_to": ["Client"],
+      "exceptions": [
+        "Animations that target absolutely-positioned elements in separate containers may run in parallel even when visually adjacent"
+      ],
+      "see_also": ["ANIM-005", "ANIM-012"]
+    },
+    {
+      "id": "ANIM-005",
+      "priority": 4,
+      "rule": "Every animation enqueue returns a promise that resolves on completion. Use .then() chains or async/await to sequence dependent animations and trigger post-animation callbacks.",
+      "violation": [
+        "Animation enqueue returns void instead of a promise",
+        "Post-animation callback is scheduled with setTimeout instead of .then() on the animation promise",
+        "Animation callback fires before the animation completes because it is not chained to the promise",
+        "Animation callback fires but the calling handler does not await it, causing race conditions",
+        "Promise rejection during animation is not caught, leaving the queue in an inconsistent state"
+      ],
+      "check": "Verify every enqueue method on the animation Manager returns a Promise. Verify every notification handler that sequences animations awaits each promise in order. Verify that promise rejections are caught and the queue advances to the next animation.",
+      "fix": "Wrap animation enqueue in a Promise that resolves on animationend or transitionend. Chain callbacks via .then(). Catch rejections with .catch() and advance the queue. Convert any setTimeout-based post-animation logic to promise-chained equivalents.",
+      "tags": ["animations", "promises", "callbacks", "lifecycle"],
+      "applies_to": ["Client"],
+      "exceptions": [],
+      "see_also": ["ANIM-004"]
+    },
+    {
+      "id": "ANIM-006",
+      "priority": 4,
+      "rule": "Apply the terminal DOM state before starting any animation. Animation then transitions from the initial visual state to the terminal state. The terminal state must be visible if the animation is interrupted or skipped.",
+      "violation": [
+        "Animation starts with the element in its old position and animates to the new position without pre-setting the terminal layout",
+        "Terminal state is set after the animation completes, so skip/fast-mode leaves outdated layout",
+        "DOM update is interleaved with animation steps rather than applied atomically before the sequence",
+        "Animation modifies computed styles that conflict with the pre-set terminal state, causing a visual flash"
+      ],
+      "check": "In each notification handler, verify the terminal DOM state (classes, positions, values) is applied as the first step before any animation enqueue. Assert that if all animations are skipped, the DOM reflects the terminal state immediately.",
+      "fix": "Reorder each handler: first apply all data updates to the DOM (via BgaCards or direct element manipulation), then enqueue transition animations. The data update step should leave the element in its final visual state; the animation step should only transition from the current rendered state to that already-set final state.",
+      "tags": ["animations", "dom", "transitions", "state"],
+      "applies_to": ["Client"],
+      "exceptions": [],
+      "see_also": ["CLNT-009"]
+    },
+    {
+      "id": "ANIM-007",
+      "priority": 4,
+      "rule": "During reconnect, disable all animations. Apply terminal DOM states directly. The reconnect path (notification replay or refreshUI) must produce stable rendered state without animation delays.",
+      "violation": [
+        "Reconnect replays notification handlers and animation promises delay the final render",
+        "Reconnect triggers animations that depend on intermediate states not present during replay",
+        "Reconnect applies animations sequentially, significantly slowing the reconnection experience",
+        "Reconnect animation state differs from the live-play animation state for the same game position"
+      ],
+      "check": "Verify the reconnect entry point sets a flag that disables all animation enqueues. Verify notification handlers check this flag and apply terminal states synchronously when set. Verify that toggleing between live and replay mode correctly enables/disables animations.",
+      "fix": "Add a global isReconnecting flag controlled by the reconnect handler. In every notification handler, check this flag: if true, apply terminal state directly without animation enqueue. Reset the flag when reconnect completes.",
+      "tags": ["animations", "reconnect", "replay", "disabling"],
+      "applies_to": ["Client"],
+      "exceptions": [],
+      "see_also": ["SYNC-003", "CLNT-006"]
+    },
+    {
+      "id": "ANIM-008",
+      "priority": 4,
+      "rule": "Cancel all pending animations when a state transition occurs. The animation queue is cleared and the terminal state for each cancelled animation is applied immediately.",
+      "violation": [
+        "State transition triggers a new notification while a previous animation is still queued, causing overlapping sequences",
+        "Pending animations from the previous state complete after the new state renders, producing visual flicker",
+        "Manager's cancel() method is not called on state transition, leaving orphaned promises",
+        "Animation queue clears but the terminal DOM state for cancelled animations is never applied"
+      ],
+      "check": "Verify the state transition entry point calls the animation Manager's cancel() method. Verify cancel() clears the queue and applies terminal states for all pending animations. Assert that no animation promises from the previous state resolve after the cancel.",
+      "fix": "Wire the state transition handler to call animationManager.cancel() before processing notifications for the new state. Implement cancel() to reject all pending promises with a CancelledAnimationError, clear the queue, and apply terminal states.",
+      "tags": ["animations", "cancellation", "interruption", "lifecycle"],
+      "applies_to": ["Client"],
+      "exceptions": [],
+      "see_also": ["ANIM-004"]
+    },
+    {
+      "id": "ANIM-009",
+      "priority": 4,
+      "rule": "Animation durations must stay within the range defined by the framework constraints. No animation may exceed the maximum duration without explicit justification.",
+      "violation": [
+        "Animation duration exceeds the framework maximum, delaying visual feedback",
+        "Animation duration is hardcoded to a value that does not scale with the animation-speed preference",
+        "Consecutive animations each run at the maximum duration, causing the cumulative sequence to take too long",
+        "Animation duration is zero for a transition animation that should have visible motion",
+        "Duration is set per-animation instead of sourced from the Manager global configuration"
+      ],
+      "check": "Verify every animation uses the Manager's global duration configuration rather than a hardcoded value. Assert that the cumulative duration of all animations in a single handler does not exceed the framework guidance. Verify the animation-speed preference scales all durations proportionally.",
+      "fix": "Centralize duration values in the Manager configuration. Replace hardcoded animation durations with references to the Manager's duration settings. Scale durations proportionally based on the animation-speed preference factor.",
+      "tags": ["animations", "duration", "performance", "consistency"],
+      "applies_to": ["Client"],
+      "exceptions": [
+        "Intro or outro sequences that are not gameplay-driven may use longer durations with explicit player opt-in"
+      ],
+      "see_also": ["ANIM-002", "ANIM-003"]
+    },
+    {
+      "id": "ANIM-010",
+      "priority": 4,
+      "rule": "During notification replay (either for reconnect or undo), disable all animations. Notification handlers must apply terminal DOM states synchronously without enqueuing animation promises.",
+      "violation": [
+        "Notification replay enqueues animations, slowing down the replay sequence",
+        "Replay animation state differs from live-play because intermediate states are missing during replay",
+        "Undo triggers animating the reversal step-by-step instead of applying the terminal state directly",
+        "Replay applies animation callbacks that have side effects (sounds, focus changes) not present in the original live play"
+      ],
+      "check": "Verify that the replay and undo paths disable the animation Manager before processing notification handlers. Assert that no animation promises are created during replay. Verify the visual state after replay matches the visual state after live play with animations disabled.",
+      "fix": "Set a flag (isReplaying) in the replay and undo entry points. In every notification handler, check this flag and skip all animation enqueues when true. Apply terminal DOM states directly. Disable animation callbacks that trigger non-visual side effects.",
+      "tags": ["animations", "replay", "undo", "disablement"],
+      "applies_to": ["Client"],
+      "exceptions": [],
+      "see_also": ["UNDO-008", "UNDO-009", "ANIM-007"]
+    },
+    {
+      "id": "ANIM-011",
+      "priority": 4,
+      "rule": "Animation enqueue must be idempotent. Calling the same animation parameters twice in sequence must produce visually the same result as calling it once.",
+      "violation": [
+        "Enqueuing the same animation twice results in the element moving twice the distance",
+        "Enqueuing the same animation twice stacks two promises but the state is already terminal after the first",
+        "Animation idempotency depends on the animation having not started, failing for late-double-enqueue",
+        "Animation enqueue mutates internal state such that re-enqueueing produces different visual outcome"
+      ],
+      "check": "Write a test that enqueues the same animation parameters twice on the same element. Assert the element ends in the same position as a single enqueue. Verify the second enqueue resolves immediately without a visible double-animation.",
+      "fix": "Make animation enqueue check whether the element is already at the target state. If it is, resolve the promise immediately without queuing. Guard against double-mutation by comparing current and target positions before enqueueing.",
+      "tags": ["animations", "idempotency", "safety"],
+      "applies_to": ["Client"],
+      "exceptions": [],
+      "see_also": ["ANIM-001"]
+    },
+    {
+      "id": "ANIM-012",
+      "priority": 4,
+      "rule": "The animation Manager maintains a single FIFO queue. Animations are dequeued and executed one at a time. The queue is cleared on cancellation.",
+      "violation": [
+        "Animations execute from the queue out of FIFO order",
+        "Multiple queues exist for different element types, causing global sequencing violations",
+        "Queue allows a new animation to start before the previous one's promise resolves",
+        "Queue does not clear pending animations when cancel() is called"
+      ],
+      "check": "Read the animation Manager implementation. Verify it maintains a single queue. Verify dequeue order is FIFO. Verify the next animation starts only after the previous promise resolves. Verify cancel() empties the queue.",
+      "fix": "Implement the animation Manager with a single FIFO queue. Use a recursive dequeue loop: dequeue head, execute, await promise, dequeue next. Cancel() rejects all pending promises and resets the queue to empty.",
+      "tags": ["animations", "queue", "architecture", "sequencing"],
+      "applies_to": ["Client"],
+      "exceptions": [],
+      "see_also": ["ANIM-004", "ANIM-005", "ANIM-008"]
+    },
+    {
+      "id": "ANIM-013",
+      "priority": 4,
+      "rule": "When an undo occurs, revert any optimistically rendered client-side animation state to the pre-mutation visual state. The refreshUI that follows the undo is the authoritative render.",
+      "violation": [
+        "Undo triggers a new animation that conflicts with the animation that rendered the original action",
+        "Optimistic client-side state from a cancelled action persists after undo, showing stale data",
+        "Undo animation attempts to reverse the previous animation step-by-step instead of applying the terminal render",
+        "Client applies animation for the undo action before refreshUI completes, causing a double-visual-change"
+      ],
+      "check": "Verify the undo path disables all animations, applies refreshUI, and does not enqueue any animation between the undo and the refreshUI. Assert the client visual state after undo matches the server state without intermediate animation.",
+      "fix": "In the undo handler: call animationManager.cancel() to clear any pending animations, then apply refreshUI which triggers synchronous DOM updates with animations disabled. Do not enqueue any undo-specific animations.",
+      "tags": ["animations", "undo", "rollback", "optimistic"],
+      "applies_to": ["Client"],
+      "exceptions": [],
+      "see_also": ["UNDO-010", "UNDO-011", "ANIM-010"]
+    },
+    {
+      "id": "ANIM-014",
+      "priority": 4,
+      "rule": "Batch multiple DOM state updates from a single notification into one animation sequence. Do not split one logical visual transition into separate queued animations.",
+      "violation": [
+        "Drawing multiple cards enqueues one animation per card instead of one batched animation",
+        "Sorting a hand enqueues an animation per card position change instead of one reorder animation",
+        "Batched elements animate sequentially when they could animate in a single parallel batch",
+        "Each element in a batch has its own duration instead of sharing a unified batch duration"
+      ],
+      "check": "Review notification handlers that update multiple DOM elements in response to a single server notification. Verify elements that move together are grouped into a single animation batch. Assert batch duration is unified. Assert batch-completion callback fires once for the entire batch.",
+      "fix": "Replace per-element animation enqueues with batch enqueue calls. Group related elements by their container or logical group. Use the Manager's batch() method (or equivalent) that accepts multiple element-target pairs and animates them as a coordinated group.",
+      "tags": ["animations", "batching", "performance"],
+      "applies_to": ["Client"],
+      "exceptions": [
+        "Elements that enter or leave the DOM independently (one appears, one disappears) belong to separate logical transitions and need not be batched"
+      ],
+      "see_also": ["ANIM-004", "ANIM-012"]
+    }
+  ]
+}

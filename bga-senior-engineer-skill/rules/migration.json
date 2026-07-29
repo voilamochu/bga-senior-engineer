@@ -1,0 +1,337 @@
+{
+  "domain": "migration",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "ai-os/bga-senior-engineer-doctrine.md, ai-os/rule-partition-plan.md",
+  "rules": [
+    {
+      "id": "MIGR-001",
+      "priority": 5,
+      "rule": "Extract God Game.php first. Move domain logic into Manager classes. Game.php retains only orchestration: setup, getAllDatas delegation, zombie routing, and giveExtraTime calls.",
+      "violation": [
+        "Game.php still contains SQL queries on game tables after the migration pass",
+        "Game.php still implements scoring, resource validation, or card logic",
+        "Manager extraction is incomplete: some domain methods remain in Game.php",
+        "Game.php exceeds 300 lines after Manager extraction is declared complete"
+      ],
+      "check": "Count lines in Game.php: assert under 300. Grep for SQL keywords on game tables: assert zero matches. Review every method body: if it applies game rules instead of calling a Manager method, it must be extracted.",
+      "fix": "Identify domain logic blocks in Game.php. Create or extend the owning Manager. Move each block to a Manager method. Update Game.php to delegate. Remove the original code. Repeat until Game.php contains only orchestration.",
+      "tags": ["migration", "game.php", "extraction"],
+      "applies_to": ["Game.php"],
+      "exceptions": [],
+      "see_also": ["ARCH-001", "ARCH-005"]
+    },
+    {
+      "id": "MIGR-002",
+      "priority": 5,
+      "rule": "Migrate legacy action.php routing to #[PossibleAction] autowired action handlers.",
+      "violation": [
+        "Actions are still routed through a manual action.php switch statement",
+        "#[PossibleAction] attribute is missing on action handler methods",
+        "Action handler method signature does not match the #[PossibleAction] expected pattern",
+        "Legacy action.php file still exists after migration is declared complete"
+      ],
+      "check": "Verify #[PossibleAction] attribute is present on each action handler. Assert the legacy action.php file has been removed. Verify that the autowired routing resolves every action that was previously handled by action.php.",
+      "fix": "Add #[PossibleAction] attribute to each action method. Remove the manual action.php routing. Verify every action URL resolves to the correct handler via the autowired system. Delete action.php when all routes are migrated.",
+      "tags": ["migration", "actions", "routing"],
+      "applies_to": ["Actions"],
+      "exceptions": [],
+      "see_also": ["ACTN-009"]
+    },
+    {
+      "id": "MIGR-003",
+      "priority": 5,
+      "rule": "Replace monolithic Game.php with a thin coordinator pattern: Game.php delegates to Managers; Managers own aggregate data; cross-Manager coordination happens in action methods.",
+      "violation": [
+        "Game.php still orchestrates cross-Manager logic inline",
+        "Action methods call Game.php methods instead of Manager methods",
+        "Managers are not yet extracted for all game tables",
+        "Game.php contains state transition logic that belongs in state classes"
+      ],
+      "check": "Verify Game.php delegates every game operation to a Manager. Assert no Game.php method contains business logic beyond orchestration. Verify each Manager owns exactly one aggregate root. Assert cross-Manager coordination lives in action methods.",
+      "fix": "Extract remaining domain logic from Game.php into Managers. Convert Game.php methods into delegation calls. Move cross-Manager orchestration into action methods. Remove inline state transitions to state classes.",
+      "tags": ["migration", "game.php", "coordinator", "managers"],
+      "applies_to": ["Game.php"],
+      "exceptions": [],
+      "see_also": ["ARCH-001", "ARCH-005"]
+    },
+    {
+      "id": "MIGR-004",
+      "priority": 5,
+      "rule": "Wrap all notifyAllPlayers and notifyPlayer calls into centralized static methods in Notifications.php. No direct notify calls remain outside the Notifications class.",
+      "violation": [
+        "Game.php or action methods still call notifyAllPlayers directly",
+        "Manager methods call notifyAllPlayers directly instead of returning data for the action to notify",
+        "Notifications.php has a static method for some notification types but raw notify calls for others",
+        "Notification payload construction is duplicated across multiple call sites"
+      ],
+      "check": "Grep for notifyAllPlayers and notifyPlayer across all PHP files outside Notifications.php. Assert zero matches. Verify every notification type has exactly one static method in Notifications.php. Assert the method constructs the full payload.",
+      "fix": "Create static methods in Notifications.php for every notification type. Replace each direct notifyAllPlayers call with a call to the corresponding static method. Remove all direct notify calls. Verify no notify call remains outside Notifications.php.",
+      "tags": ["migration", "notifications", "centralization"],
+      "applies_to": ["Notifications"],
+      "exceptions": [],
+      "see_also": ["NOTF-001", "NOTF-010"]
+    },
+    {
+      "id": "MIGR-005",
+      "priority": 5,
+      "rule": "Replace raw global_variables access with a typed Globals wrapper class. Every global key has a typed getter and setter.",
+      "violation": [
+        "Game.php or Manager code accesses self::getGameStateValue directly",
+        "global_variables keys are string literals duplicated across methods",
+        "No Globals class exists after the migration pass",
+        "Globals class has getters and setters but returns raw values without type coercion"
+      ],
+      "check": "Grep for getGameStateValue and setGameStateValue across all PHP files outside the Globals class. Assert zero matches. Verify the Globals class provides one typed getter/setter pair per global key. Assert every key is defined as a constant.",
+      "fix": "Create a Globals class with typed getter/setter methods. Define each global key as a class constant. Replace all raw getGameStateValue calls with Globals::getKeyName(). Remove the legacy access patterns.",
+      "tags": ["migration", "globals", "typed-wrapper"],
+      "applies_to": ["Globals", "Persistence"],
+      "exceptions": [],
+      "see_also": ["PERS-006", "PERS-008"]
+    },
+    {
+      "id": "MIGR-006",
+      "priority": 5,
+      "rule": "Migrate Dojo-based widgets (ebg/stock) to ES modules and BgaCards. Replace legacy card rendering with the modern BgaCards framework.",
+      "violation": [
+        "Legacy Dojo ebg/stock calls still exist in client code",
+        "Card rendering uses custom DOM instead of BgaCards card markup",
+        "Client code still imports from Dojo modules instead of ES module imports",
+        "BgaCards is not instantiated after the migration pass"
+      ],
+      "check": "Search for ebg/stock references across client JS files. Assert zero remaining. Verify all card rendering uses BgaCards APIs. Assert ES module imports replace Dojo module declarations. Verify BgaCards and BgaAnimations are instantiated.",
+      "fix": "Replace ebg/stock with BgaCards card framework. Replace Dojo module declarations with ES import statements. Update notification handlers to use BgaCards APIs. Instantiate BgaCards and BgaAnimations.Manager in setup. Remove all legacy Dojo dependencies.",
+      "tags": ["migration", "client", "dojo", "bgacards", "es-modules"],
+      "applies_to": ["Client"],
+      "exceptions": [],
+      "see_also": ["CLNT-003", "CLNT-010", "ANIM-001"]
+    },
+    {
+      "id": "MIGR-007",
+      "priority": 5,
+      "rule": "Replace numeric state IDs with named constants in a StateIds.php file.",
+      "violation": [
+        "State machine configuration still uses raw numeric values for state IDs",
+        "No StateIds.php file exists after the migration pass",
+        "Some state IDs are constants but others remain as raw numbers",
+        "State IDs are defined inline in state machine configuration instead of imported"
+      ],
+      "check": "Grep for numeric state ID values in state machine configuration and state classes. Assert zero raw numeric IDs remain. Verify StateIds.php exists with a const for every state. Assert the state machine configuration imports StateIds constants.",
+      "fix": "Create StateIds.php with a const per state. Replace all numeric state IDs with StateIds::CONST_NAME references in state machine configuration and state classes. Remove all inline numeric literals.",
+      "tags": ["migration", "states", "constants"],
+      "applies_to": ["StateMachine"],
+      "exceptions": [],
+      "see_also": ["STAT-004"]
+    },
+    {
+      "id": "MIGR-008",
+      "priority": 5,
+      "rule": "Before any migration step, verify the target code has adequate test coverage. If tests are absent, add them before migrating.",
+      "violation": [
+        "Code is migrated without existing tests for the pre-migration behaviour",
+        "Migration introduces a regression that existing tests would have caught but the tests did not exist",
+        "Tests are added after migration, making it impossible to verify pre-migration behaviour",
+        "Migration is tested only by manual verification, not automated assertions"
+      ],
+      "check": "Before each migration step, verify the component being migrated has tests covering its public interface. If coverage is below the minimum threshold (TEST-010), halt the migration and add tests first.",
+      "fix": "Write unit tests for the legacy component before migrating it. Snapshots of the legacy behaviour serve as the correctness baseline. After migration, the tests should pass unchanged, proving behavioural equivalence.",
+      "tags": ["migration", "testing", "safety"],
+      "applies_to": ["Testing", "Migration"],
+      "exceptions": [],
+      "see_also": ["TEST-001", "TEST-009"]
+    },
+    {
+      "id": "MIGR-009",
+      "priority": 5,
+      "rule": "Extract exactly one concern per commit. Each commit extracts one Manager, one model, or one notification type. Never combine extractions.",
+      "violation": [
+        "One commit extracts a Manager and also refactors its notification type",
+        "One commit extracts two Managers simultaneously, making review and rollback harder",
+        "One commit extracts a Manager and also migrates its state class",
+        "Commit message does not identify which concern was extracted"
+      ],
+      "check": "Review the commit log for the migration period. Assert each commit addresses exactly one extraction. Verify commit messages identify the extracted concern. Assert no commit mixes extraction with unrelated refactoring or bug fixes.",
+      "fix": "Split combined commits into one commit per extraction. Each commit: (1) extracts one concern, (2) updates call sites, (3) removes the legacy code, (4) verifies tests pass. Rebase to keep the migration history clean.",
+      "tags": ["migration", "incremental", "commits"],
+      "applies_to": ["Migration"],
+      "exceptions": [],
+      "see_also": ["MIGR-014"]
+    },
+    {
+      "id": "MIGR-010",
+      "priority": 5,
+      "rule": "Parallel extraction is permitted only when the extracted components target non-overlapping Managers with independent tables.",
+      "violation": [
+        "Two developers extract Managers that write to overlapping tables simultaneously",
+        "Parallel extractions create merge conflicts because both touch Game.php delegation methods",
+        "Parallel extractions are attempted for notification extraction before Manager extraction is complete",
+        "Parallel extraction proceeds without a shared coordination document tracking ownership boundaries"
+      ],
+      "check": "Verify the extraction plan assigns each Manager to a single owner. Assert no two active extractions target tables that share foreign-key relationships requiring coordinated changes. Assert Game.php is extracted by one developer at a time.",
+      "fix": "Create a coordination document that maps each Manager to its owner and table. Allow parallel extraction only for Managers with zero table overlap. Serialize extraction of Game.php delegation and any cross-Manager state transitions.",
+      "tags": ["migration", "parallel", "coordination"],
+      "applies_to": ["Migration"],
+      "exceptions": [],
+      "see_also": ["ARCH-005"]
+    },
+    {
+      "id": "MIGR-011",
+      "priority": 5,
+      "rule": "Signal thresholds trigger extraction: file over 1000 lines, method over 40 lines, Manager writes another Manager's table, Game.php contains SQL, notification called from over 1 place without wrapper, global_variables accessed without typed wrapper.",
+      "violation": [
+        "File exceeds 1000 lines but has not been split",
+        "Method exceeds 40 lines but has not been refactored",
+        "Manager writes to a table owned by another Manager",
+        "Game.php contains SQL queries on game tables",
+        "Same notification payload is constructed inline at multiple call sites",
+        "Global variable key is accessed as a raw string without a typed wrapper"
+      ],
+      "check": "Run a static analysis script that checks each threshold. Flag every violation. Each flag produces a ticket or migration task. Assert the total number of active threshold violations decreases over time.",
+      "fix": "For each flagged threshold violation: (1) create a migration task, (2) extract or refactor the violating code, (3) re-run the analysis, (4) close the task when the threshold is no longer violated.",
+      "tags": ["migration", "thresholds", "static-analysis", "technical-debt"],
+      "applies_to": ["Game.php", "Managers", "Notifications"],
+      "exceptions": [
+        "Framework-generated files (BGA platform stubs) are exempt from line-count thresholds"
+      ],
+      "see_also": ["ARCH-018"]
+    },
+    {
+      "id": "MIGR-012",
+      "priority": 5,
+      "rule": "Maintain a mapping document that lists every legacy construct and its modern equivalent. Update the mapping as each migration step completes.",
+      "violation": [
+        "No migration mapping document exists",
+        "Mapping document lists legacy constructs but not their modern equivalents",
+        "Mapping document is not updated after a migration step",
+        "New team members cannot determine the modern equivalent of a legacy pattern from the mapping"
+      ],
+      "check": "Verify a migration mapping document exists. Assert it covers every construct listed in the doctrine migration table (§10). Verify the mapping is updated after each extraction. Assert a developer new to the project can navigate from any legacy pattern to its modern equivalent.",
+      "fix": "Create or update the migration mapping document following the doctrine §10 legacy-to-modern table. After each extraction, update the mapping to mark the migrated construct as complete. Add entries for any legacy patterns discovered during extraction.",
+      "tags": ["migration", "documentation", "mapping"],
+      "applies_to": ["Migration"],
+      "exceptions": [],
+      "see_also": []
+    },
+    {
+      "id": "MIGR-013",
+      "priority": 5,
+      "rule": "Never migrate and add features in the same pass. A migration step changes how code is structured without changing what it does. Feature additions change behaviour without restructuring.",
+      "violation": [
+        "A commit extracts a Manager and adds a new method that did not exist in the legacy code",
+        "A migration branch includes a new feature ticket alongside extraction tasks",
+        "A bug fix is applied during migration without verifying the bug exists in pre-migration code",
+        "Feature parity tests fail because the migration inadvertently changed behaviour"
+      ],
+      "check": "For each migration commit, verify it changes only structure, not behaviour. Assert no new features, no bug fixes for undocumented behaviour, and no functional changes. Run parity validation before and after each migration step.",
+      "fix": "Split any commit that mixes migration with feature work: revert the feature addition, complete the migration, then add the feature in a separate commit. Bug fixes found during migration should be applied to the legacy code first, then the migration proceeds.",
+      "tags": ["migration", "safety", "separation"],
+      "applies_to": ["Migration"],
+      "exceptions": [],
+      "see_also": []
+    },
+    {
+      "id": "MIGR-014",
+      "priority": 5,
+      "rule": "Follow the defined migration sequence: config files first, then DB helpers, then Managers, then Models, then Notifications, then States, then Client.",
+      "violation": [
+        "Client migration is attempted before Manager extraction is complete",
+        "Model extraction is skipped and raw arrays are returned from Manager methods",
+        "State classes are migrated before the Notifications class that they trigger",
+        "Config files are still in PHP format after the migration pass"
+      ],
+      "check": "Verify the migration sequence order matches the defined priority. Assert no step starts before its dependencies are complete. Assert config files are migrated first. Assert Client migration is started last.",
+      "fix": "Re-plan the migration sequence. Complete each phase in order: config → DB helpers → Managers → Models → Notifications → States → Client. Do not proceed to the next phase until the current phase is verified and committed.",
+      "tags": ["migration", "ordering", "sequence"],
+      "applies_to": ["Migration"],
+      "exceptions": [],
+      "see_also": ["MIGR-001", "MIGR-004", "MIGR-006", "MIGR-007"]
+    },
+    {
+      "id": "MIGR-015",
+      "priority": 5,
+      "rule": "After each migration step, verify parity between legacy and modern implementations. The modern code must produce identical output for identical input.",
+      "violation": [
+        "Parity validation is skipped after a migration step",
+        "Parity test compares output formats rather than behavioural results",
+        "Parity test passes despite minor behavioural differences (rounding, ordering, whitespace)",
+        "Parity test is written after the migration step instead of before, losing the baseline"
+      ],
+      "check": "After each migration step, run the pre-migration test suite against the modern code. Assert all tests pass without modification. For steps without test coverage, write a parity test that feeds identical input to both legacy and modern code and asserts identical output.",
+      "fix": "Before migrating a component, snapshot its behaviour via tests or a parity harness. After migration, run the same inputs through the modern code and compare outputs. Fix any behavioural differences before declaring the step complete.",
+      "tags": ["migration", "parity", "verification", "validation"],
+      "applies_to": ["Testing", "Migration"],
+      "exceptions": [],
+      "see_also": ["TEST-006", "MIGR-008"]
+    },
+    {
+      "id": "MIGR-016",
+      "priority": 5,
+      "rule": "Create a checkpoint before each migration step. If the step fails validation, roll back to the checkpoint and retry after fixing the issue.",
+      "violation": [
+        "No version-control checkpoint (tag or branch) is created before a migration step",
+        "Migration step proceeds without a rollback plan documented",
+        "Rollback requires manual reversal of multiple commits instead of reverting to a single checkpoint",
+        "Checkpoint is created after the migration step begins, losing the pre-migration baseline"
+      ],
+      "check": "Verify a git tag or branch exists marking the pre-migration state for the current step. Assert the rollback procedure is documented. Verify that reverting to the checkpoint restores the exact pre-migration state including database state if applicable.",
+      "fix": "Create a git tag (migration-checkpoint-N) before starting each migration step. Document the rollback procedure. If the step fails, git revert to the checkpoint, fix the issue, and retry the step.",
+      "tags": ["migration", "checkpoint", "rollback", "safety"],
+      "applies_to": ["Migration"],
+      "exceptions": [],
+      "see_also": ["UNDO-004"]
+    },
+    {
+      "id": "MIGR-017",
+      "priority": 5,
+      "rule": "Use temporary adapters to maintain compatibility between legacy and modern code during incremental migration. Remove the adapter when the migration step is complete.",
+      "violation": [
+        "Legacy code calls the modern Manager directly before the migration is complete",
+        "Modern and legacy code both exist with no adapter layer, causing duplicated logic",
+        "Adapter is left in place after the migration step is complete",
+        "Adapter introduces behavioural differences between legacy and modern paths"
+      ],
+      "check": "Verify that each adapter has a documented lifespan tied to a specific migration step. Assert the adapter is removed in the same commit that completes the migration step. Verify no adapter has an open-ended lifetime.",
+      "fix": "Introduce an adapter that translates between legacy and modern interfaces. Route legacy callers through the adapter. When the migration step completes, update callers to use the modern interface directly and remove the adapter.",
+      "tags": ["migration", "adapters", "compatibility"],
+      "applies_to": ["Migration"],
+      "exceptions": [],
+      "see_also": ["ARCH-014"]
+    },
+    {
+      "id": "MIGR-018",
+      "priority": 5,
+      "rule": "Mark legacy code as deprecated when the modern replacement is complete. Remove deprecated code after one full release cycle.",
+      "violation": [
+        "Legacy code is deleted before the modern replacement is verified in production",
+        "Legacy code is left in place indefinitely without a deprecation notice",
+        "Deprecated code has no removal timeline documented",
+        "Deprecation notice is added but the dependent call sites are not updated"
+      ],
+      "check": "Verify that legacy code marked as deprecated includes a @deprecated annotation with the removal version. Assert all call sites within the same project have been updated to use the modern replacement. Verify the deprecation timeline is documented.",
+      "fix": "Add @deprecated annotations to legacy code with the removal version. Update all internal call sites to use the modern replacement. Schedule removal for the next MAJOR release. Remove the legacy code when the scheduled version is reached.",
+      "tags": ["migration", "deprecation", "lifecycle"],
+      "applies_to": ["Migration"],
+      "exceptions": [
+        "Legacy code that cannot be removed because it is part of the BGA framework API is exempt but must be documented"
+      ],
+      "see_also": []
+    },
+    {
+      "id": "MIGR-019",
+      "priority": 5,
+      "rule": "A migration step is complete when: all legacy code for the extracted concern is removed, all call sites use the modern interface, parity tests pass, and no threshold violations remain for the migrated component.",
+      "violation": [
+        "Migration step is declared complete but legacy code still exists",
+        "Migration step is declared complete but some call sites still use the old interface",
+        "Migration step is declared complete but parity tests were not run",
+        "Migration step is declared complete but threshold violations (MIGR-011) for the component are not resolved"
+      ],
+      "check": "After each migration step, verify: (1) no legacy code remains for the extracted concern, (2) all call sites reference the modern interface, (3) parity validation passes, (4) static analysis confirms zero threshold violations for the component. Mark the step complete only when all four conditions are met.",
+      "fix": "Complete any unfinished work before declaring the step done: remove remaining legacy code, update stale call sites, run parity validation, and verify threshold compliance. Re-run the completion checklist.",
+      "tags": ["migration", "completion", "criteria"],
+      "applies_to": ["Migration"],
+      "exceptions": [],
+      "see_also": ["MIGR-008", "MIGR-011", "MIGR-015"]
+    }
+  ]
+}
