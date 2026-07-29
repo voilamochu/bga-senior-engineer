@@ -2,7 +2,7 @@
 
 **Purpose:** Define the runtime architecture of the BGA Senior Engineer skill. Answers HOW the skill exists at runtime: packaging, loading, retrieval, organization, extensibility, and execution.
 
-**Status:** Draft — Pre-implementation design
+**Status:** v1.1 — reconciled with implemented runtime
 
 **Prerequisite:** `docs/ai-os/skill-development-roadmap.md` (approved 2026-07-29)
 
@@ -54,9 +54,9 @@ The runtime package must optimize for the following, in priority order:
 |---|---|---|
 | **Maximum token budget (full skill)** | 12,000 tokens | Must fit in a 32K context window with room for agent task work. 12K tokens leaves 20K for codebase and reasoning. |
 | **Maximum token budget (single task)** | 3,000 tokens | Agent must load skill artifacts plus target codebase plus produce output. 3K leaves 29K for code and reasoning. |
-| **Maximum file size (any artifact)** | 150 lines | Files over 150 lines dominate context and cannot be loaded atomically. Smaller files enable faster iteration. |
+| **Maximum file size (any artifact)** | 500 lines (soft) / 800 lines (hard) | Files under 500 lines load efficiently. Files exceeding 800 lines should be split by sub-domain. The original 150-line estimate proved unrealistic for thorough rules with violation arrays, exception lists, and applies_to fields. |
 | **Maximum prompt size** | 120 lines | Prompts are the largest individual artifacts. Must leave room for rules, examples, and checklists within the 3K budget. |
-| **Maximum rule file size** | 150 lines | Rule files are loaded in groups of 2-8 per task. Each must be compact. |
+| **Maximum rule file size** | 500 lines (soft) / 800 lines (hard) | Rule files are loaded in groups of 2-8 per task. The 500-line soft limit is the recommended target; the 800-line hard limit triggers a split recommendation. Aligns with ARCH-018 Manager size policy. |
 | **Maximum checklist size** | 80 lines | Checklists run last. Must be small enough that the agent actually executes them. |
 | **Maximum example size** | 60 lines | Examples are reference material. Must demonstrate the pattern without requiring study. |
 | **Minimum line count for any artifact** | 15 lines | Artifacts under 15 lines are too trivial to justify a separate file. Merge into parent. |
@@ -77,14 +77,16 @@ The runtime package must optimize for the following, in priority order:
 |---|---|---|---|---|
 | Manifest (skill.json) | 1 | 50 | 150 | 1.3 percent |
 | Index (index.json) | 1 | 120 | 360 | 3.0 percent |
-| Rules (12 files) | 12 | 1,440 | 4,320 | 36.0 percent |
+| Rules (12 files, 5 implemented) | 12 | 2,319 (imp.) + ~1,050 (proj.) | ~6,960 (imp.) + ~3,150 (proj.) | — |
 | Prompts (13 files) | 13 | 1,300 | 3,900 | 32.5 percent |
 | Examples (7 files) | 7 | 350 | 1,050 | 8.8 percent |
 | Checklists (3 files) | 3 | 200 | 600 | 5.0 percent |
 | References (3 files) | 3 | 200 | 600 | 5.0 percent |
 | README | 1 | 80 | 240 | 2.0 percent |
-| Buffer | — | — | 780 | 6.5 percent |
-| **Total** | **41** | **3,740** | **12,000** | **100 percent** |
+| Buffer | — | — | 1,590 | 13.3 percent |
+| **Total** | **41** | **~3,700 (imp.) + ~1,050 (proj.)** | **~12,000 (imp.) + ~3,150 (proj.)** | **—** |
+
+**Note:** Implemented rules (5 files) consume more lines and tokens than the original budget estimated. The remaining 7 files are expected to add ~1,050 lines / ~3,150 tokens. The full-skill budget of 12,000 tokens will be exceeded when all 12 files are loaded simultaneously. However, the tiered loading model (§3) ensures that no single task loads all 12 rule files — each task loads 2-8 files, keeping per-task consumption within the 3,000-token budget when used with the phased loading strategy (§8.4).
 
 ---
 
@@ -400,13 +402,13 @@ The agent should NEVER guess which rules to load. If classification fails, escal
 | **Purpose** | Distilled engineering rules for one domain. Loaded in Tier 1 (task-load). |
 | **Format** | JSON |
 | **Naming** | `<domain>.json` — domain names from the approved list (see section 7) |
-| **Max size** | 150 lines |
+| **Max size** | 500 lines (soft) / 800 lines (hard) |
 | **Required metadata** | `domain`, `version`, `last_updated`, `source`, `rules[]` |
 | **Dependencies** | None (may reference other rule files by ID, but not required) |
 | **Cross-references** | Rule IDs are globally unique. Rules may reference other rule IDs in `see_also`. |
-| **Forbidden** | Must NOT contain prose explanations. Must NOT duplicate rules in other files. |
+| **Forbidden** | Must NOT contain prose explanations. Must NOT duplicate rules in peer files (same layer). Constitutional-to-runtime hierarchical pairs are exempt — see partition plan §1.3. |
 
-**Schema:**
+**Schema (Version 1.1 — frozen):**
 
 ```json
 {
@@ -417,31 +419,42 @@ The agent should NEVER guess which rules to load. If classification fails, escal
   "rules": [
     {
       "id": "ARCH-001",
-      "priority": 1,
-      "rule": "Game.php is a switchboard. Under 300 lines. Zero SQL. Zero domain logic.",
-      "check": "Count lines in game.php. Assert fewer than 300. Grep for SQL keywords. Assert zero matches.",
-      "violation": "Game.php contains domain logic, SQL queries, or exceeds 300 lines",
-      "fix": "Extract domain logic to a Manager. Move SQL to Manager methods.",
-      "tags": ["architecture", "game.php", "migration", "refactor"],
-      "see_also": ["ARCH-004", "PERS-001"]
+      "priority": 2,
+      "rule": "Game.php is orchestration only. Under 300 lines. Zero SQL queries. Zero domain logic. Delegates all game work to Managers and States.",
+      "violation": [
+        "Game.php contains SQL on game tables",
+        "Game.php implements scoring, resource validation, card logic, or turn flow rules",
+        "Game.php grows with each new feature rather than delegating to existing Managers"
+      ],
+      "check": "Count lines in Game.php: assert under 300. Grep for SQL keywords on game tables: assert zero matches. Review every method body: if it applies game rules instead of calling Manager methods and returning, it is domain logic.",
+      "fix": "Extract domain logic into a Manager class. Extract SQL into Manager mutation methods. Game.php methods should call Manager::method() and return.",
+      "exceptions": [],
+      "tags": ["architecture", "game.php", "orchestration", "refactor"],
+      "applies_to": ["Game.php"],
+      "see_also": ["CORE-002"]
     }
   ]
 }
 ```
 
-**Rule field definitions:**
+**Rule field definitions (Schema Version 1.1):**
 
 | Field | Required | Type | Description |
 |---|---|---|---|
 | `id` | Yes | String | Globally unique rule identifier. Format: DOMAIN-NNN (e.g. ARCH-001). |
 | `priority` | Yes | Integer | 1 through 5. 1 equals immutable law. 5 equals style preference. Lower equals higher priority. |
 | `rule` | Yes | String | The rule itself. One sentence. Actionable. Under 150 characters. |
+| `violation` | Yes | Array of Strings | Concrete examples of what the rule violation looks like. Multiple examples improve detection accuracy. |
 | `check` | Yes | String | How to verify compliance. Concrete: grep pattern, assertion, line count. |
-| `violation` | Yes | String | What it looks like when the rule is broken. |
 | `fix` | Yes | String | How to correct a violation. References a pattern or example. |
 | `tags` | Yes | Array of Strings | Searchable tags for cross-domain retrieval. |
-| `see_also` | No | Array of Strings | Related rule IDs. |
+| `applies_to` | Yes | Array of Strings | The components this rule applies to (e.g. Actions, Managers, Game.php). |
+| `exceptions` | No | Array of Strings | Documented exceptions to the rule. Empty array if none. |
+| `see_also` | No | Array of Strings | Related rule IDs. For constitutional-to-runtime hierarchical pairs, the runtime rule references the constitutional owner. |
+| `rationale` | No | String | Why the rule exists. Required for constitutional rules (constitution.json) to explain why the law is immutable. Optional for runtime rules. |
 | `source` | No | String | Overrides the file-level source for this specific rule. |
+
+**Schema freeze:** Schema Version 1.1 is frozen. No new fields may be introduced without a schema version change. Any addition, removal, or type change to the fields above requires bumping the schema version in this document.
 
 **Rule ID namespace:**
 

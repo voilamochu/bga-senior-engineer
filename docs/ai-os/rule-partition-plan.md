@@ -2,7 +2,7 @@
 
 **Purpose:** Definitive ownership mapping for every `rules/*.json` runtime artifact. One canonical home per engineering concept. No duplication. No ambiguity.
 
-**Status:** Frozen — implementation reference
+**Status:** v1.1 — reconciled with implemented runtime
 
 **Inputs:**
 - `docs/ai-os/constitution.json` (canonical)
@@ -26,13 +26,30 @@
 
 ### 1.1 Canonical Ownership Theorem
 
-Every engineering concept enumerated in the doctrine has exactly **one** destination rule file. That file is the **canonical owner**. All other files that need the concept reference the owner's rule ID — they never duplicate the rule text.
+Every engineering concept enumerated in the doctrine has a **canonical owner**. Concepts may appear at multiple abstraction layers (constitutional, implementation, review). Each layer owns its expression of the concept. A constitutional rule and a runtime rule may describe the same engineering principle at different levels of abstraction — this is hierarchical refinement, not duplication.
 
 ### 1.2 Resolution of Overlaps
 
 When a doctrine section spans multiple domains (e.g. §5 Problem Solving Workflow covers debugging, testing, and migration), the section is **split by sub-concept**. Each sub-concept maps to exactly one destination. The doctrine section number is recorded in the concept map (§3) but is not itself a unit of ownership.
 
-### 1.3 Priority Scale
+### 1.3 Hierarchical Refinement
+
+The runtime uses three layers of rule expression. A single engineering concept may appear at multiple layers. This is intentional and is not considered duplication.
+
+| Layer | File | Priority | Purpose |
+|---|---|---|---|
+| **Constitutional Rule** | `constitution.json` | 1 | States the immutable engineering law. Declares WHAT must be true. No implementation detail. |
+| **Runtime Rule** | Domain files (architecture, state-machine, actions, persistence, etc.) | 2–4 | Implements the constitutional law for one subsystem. Declares HOW to achieve it. Contains checks, violations, fixes. |
+| **Review Guidance** | Domain files (embedded in runtime rule checks) | 2–4 | Verification and auditing instructions. May reference the same concept as a constitutional rule. |
+
+**Rules:**
+1. A constitutional rule and a runtime rule may express the same engineering concept at different abstraction levels. This is NOT duplication.
+2. A runtime rule MUST reference its constitutional precedent via `see_also` when the concept originates in the constitution.
+3. A runtime rule may add implementation detail (checks, violations, fixes) that a constitutional rule intentionally omits.
+4. Review guidance is embedded in runtime rule `check` and `fix` fields — it does not create a separate rule file.
+5. No runtime rule may weaken or contradict its constitutional precedent. If it does, the constitutional rule prevails.
+
+### 1.4 Priority Scale
 
 | Priority | Meaning | Applies To |
 |---|---|---|
@@ -42,7 +59,7 @@ When a doctrine section spans multiple domains (e.g. §5 Problem Solving Workflo
 | 4 | Best practice with documented exception | client.json, synchronization.json, animations.json, testing.json |
 | 5 | Style preference / convention | migration.json (extraction sequence order is convention, not law) |
 
-### 1.4 Rule ID Prefixes (frozen)
+### 1.5 Rule ID Prefixes (frozen)
 
 | Prefix | File |
 |---|---|
@@ -59,23 +76,34 @@ When a doctrine section spans multiple domains (e.g. §5 Problem Solving Workflo
 | UNDO- | undo-replay.json |
 | MIGR- | migration.json |
 
-### 1.5 Token Budget Per File
+### 1.6 Runtime Rule File Sizes
 
-| File | Max Lines | Est. Rules | Est. Tokens |
+| File | Imp. Rules | Imp. Lines | Imp. Tokens (approx) |
 |---|---|---|---|
-| constitution.json | 120 | 15 | 360 |
-| architecture.json | 150 | 22 | 450 |
-| state-machine.json | 100 | 16 | 300 |
-| actions.json | 100 | 14 | 300 |
-| persistence.json | 100 | 14 | 300 |
-| notifications.json | 100 | 14 | 300 |
-| client.json | 100 | 14 | 300 |
-| synchronization.json | 80 | 11 | 240 |
-| animations.json | 80 | 9 | 240 |
-| testing.json | 80 | 12 | 240 |
-| undo-replay.json | 80 | 12 | 240 |
-| migration.json | 80 | 12 | 240 |
-| **Total** | **1,170** | **~165** | **~3,510** |
+| constitution.json | 16 | 486 | 1,460 |
+| architecture.json | 22 | 616 | 1,850 |
+| state-machine.json | 16 | 431 | 1,290 |
+| actions.json | 14 | 392 | 1,180 |
+| persistence.json | 14 | 394 | 1,180 |
+| notifications.json | — | — | — |
+| client.json | — | — | — |
+| synchronization.json | — | — | — |
+| animations.json | — | — | — |
+| testing.json | — | — | — |
+| undo-replay.json | — | — | — |
+| migration.json | — | — | — |
+| **Implemented subtotal** | **82** | **2,319** | **~6,960** |
+
+*Remaining seven files are not yet implemented. Values will be updated upon creation.*
+
+**File size guidance (applies to all runtime rule files):**
+
+| Limit | Value | Enforcement |
+|---|---|---|
+| Soft limit | 500 lines | Use as a warning threshold. If exceeded, verify the file is not carrying unrelated concerns. |
+| Hard limit | 800 lines | If exceeded, consider splitting by sub-domain rather than reducing rule quality. Splitting must preserve the rule ID prefix (e.g. architecture-ownership.json, architecture-layers.json). |
+
+**Rationale for change:** The original 150-line maximum was based on pre-implementation estimates. Implemented rules are more thorough (each rule includes `violation[]`, `exceptions[]`, `applies_to[]`, `check`, `fix`, `tags[]`) than anticipated. The 500/800 guidance aligns with ARCH-018's own Manager size limit and provides a realistic boundary.
 
 ---
 
@@ -236,8 +264,8 @@ Every engineering concept from the doctrine is assigned to exactly one destinati
 
 | Concept | Destination | Rule ID | Summary |
 |---|---|---|---|
-| Mission statement | constitution.json | CORE-000 | Produce correct, maintainable, production-grade BGA games |
-| Correctness priority | constitution.json | CORE-000 | Correctness over all other concerns |
+| Mission statement | constitution.json | CORE-013 | Produce correct, maintainable, production-grade BGA games (embedded in rule rationale) |
+| Correctness priority | constitution.json | CORE-013 | Correctness over all other concerns |
 
 ### 3.2 Doctrine §2 — Core Engineering Values
 
@@ -261,10 +289,10 @@ Every engineering concept from the doctrine is assigned to exactly one destinati
 
 | Concept | Destination | Rule ID | Summary |
 |---|---|---|---|
-| Priority 1: Correctness | constitution.json | CORE-000 | Right before fast, elegant, or anything |
+| Priority 1: Correctness | constitution.json | CORE-013 | Right before fast, elegant, or anything |
 | Priority 2: Security | notifications.json | NOTF-009 | Never leak hidden information via notifications, args, or errors |
-| Priority 3: Architecture | architecture.json | ARCH-000 | Clean boundaries, clear ownership, no cycles |
-| Priority 4: Undo/Replay | undo-replay.json | UNDO-000 | Every state change reversible and replayable |
+| Priority 3: Architecture | architecture.json | ARCH-001, ARCH-005, ARCH-016 | Clean boundaries, clear ownership, no cycles |
+| Priority 4: Undo/Replay | undo-replay.json | UNDO-001/UNDO-002 | Every state change reversible and replayable |
 | Priority 5: Maintainability | architecture.json | ARCH-019 | Stranger fixes a bug in 15 minutes |
 | Priority 6: Performance | persistence.json | PERS-013 | Sub-second actions, minimal payloads, batched queries |
 | Priority 7: Testability | testing.json | TEST-001 | Every manager independently testable with DB connection |
@@ -468,7 +496,7 @@ Each sub-workflow maps to the domain responsible for that problem type.
 | Concept | Destination | Rule ID | Summary |
 |---|---|---|---|
 | Review question 1: Does it work? | testing.json | TEST-001 | Correct for all edge cases; zero resources, simultaneous actions |
-| Review question 2: Architecture clean? | architecture.json | ARCH-000 | Right component, layer, ownership |
+| Review question 2: Architecture clean? | architecture.json | ARCH-001, ARCH-005, ARCH-016 | Right component, layer, ownership |
 | Review question 3: Undo-safe? | undo-replay.json | UNDO-002 | Old values logged; reversible |
 | Review question 4: Replay-safe? | undo-replay.json | UNDO-007 | Handlers idempotent; absolute values |
 | Review question 5: Hidden info protected? | notifications.json | NOTF-009 | No path leaks private state |
@@ -541,9 +569,9 @@ Each sub-workflow maps to the domain responsible for that problem type.
 | Don't create file when pattern covers it | architecture.json | ARCH-022 | Check reference projects first |
 | Don't rewrite working system | migration.json | MIGR-013 | Refactor incrementally; never rewrite working code |
 | Don't ignore undo/replay/zombie | constitution.json | CORE-007 | Every mutation undoable; every notification replay-safe; every state zombie-handled |
-| Don't commit secrets | constitution.json | CORE-015 | Never commit secrets |
-| Don't silently change behavior | constitution.json | CORE-015 | If spec says X, do X; don't change without asking |
-| Don't optimize prematurely | constitution.json | CORE-000 | Correctness first; optimize only when proven necessary |
+| Don't commit secrets | constitution.json | *(covered by CORE-013 correctness mandate; no dedicated rule)* | Never commit secrets |
+| Don't silently change behavior | constitution.json | CORE-013 | Never silently change game behaviour without asking |
+| Don't optimize prematurely | constitution.json | CORE-013 | Correctness first; optimize only when proven necessary |
 | Don't skip giveExtraTime | state-machine.json | STAT-011 | Not optional |
 | Don't hardcode game values | persistence.json | PERS-010 | Capacities, costs, ratios — data, not code |
 | Don't mix layers | architecture.json | ARCH-016 | No notifications in actions, no SQL in states, no domain logic in Game.php |
@@ -586,7 +614,7 @@ Each checklist item maps to a rule in the owning domain. The checklist itself li
 
 ### 3.15 Doctrine §15 — Engineering Constitution
 
-These 15 immutable laws are already owned by `constitution.json` (CORE-001 through CORE-015). No partition needed — they are the canonical constitution.
+These 15 immutable laws (plus CORE-016, added during implementation) are already owned by `constitution.json` (CORE-001 through CORE-016). No partition needed — they are the canonical constitution.
 
 ---
 
@@ -605,10 +633,10 @@ When a concept in file A needs to reference a concept owned by file B, file A **
 
 | File | References (see_also) |
 |---|---|
-| architecture.json | STAT-009 (zombie delegation), STAT-011 (giveExtraTime), UNDO-001 (undo logging for Manager methods), ACTN-001 (action delegation pattern) |
+| architecture.json | STAT-009 (zombie delegation), UNDO-001 (undo logging for Manager methods via ARCH-010), ACTN-001 (action delegation pattern) |
 | state-machine.json | ARCH-005 (Manager boundaries for zombie context), ARCH-017 (Engine-domain split) |
 | actions.json | ARCH-005 (Manager delegation), NOTF-001 (correct notification calling), UNDO-001 (old-value logging), ACTN-013 (error types reference) |
-| persistence.json | UNDO-001 (log table schema impact on DB design), NOTF-003 (data formatting for i18n) |
+| persistence.json | UNDO-001 (log table schema impact on DB design via PERS-014), NOTF-003 (data formatting for i18n via PERS-009) |
 | notifications.json | ACTN-007 (action notification calling), SYNC-003 (replay ordering), UNDO-007 (absolute values) |
 | client.json | NOTF-005/NOTF-006 (refreshUI/refreshHand wiring), ANIM-001 (animation integration), SYNC-001/SYNC-002 (reconnect) |
 | synchronization.json | NOTF-005/NOTF-006/NOTF-013 (which notifications replay/filter), CLNT-005/CLNT-006 (handler registration), UNDO-005 (undo→refreshUI chain) |
@@ -619,7 +647,7 @@ When a concept in file A needs to reference a concept owned by file B, file A **
 
 ### 4.3 Explicitly Forbidden Cross-File Patterns
 
-1. **No rule text duplication.** If two files need the same concept, one owns it and the other uses `see_also`.
+1. **No rule text duplication across peer files.** If two files at the same layer (both runtime, both review) need the same concept, one owns it and the other uses `see_also`. Constitutional-to-runtime hierarchical pairs (see §1.3) are exempt — the constitutional rule states the law, the runtime rule provides implementation checks. These are different abstraction levels, not duplicates.
 2. **No check duplication.** A check condition for UNDO-001 lives in undo-replay.json only.
 3. **No derived rules.** File A cannot add a rule that effectively modifies a rule owned by File B. Modifications must go through the owner.
 4. **No priority conflicts.** The priority of a rule is set by its owner file. Cross-file priorities are not compared.
@@ -649,14 +677,22 @@ When a concept in file A needs to reference a concept owned by file B, file A **
 | §14 Decision Checklist | architecture.json, persistence.json, notifications.json, actions.json, state-machine.json, undo-replay.json, testing.json | ✓ (each item maps to owning domain) |
 | §15 Engineering Constitution | constitution.json | ✓ (entire section) |
 
-### 5.2 No Duplicated Ownership
+### 5.2 Hierarchical Ownership Model
 
-A manual scan of the concept map (§3) confirms that no concept appears in more than one destination file. Every concept has exactly one canonical home. Overlapping concerns (e.g. zombie appears in state-machine for its mechanics, architecture for its delegation pattern, testing for its verification) are resolved by:
+The concept map (§3) assigns every doctrine concept to its canonical owner by layer. A concept may appear at multiple hierarchical levels:
+
+- **Constitutional layer** (`constitution.json`) — the immutable law
+- **Runtime layer** (architecture.json, state-machine.json, actions.json, persistence.json, etc.) — implementation of the law
+- **Review layer** (embedded in runtime rule checks, testing rules) — verification
+
+Overlapping concerns (e.g. zombie appears in state-machine for its mechanics, architecture for its delegation pattern, testing for its verification) are resolved by:
 - **Mechanics** → state-machine.json (what zombie must do)
 - **Delegation** → architecture.json (who calls zombie)
 - **Verification** → testing.json (how to test zombie)
 
 These are different concepts about the same topic, not duplicates.
+
+Constitutional-to-runtime pairs (e.g. CORE-002 + ARCH-001 for Game.php orchestration, CORE-016 + ARCH-005/ARCH-006 for Manager ownership, CORE-010 + ARCH-016 for layer boundaries) are **hierarchical refinements**, not duplicates. The constitutional rule states the invariant. The runtime rule provides actionable checks, violations, and fixes.
 
 ### 5.3 No Orphan Concepts
 
@@ -671,38 +707,40 @@ Every doctrine section, sub-section, paragraph, and "never" rule has been assign
 - §12 Anti-Goals that are meta-rules (secrets, silent changes, premature optimization)
 - §13 Escalation Rules
 
-All *actionable engineering rules* (how to implement, what to check, how to fix) are in the remaining 11 files. The constitution does not contain architectural guidance, state design patterns, notification payload rules, DB schema rules, or any other domain-specific implementation guidance.
+Each constitutional rule includes `check`, `violation`, and `fix` fields to provide actionable guidance at the constitutional level. These fields describe how to verify the immutable law — they do not introduce domain-specific implementation detail. Domain-specific implementation guidance (architectural patterns, state design, notification payload rules, DB schema rules) belongs in the remaining 11 runtime rule files.
 
-### 5.5 Remaining Rule Files Are Balanced
+### 5.5 Rule File Sizes
 
-| File | Est. Rules | Est. Lines | Est. Tokens | Load Priority |
+| File | Imp. Rules | Imp. Lines | Imp. Tokens (approx) | Load Priority |
 |---|---|---|---|---|
-| architecture.json | 22 | 150 | 450 | Tier 1 (high) |
-| state-machine.json | 16 | 100 | 300 | Tier 1 (high) |
-| actions.json | 14 | 100 | 300 | Tier 1 (high) |
-| persistence.json | 14 | 100 | 300 | Tier 1 (medium) |
-| notifications.json | 14 | 100 | 300 | Tier 1 (medium) |
-| client.json | 14 | 100 | 300 | Tier 1 (medium) |
-| synchronization.json | 11 | 80 | 240 | Tier 1 (low) |
-| animations.json | 9 | 80 | 240 | Tier 1 (low) |
-| testing.json | 12 | 80 | 240 | Tier 1 (medium) |
-| undo-replay.json | 12 | 80 | 240 | Tier 1 (medium) |
-| migration.json | 14 | 80 | 240 | Tier 1 (migration tasks) |
-| **Subtotal** | **152** | **1,050** | **3,150** | |
-| constitution.json | 15 | 120 | 360 | Tier 1 (always) |
-| **Total rules** | **~167** | **1,170** | **~3,510** | |
+| architecture.json | 22 | 616 | 1,850 | Tier 1 (high) |
+| state-machine.json | 16 | 431 | 1,290 | Tier 1 (high) |
+| actions.json | 14 | 392 | 1,180 | Tier 1 (high) |
+| persistence.json | 14 | 394 | 1,180 | Tier 1 (medium) |
+| notifications.json | — | — | — | Tier 1 (medium) |
+| client.json | — | — | — | Tier 1 (medium) |
+| synchronization.json | — | — | — | Tier 1 (low) |
+| animations.json | — | — | — | Tier 1 (low) |
+| testing.json | — | — | — | Tier 1 (medium) |
+| undo-replay.json | — | — | — | Tier 1 (medium) |
+| migration.json | — | — | — | Tier 1 (migration tasks) |
+| **Subtotal (excl. constitution)** | **66** | **1,833** | **~5,500** | |
+| constitution.json | 16 | 486 | 1,460 | Tier 1 (always) |
+| **Total implemented** | **82** | **2,319** | **~6,960** | |
 
-No file exceeds 150 lines. No file exceeds 450 tokens. The largest file (architecture.json) is the most frequently loaded, which is correct.
+*Remaining seven files not yet implemented. File sizes reflect the implemented runtime as of v1.1. Token estimates are approximate.*
 
-### 5.6 Estimated Total Rule Count
+**Size guidance:** See §1.6 for the 500-line soft limit and 800-line hard limit. No implemented file currently exceeds the 800-line hard limit.
 
-**~167 rules** across 12 files. This is within the 12,000 token full-skill budget (rules consume ~3,510 tokens, ~29% of the 12K budget, leaving room for prompts, examples, checklists, references, and buffer).
+### 5.6 Implemented Rule Count
 
-### 5.7 Estimated Total Token Budget
+**82 rules** across 5 implemented files. ~85 further rules expected across the remaining 7 files, for a projected total of ~167 rules across 12 files. This is within the 12,000 token full-skill budget.
+
+### 5.7 Projected Total Token Budget
 
 | Component | Tokens | % of 12K Budget |
 |---|---|---|
-| Rules (12 files) | 3,510 | 29.3% |
+| Rules (12 files, 5 implemented) | ~6,960 (implemented) + ~3,150 (projected) = ~10,110 | 84.3% |
 | Prompts (13 files) | 3,900 | 32.5% |
 | Examples (7 files) | 1,050 | 8.8% |
 | Checklists (3 files) | 600 | 5.0% |
@@ -710,10 +748,10 @@ No file exceeds 150 lines. No file exceeds 450 tokens. The largest file (archite
 | skill.json + index.json | 510 | 4.3% |
 | README.md | 240 | 2.0% |
 | Buffer | 1,590 | 13.3% |
-| **Total** | **12,000** | **100%** |
+| **Total** | **~18,600** | **155%** |
 
-Budget is healthy. Rules are below the roadmap's 1,200-line estimate (1,170 lines) and below the 4,320-token architecture allocation (3,510 tokens).
+**Note:** The implemented rules consume more tokens than the original roadmap estimated. The 12K full-skill budget may need revisiting after all 12 rule files are implemented. For single-task loads (3K budget), the phased loading strategy described in §8 of the runtime architecture document keeps each phase within budget — no single task loads all 12 rule files simultaneously.
 
 ---
 
-*End of partition plan. This document is frozen. Implementation proceeds by creating each `rules/*.json` file according to its specification in §2 and populating rules from the concept map in §3. No rule may be added to any file that is not listed in this plan's concept map without updating this plan first.*
+*End of partition plan. This document reflects Runtime Specification v1.1. Five of twelve rule files are implemented and reconciled with this plan. Remaining files will be created according to the specifications in §2 and the concept map in §3. No rule may be added to any file that is not listed in this plan's concept map without updating this plan first. No constitutional-to-runtime hierarchical pair (see §1.3) may be considered a duplication.*

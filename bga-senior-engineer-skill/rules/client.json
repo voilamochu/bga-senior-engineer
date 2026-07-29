@@ -1,0 +1,396 @@
+{
+  "domain": "client",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "ai-os/bga-senior-engineer-doctrine.md sections 2, 3, 5, 6, 7, 14",
+  "rules": [
+    {
+      "id": "CLNT-001",
+      "priority": 3,
+      "rule": "Client code must be organised into Manager classes mirroring the server-side Manager structure. Each client Manager owns the rendering and state for one server aggregate. One client Manager per server Manager.",
+      "violation": [
+        "Client-side rendering logic is in a single monolithic file without Manager separation",
+        "Client Manager handles rendering for multiple unrelated server-side aggregates",
+        "A server-side Manager has no corresponding client Manager — its state is rendered ad-hoc"
+      ],
+      "check": "Verify a client Manager class exists for every server Manager that has visible state. Verify each client Manager is responsible for exactly one server aggregate. Verify no client Manager handles rendering for two unrelated aggregates.",
+      "fix": "Create one client Manager per server Manager. Move rendering logic for each aggregate into its client Manager. Each client Manager receives the game view reference and manages its own DOM subtree.",
+      "exceptions": [],
+      "tags": [
+        "client",
+        "managers",
+        "architecture",
+        "modularity"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "ARCH-005",
+        "CLNT-002",
+        "SYNC-001"
+      ]
+    },
+    {
+      "id": "CLNT-002",
+      "priority": 4,
+      "rule": "Client Manager constructors receive the game view reference and any dependent Manager interfaces. Managers must not instantiate other Managers or look up global state. All dependencies are injected at construction.",
+      "violation": [
+        "Client Manager looks up other Managers by name from a global registry inside a method",
+        "Client Manager constructor instantiates its own dependencies instead of receiving them",
+        "Two client Managers hold circular references to each other"
+      ],
+      "check": "Review each client Manager constructor: verify it receives only the game view and typed Manager interfaces. Verify no Manager calls another Manager lookup inside method bodies. Verify no circular constructor dependencies.",
+      "fix": "Inject all client Manager dependencies through the constructor. The main setup method creates all Managers and passes references. Move any global or self-lookup out of Manager methods into constructor injection.",
+      "exceptions": [],
+      "tags": [
+        "client",
+        "managers",
+        "dependencies",
+        "injection"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "CLNT-001",
+        "ARCH-010"
+      ]
+    },
+    {
+      "id": "CLNT-003",
+      "priority": 3,
+      "rule": "Card games must use BgaCards for all card rendering. BgaCards handles the deck, hand, discard, card layout, drag-and-drop, and card animation. Never implement custom card DOM or card interaction logic from scratch.",
+      "violation": [
+        "Card is rendered as a generic div with manual CSS instead of BgaCards card component",
+        "Card drag-and-drop is implemented from scratch instead of using BgaCards built-in interaction",
+        "Deck, hand, or discard pile is managed with custom DOM instead of BgaCards stock methods"
+      ],
+      "check": "Verify the project uses BgaCards if the game has cards. Verify all card rendering goes through BgaCards card markup, not custom card elements. Verify BgaCards drag-and-drop is used for card interaction where applicable.",
+      "fix": "Replace custom card DOM with BgaCards card component markup. Use BgaCards stock methods for deck, hand, and discard management. Wire BgaCards drag-and-drop for card movement. Remove all custom card rendering code.",
+      "exceptions": [
+        "Games without cards have no BgaCards requirement. Tile-based games, board games, and dice games use appropriate widgets instead."
+      ],
+      "tags": [
+        "client",
+        "cards",
+        "widgets",
+        "BgaCards"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "CLNT-004",
+        "ANIM-001"
+      ]
+    },
+    {
+      "id": "CLNT-004",
+      "priority": 4,
+      "rule": "Instantiate BgaAnimations.Manager in the main game setup and pass it to client Managers. Animations are managed through this central instance, not instantiated per-widget. The Manager handles fast-mode, sequencing, and cancellation.",
+      "violation": [
+        "Each client Manager creates its own animation instance instead of receiving the shared Manager",
+        "BgaAnimations.Manager is not instantiated at all — animations are done manually with setTimeout or CSS transitions",
+        "Animation queue bypasses the Manager for sequencing and runs in parallel without coordination"
+      ],
+      "check": "Verify BgaAnimations.Manager is instantiated once in the main game setup. Verify it is passed to client Managers that need animation support. Verify no ad-hoc animation mechanisms exist outside the Manager.",
+      "fix": "Create BgaAnimations.Manager in setup. Pass it to client Manager constructors. Route all game animations through the Manager. Remove standalone setTimeout or CSS-only animation paths.",
+      "exceptions": [
+        "Purely visual effects that do not interact with game state (pulsing active player indicator) may use CSS transitions without the Manager."
+      ],
+      "tags": [
+        "client",
+        "animations",
+        "BgaAnimations",
+        "setup"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "ANIM-001",
+        "CLNT-003"
+      ]
+    },
+    {
+      "id": "CLNT-005",
+      "priority": 3,
+      "rule": "Notification handlers must be named notif_<camelCase> matching the server notification type. The handler name is the server notification type with a notif_ prefix. Every server notification type must have exactly one handler.",
+      "violation": [
+        "Handler name does not match the server notification type — runtime fails to find the handler",
+        "Multiple handlers exist for the same notification type — only the last registered executes",
+        "Server notification has no client handler — the notification is received but no visual feedback occurs"
+      ],
+      "check": "For every server-side notification method in Notifications.php: verify a notif_<camelCase> handler exists on the client. Verify the handler name exactly matches notif_ followed by the camelCase version of the method name. Verify no duplicate handlers.",
+      "fix": "Create missing notif_ handlers. Rename mismatched handlers to match the server notification type. Remove duplicate handlers. Every server notification has exactly one client handler.",
+      "exceptions": [],
+      "tags": [
+        "client",
+        "notifications",
+        "handlers",
+        "naming"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "CLNT-006",
+        "CLNT-007",
+        "NOTF-003"
+      ]
+    },
+    {
+      "id": "CLNT-006",
+      "priority": 3,
+      "rule": "All notification handlers must be registered in setupPromiseNotifications. This is the single registration point. Each notif_ method is listed as a promise that resolves when the handler completes. Handlers are registered before any notification can arrive.",
+      "violation": [
+        "Notification handler is registered outside setupPromiseNotifications in ad-hoc setup code",
+        "setupPromiseNotifications is missing a handler — the notification reaches the client but no handler runs",
+        "Promise chain in setupPromiseNotifications is not properly chained — handlers may run in wrong order or miss dependencies"
+      ],
+      "check": "Verify setupPromiseNotifications exists and lists every notif_ handler. Verify each handler is included as a promise in the chain. Verify the registration completes before the game starts sending notifications. Grep for onNotification or addNotificationBinding outside setupPromiseNotifications: assert zero matches.",
+      "fix": "Move all handler registrations into setupPromiseNotifications. List each handler as a promise in the chain. Return a single promise that resolves when all handlers are ready. Remove any scattered handler registrations.",
+      "exceptions": [],
+      "tags": [
+        "client",
+        "notifications",
+        "registration",
+        "promises"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "CLNT-005",
+        "SYNC-001",
+        "SYNC-003"
+      ]
+    },
+    {
+      "id": "CLNT-007",
+      "priority": 2,
+      "rule": "Every notification handler must be idempotent. Running the same handler twice with the same payload must produce identical DOM. Handlers set state from the payload — they never increment, append, or toggle. Replay safety depends on handler idempotency.",
+      "violation": [
+        "Handler appends a DOM element for each notification — replay fires the same notification twice and produces duplicate elements",
+        "Handler increments a counter on each call — replay produces a different UI than the original play",
+        "Handler toggles a boolean — replay fires twice and returns the UI to the pre-notification state",
+        "Handler depends on the current DOM state rather than the payload for its output"
+      ],
+      "check": "For every notif_ handler: verify it sets DOM state from payload values directly. Verify appending or incrementing patterns are replaced with full-state assignment. Verify running the handler twice with identical payload produces identical DOM.",
+      "fix": "Replace append patterns with full-state assignment. Replace increment with absolute value setting from payload. Replace toggle with direct state assignment. Handlers should be pure functions of the payload that produce the same DOM output every time.",
+      "exceptions": [],
+      "tags": [
+        "client",
+        "idempotency",
+        "replay",
+        "correctness"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "CORE-007",
+        "NOTF-012",
+        "CLNT-009"
+      ]
+    },
+    {
+      "id": "CLNT-008",
+      "priority": 3,
+      "rule": "All server actions must be called through bga.actions.performAction. Never bypass this API by making direct AJAX calls, constructing framework URLs, or calling server methods from client code. performAction handles session, error handling, and loading states.",
+      "violation": [
+        "Client code calls a server URL directly instead of using bga.actions.performAction",
+        "Action is dispatched via a raw XMLHttpRequest or fetch call",
+        "Action button onclick handler constructs a URL manually instead of calling performAction"
+      ],
+      "check": "Grep client JS for direct AJAX calls, fetch, or URL construction targeting server endpoints: assert zero matches. Verify every action invocation goes through bga.actions.performAction with action name and arguments.",
+      "fix": "Replace direct AJAX calls with bga.actions.performAction('actionName', args). The framework handles routing, error display, session management, and loading indicators. Remove all raw server calls from client code.",
+      "exceptions": [
+        "bga.actions.performAction is the only permitted mechanism for server actions. No exceptions."
+      ],
+      "tags": [
+        "client",
+        "actions",
+        "framework",
+        "api"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "CORE-003",
+        "CORE-005",
+        "CLNT-013"
+      ]
+    },
+    {
+      "id": "CLNT-009",
+      "priority": 3,
+      "rule": "Never mutate the DOM to reflect a game state change before the server confirms the action. Client-side state is a cache. Wait for the server notification to arrive before updating any UI element that represents game state.",
+      "violation": [
+        "Card moves visually before the server sends the cardPlayed notification",
+        "Resource counter decrements on button click before the server confirms the transaction",
+        "DOM is updated optimistically and never corrected if the server rejects the action"
+      ],
+      "check": "Review every client action path: verify no DOM mutation for game state occurs before the notification handler fires. Verify optimistic UI is limited to transient interaction feedback (button press, drag ghost), never game state rendering.",
+      "fix": "Remove pre-notification game state DOM changes. Let all game state UI updates happen in notif_ handlers only. Transient interaction feedback (button loading, drag ghost) is acceptable but must not reflect game state changes.",
+      "exceptions": [
+        "Transient UI feedback — button loading state, drag ghost position, hover effects — is permitted because it does not represent committed game state and is reset when the notification arrives."
+      ],
+      "tags": [
+        "client",
+        "dom",
+        "optimism",
+        "correctness"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "CORE-001",
+        "CLNT-007",
+        "CLNT-008"
+      ]
+    },
+    {
+      "id": "CLNT-010",
+      "priority": 4,
+      "rule": "Client code must use ES module structure (import/export). Each module file exports one class or one logical unit. Modules are organised by domain — one module per client Manager. No legacy script-loading order dependencies.",
+      "violation": [
+        "Client code is a single monolithic JS file with no module separation",
+        "Files depend on global script loading order instead of explicit import statements",
+        "Module exports multiple unrelated classes or mixes domain concerns in one file"
+      ],
+      "check": "Verify client code uses ES module syntax (import/export). Verify no script tags with ordering dependencies exist for game logic files. Verify each module file exports one coherent unit matching one client Manager or utility.",
+      "fix": "Convert monolithic JS into ES modules. Split by domain with one module per client Manager. Replace global namespace pollution with import/export. Remove script tag ordering dependencies. Use a build step if needed for legacy browser compatibility.",
+      "exceptions": [
+        "Third-party libraries without ES module exports may be loaded via script tags. These must be wrapped in an ES module adapter if used by game modules."
+      ],
+      "tags": [
+        "client",
+        "modules",
+        "es6",
+        "architecture"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "CLNT-011",
+        "CLNT-012"
+      ]
+    },
+    {
+      "id": "CLNT-011",
+      "priority": 4,
+      "rule": "Legacy Dojo code must be migrated to ES modules. The migration path is: (1) wrap Dojo classes as ES module exports, (2) replace dojo.declare with class syntax, (3) replace dojo.query with document.querySelector, (4) replace dojo.on with addEventListener, (5) remove remaining dojo.require dependencies.",
+      "violation": [
+        "New client code uses dojo.declare instead of ES class syntax",
+        "dojo.require is used in a module that has ES module imports",
+        "dojo.query or dojo.on is used in new code where standard DOM API exists",
+        "Migration to ES modules is blocked by remaining dojo.require circular dependencies"
+      ],
+      "check": "Verify no new code uses dojo.declare, dojo.require, or dojo.query. Verify migration in progress: existing Dojo code is wrapped in ES module exports. Verify dojo.require count decreases across commits. Target zero framework dependencies.",
+      "fix": "Replace dojo.declare with ES class syntax. Replace dojo.require with import statements. Replace dojo.query with querySelector/querySelectorAll. Replace dojo.on with addEventListener. Remove dojo topic publish/subscribe in favour of direct Manager method calls.",
+      "exceptions": [
+        "Dojo widgets (BgaCards, BgaAnimations) that depend on the Dojo framework internally may still load Dojo. This is a framework constraint — game code should not add new Dojo dependencies."
+      ],
+      "tags": [
+        "client",
+        "migration",
+        "dojo",
+        "modernisation"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "CLNT-010",
+        "CLNT-012"
+      ]
+    },
+    {
+      "id": "CLNT-012",
+      "priority": 5,
+      "rule": "TypeScript is preferred for all new client code. Existing JavaScript files may be converted incrementally. New Manager classes, utility modules, and widget extensions must be written in TypeScript. Type definitions for BGA framework APIs should be added as needed.",
+      "violation": [
+        "New client Manager is written in plain JavaScript instead of TypeScript",
+        "Function parameters lack type annotations making API contracts implicit and error-prone",
+        "BGA framework API calls use untyped globals — no type definitions exist for framework methods"
+      ],
+      "check": "Verify new client module files use .ts extension. Verify functions have typed parameters and return types. Review any new .js file: if it implements a Manager or new domain module, flag for TypeScript conversion.",
+      "fix": "Write new modules in TypeScript. Add type annotations to all function parameters and return values. Create .d.ts type definitions for framework APIs used by the module. Convert existing adjacent .js files opportunistically.",
+      "exceptions": [
+        "One-line event handlers or simple configuration objects in existing .js files may remain unconverted until their parent module is migrated."
+      ],
+      "tags": [
+        "client",
+        "typescript",
+        "types",
+        "convention"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "CLNT-010",
+        "CLNT-011"
+      ]
+    },
+    {
+      "id": "CLNT-013",
+      "priority": 4,
+      "rule": "Action buttons must be wired through the client Manager that owns the action domain. Each Manager exposes a method that calls bga.actions.performAction with the correct action name and arguments. Buttons never construct action calls directly.",
+      "violation": [
+        "Button onclick handler calls bga.actions.performAction directly instead of through the owning Manager",
+        "Action name is hardcoded in the HTML template instead of resolved by the Manager",
+        "Arguments for the action are assembled in the event handler instead of the Manager method"
+      ],
+      "check": "Verify every action button calls a client Manager method. Verify the Manager method calls bga.actions.performAction. Verify no action names or argument construction appear in HTML templates or standalone onclick handlers.",
+      "fix": "Create a Manager method for each action. The method validates preconditions, assembles arguments, and calls bga.actions.performAction. Wire buttons to call the Manager method. Remove direct performAction calls from templates.",
+      "exceptions": [],
+      "tags": [
+        "client",
+        "actions",
+        "buttons",
+        "wiring"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "CLNT-008",
+        "CLNT-001",
+        "ACTN-006"
+      ]
+    },
+    {
+      "id": "CLNT-014",
+      "priority": 4,
+      "rule": "State args from the server must be consumed through the client Manager that owns that state domain. Each manager reads its relevant section of the args payload and updates its DOM subtree. No single handler should parse the entire args payload.",
+      "violation": [
+        "A single method parses the full args payload and distributes data to all Managers",
+        "Manager reads args fields that belong to another Manager domain",
+        "Args payload is stored as a raw object and accessed by field name across multiple modules"
+      ],
+      "check": "Verify the main setup method distributes args sections to the appropriate client Manager. Verify each Manager reads only its own section of the args. Verify no cross-Manager arg field access.",
+      "fix": "Split args distribution in setup: each Manager receives its own section of the args. Manager methods parse their own section and update their DOM subtree. Remove any cross-Manager arg access. Each Manager owns its args domain.",
+      "exceptions": [],
+      "tags": [
+        "client",
+        "args",
+        "state",
+        "distribution"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "CLNT-001",
+        "STAT-006",
+        "SYNC-001"
+      ]
+    }
+  ]
+}
