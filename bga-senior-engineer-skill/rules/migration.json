@@ -85,7 +85,7 @@
       "check": "Grep for getGameStateValue and setGameStateValue across all PHP files outside the Globals class. Assert zero matches. Verify the Globals class provides one typed getter/setter pair per global key. Assert every key is defined as a constant.",
       "fix": "Create a Globals class with typed getter/setter methods. Define each global key as a class constant. Replace all raw getGameStateValue calls with Globals::getKeyName(). Remove the legacy access patterns.",
       "tags": ["migration", "globals", "typed-wrapper"],
-      "applies_to": ["Globals", "Persistence"],
+      "applies_to": ["Database"],
       "exceptions": [],
       "see_also": ["PERS-006", "PERS-008"]
     },
@@ -119,7 +119,7 @@
       "check": "Grep for numeric state ID values in state machine configuration and state classes. Assert zero raw numeric IDs remain. Verify StateIds.php exists with a const for every state. Assert the state machine configuration imports StateIds constants.",
       "fix": "Create StateIds.php with a const per state. Replace all numeric state IDs with StateIds::CONST_NAME references in state machine configuration and state classes. Remove all inline numeric literals.",
       "tags": ["migration", "states", "constants"],
-      "applies_to": ["StateMachine"],
+      "applies_to": ["States"],
       "exceptions": [],
       "see_also": ["STAT-004"]
     },
@@ -136,9 +136,9 @@
       "check": "Before each migration step, verify the component being migrated has tests covering its public interface. If coverage is below the minimum threshold (TEST-010), halt the migration and add tests first.",
       "fix": "Write unit tests for the legacy component before migrating it. Snapshots of the legacy behaviour serve as the correctness baseline. After migration, the tests should pass unchanged, proving behavioural equivalence.",
       "tags": ["migration", "testing", "safety"],
-      "applies_to": ["Testing", "Migration"],
+      "applies_to": ["All components"],
       "exceptions": [],
-      "see_also": ["TEST-001", "TEST-009"]
+      "see_also": ["TEST-001", "TEST-010"]
     },
     {
       "id": "MIGR-009",
@@ -153,7 +153,7 @@
       "check": "Review the commit log for the migration period. Assert each commit addresses exactly one extraction. Verify commit messages identify the extracted concern. Assert no commit mixes extraction with unrelated refactoring or bug fixes.",
       "fix": "Split combined commits into one commit per extraction. Each commit: (1) extracts one concern, (2) updates call sites, (3) removes the legacy code, (4) verifies tests pass. Rebase to keep the migration history clean.",
       "tags": ["migration", "incremental", "commits"],
-      "applies_to": ["Migration"],
+      "applies_to": ["All components"],
       "exceptions": [],
       "see_also": ["MIGR-014"]
     },
@@ -170,7 +170,7 @@
       "check": "Verify the extraction plan assigns each Manager to a single owner. Assert no two active extractions target tables that share foreign-key relationships requiring coordinated changes. Assert Game.php is extracted by one developer at a time.",
       "fix": "Create a coordination document that maps each Manager to its owner and table. Allow parallel extraction only for Managers with zero table overlap. Serialize extraction of Game.php delegation and any cross-Manager state transitions.",
       "tags": ["migration", "parallel", "coordination"],
-      "applies_to": ["Migration"],
+      "applies_to": ["All components"],
       "exceptions": [],
       "see_also": ["ARCH-005"]
     },
@@ -208,7 +208,7 @@
       "check": "Verify a migration mapping document exists. Assert it covers every construct listed in the doctrine migration table (§10). Verify the mapping is updated after each extraction. Assert a developer new to the project can navigate from any legacy pattern to its modern equivalent.",
       "fix": "Create or update the migration mapping document following the doctrine §10 legacy-to-modern table. After each extraction, update the mapping to mark the migrated construct as complete. Add entries for any legacy patterns discovered during extraction.",
       "tags": ["migration", "documentation", "mapping"],
-      "applies_to": ["Migration"],
+      "applies_to": ["All components"],
       "exceptions": [],
       "see_also": []
     },
@@ -225,7 +225,7 @@
       "check": "For each migration commit, verify it changes only structure, not behaviour. Assert no new features, no bug fixes for undocumented behaviour, and no functional changes. Run parity validation before and after each migration step.",
       "fix": "Split any commit that mixes migration with feature work: revert the feature addition, complete the migration, then add the feature in a separate commit. Bug fixes found during migration should be applied to the legacy code first, then the migration proceeds.",
       "tags": ["migration", "safety", "separation"],
-      "applies_to": ["Migration"],
+      "applies_to": ["All components"],
       "exceptions": [],
       "see_also": []
     },
@@ -242,7 +242,7 @@
       "check": "Verify the migration sequence order matches the defined priority. Assert no step starts before its dependencies are complete. Assert config files are migrated first. Assert Client migration is started last.",
       "fix": "Re-plan the migration sequence. Complete each phase in order: config → DB helpers → Managers → Models → Notifications → States → Client. Do not proceed to the next phase until the current phase is verified and committed.",
       "tags": ["migration", "ordering", "sequence"],
-      "applies_to": ["Migration"],
+      "applies_to": ["All components"],
       "exceptions": [],
       "see_also": ["MIGR-001", "MIGR-004", "MIGR-006", "MIGR-007"]
     },
@@ -259,7 +259,7 @@
       "check": "After each migration step, run the pre-migration test suite against the modern code. Assert all tests pass without modification. For steps without test coverage, write a parity test that feeds identical input to both legacy and modern code and asserts identical output.",
       "fix": "Before migrating a component, snapshot its behaviour via tests or a parity harness. After migration, run the same inputs through the modern code and compare outputs. Fix any behavioural differences before declaring the step complete.",
       "tags": ["migration", "parity", "verification", "validation"],
-      "applies_to": ["Testing", "Migration"],
+      "applies_to": ["All components"],
       "exceptions": [],
       "see_also": ["TEST-006", "MIGR-008"]
     },
@@ -276,7 +276,7 @@
       "check": "Verify a git tag or branch exists marking the pre-migration state for the current step. Assert the rollback procedure is documented. Verify that reverting to the checkpoint restores the exact pre-migration state including database state if applicable.",
       "fix": "Create a git tag (migration-checkpoint-N) before starting each migration step. Document the rollback procedure. If the step fails, git revert to the checkpoint, fix the issue, and retry the step.",
       "tags": ["migration", "checkpoint", "rollback", "safety"],
-      "applies_to": ["Migration"],
+      "applies_to": ["All components"],
       "exceptions": [],
       "see_also": ["UNDO-004"]
     },
@@ -293,7 +293,7 @@
       "check": "Verify that each adapter has a documented lifespan tied to a specific migration step. Assert the adapter is removed in the same commit that completes the migration step. Verify no adapter has an open-ended lifetime.",
       "fix": "Introduce an adapter that translates between legacy and modern interfaces. Route legacy callers through the adapter. When the migration step completes, update callers to use the modern interface directly and remove the adapter.",
       "tags": ["migration", "adapters", "compatibility"],
-      "applies_to": ["Migration"],
+      "applies_to": ["All components"],
       "exceptions": [],
       "see_also": ["ARCH-014"]
     },
@@ -310,7 +310,7 @@
       "check": "Verify that legacy code marked as deprecated includes a @deprecated annotation with the removal version. Assert all call sites within the same project have been updated to use the modern replacement. Verify the deprecation timeline is documented.",
       "fix": "Add @deprecated annotations to legacy code with the removal version. Update all internal call sites to use the modern replacement. Schedule removal for the next MAJOR release. Remove the legacy code when the scheduled version is reached.",
       "tags": ["migration", "deprecation", "lifecycle"],
-      "applies_to": ["Migration"],
+      "applies_to": ["All components"],
       "exceptions": [
         "Legacy code that cannot be removed because it is part of the BGA framework API is exempt but must be documented"
       ],
@@ -329,7 +329,7 @@
       "check": "After each migration step, verify: (1) no legacy code remains for the extracted concern, (2) all call sites reference the modern interface, (3) parity validation passes, (4) static analysis confirms zero threshold violations for the component. Mark the step complete only when all four conditions are met.",
       "fix": "Complete any unfinished work before declaring the step done: remove remaining legacy code, update stale call sites, run parity validation, and verify threshold compliance. Re-run the completion checklist.",
       "tags": ["migration", "completion", "criteria"],
-      "applies_to": ["Migration"],
+      "applies_to": ["All components"],
       "exceptions": [],
       "see_also": ["MIGR-008", "MIGR-011", "MIGR-015"]
     }
