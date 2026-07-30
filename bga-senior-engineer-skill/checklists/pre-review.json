@@ -9,82 +9,66 @@
   {
    "id": "PR-001",
    "rule_id": "CORE-013",
-   "check": "Are all stop conditions from the task prompt verified and passing?",
-   "pass": "All stop conditions pass",
-   "fail": "One or more stop conditions are not met",
-   "fix": "Re-read Stop Conditions. For each failing condition, apply the described fix and re-verify."
+   "check": "Are stop conditions verified and rules complied with?",
+   "pass": "Stop conditions pass and rules are satisfied",
+   "fail": "A stop condition fails or a rule is violated",
+   "fix": "Re-read Stop Conditions and workflow rules. Fix violations and re-verify."
   },
   {
    "id": "PR-002",
-   "rule_id": "CORE-013",
-   "check": "Does the output comply with all rule IDs referenced in the workflow steps?",
-   "pass": "All referenced rules are satisfied",
-   "fail": "One or more referenced rules are violated",
-   "fix": "Re-read each workflow step. Verify compliance with every referenced rule ID."
+   "rule_id": "CORE-001",
+   "check": "Any constitutional violations?",
+   "pass": "No constitutional violations",
+   "fail": "A CORE rule is violated",
+   "fix": "Revert violating change. Re-implement per constitutional law."
   },
   {
    "id": "PR-003",
-   "rule_id": "CORE-001",
-   "check": "Does the output violate any constitutional rule from rules/constitution.json?",
-   "pass": "No constitutional violations",
-   "fail": "A constitutional rule is violated",
-   "fix": "Identify the violated CORE rule. Revert the change and re-implement per constitutional law."
+   "rule_id": "CORE-013",
+   "check": "Have all referenced checklists been run and passed?",
+   "pass": "All checklists pass",
+   "fail": "A checklist has not been run or has failures",
+   "fix": "Load each referenced checklist. Fix all failures and re-run."
   },
   {
    "id": "PR-004",
    "rule_id": "CORE-013",
-   "check": "Have all checklists referenced in the Self-Validation section been executed and passed?",
-   "pass": "All referenced checklists pass",
-   "fail": "One or more checklists have not been run or have failing items",
-   "fix": "Load each referenced checklist. Verify every item passes. Fix failures and re-run."
+   "check": "Are edge cases reviewed and escalations resolved?",
+   "pass": "Edge cases handled and no unresolved escalations",
+   "fail": "An edge case unhandled or escalation unresolved",
+   "fix": "Re-read Edge Cases and Escalation sections. Handle or escalate each item."
   },
   {
    "id": "PR-005",
    "rule_id": "CORE-013",
-   "check": "Are there any unresolved escalation scenarios from the task's Escalation section?",
-   "pass": "No unresolved escalations",
-   "fail": "An escalation scenario applies but was not raised",
-   "fix": "Re-read the Escalation section. If a situation matches, stop and ask the prescribed question."
+   "check": "If lazy rules were loaded, are concerns correctly addressed?",
+   "pass": "Lazy-loaded concerns are correctly addressed",
+   "fail": "A lazy-loaded rule is violated",
+   "fix": "Re-read loaded lazy rule files. Check referenced rule IDs. Fix violations."
   },
   {
    "id": "PR-006",
-   "rule_id": "CORE-013",
-   "check": "Have all edge cases from the task's Edge Cases section been reviewed and addressed?",
-   "pass": "All edge cases are reviewed and handled correctly",
-   "fail": "One or more edge cases were not reviewed or are not handled",
-   "fix": "Re-read each edge case. Verify the output handles the described situation. Apply fixes where needed."
+   "rule_id": "CORE-006",
+   "check": "Are all mutations undoable with logged old values?",
+   "pass": "All mutations undoable with logged values",
+   "fail": "A mutation lacks old-value logging",
+   "fix": "Add old-value logging before every mutation. Verify LIFO per UNDO-001."
   },
   {
    "id": "PR-007",
-   "rule_id": "CORE-013",
-   "check": "If lazy rules were loaded, are the triggered concerns correctly addressed without violations?",
-   "pass": "All lazy-loaded concerns are correctly addressed",
-   "fail": "A lazy-loaded rule is violated or a triggered concern is not addressed",
-   "fix": "Re-read the loaded lazy rule files. Check the referenced rule IDs. Fix violations."
+   "rule_id": "CORE-007",
+   "check": "Are notification handlers idempotent?",
+   "pass": "All handlers idempotent",
+   "fail": "A handler is not idempotent",
+   "fix": "Remove state-dependent branches. Produce identical DOM from identical payload."
   },
   {
    "id": "PR-008",
-   "rule_id": "CORE-007",
-   "check": "Are all notification handlers idempotent? Same payload always produces identical DOM.",
-   "pass": "All notification handlers are idempotent",
-   "fail": "A notification handler is not idempotent",
-   "fix": "Rewrite the handler to produce identical DOM from identical payload. Remove state-dependent branches."
-  },
-  {
-   "id": "PR-009",
-   "rule_id": "CORE-006",
-   "check": "Are all mutated state changes undoable? Old values logged before mutation.",
-   "pass": "All mutations are undoable with logged old values",
-   "fail": "A mutation is not undoable or old values are not logged",
-   "fix": "Add old-value logging before every mutation. Verify LIFO reversal within checkpoint boundaries."
-  },
-  {
-   "id": "PR-010",
    "rule_id": "CORE-005",
-   "check": "Is hidden game state protected? No private info in public notifications, args, or errors.",
-   "pass": "Hidden information is protected in all paths",
-   "fail": "Hidden information could be exposed in a public path",
-   "fix": "Identify the leak. Split into public/private variants following NOTF-008. Use _private state keys per STAT-006."
+   "check": "Is hidden information protected?",
+   "pass": "Hidden info protected in all paths",
+   "fail": "Hidden info exposed in a public path",
+   "fix": "Split into public/private. Use _private state keys per STAT-006."
   }
  ]
 }

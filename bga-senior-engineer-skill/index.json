@@ -38,6 +38,10 @@
       "examples": [
         "examples/manager-example.json",
         "examples/model-example.json"
+      ],
+      "references": [
+        "references/architecture-reference.json",
+        "references/migration-reference.json"
       ]
     },
     "migrate-state": {
@@ -177,9 +181,9 @@
         "examples/undo-example.json"
       ],
       "references": [
-        "references/reference-project-matrix.json",
-        "references/anti-patterns.json",
-        "references/migration-mapping.json"
+        "references/architecture-reference.json",
+        "references/migration-reference.json",
+        "references/bga-framework-reference.json"
       ],
       "phase_groups": {
         "architecture": {
@@ -242,6 +246,10 @@
       "prompt": "prompts/new-feature.md",
       "rules": ["rules/constitution.json"],
       "checklists": ["checklists/pre-commit.json"],
+      "references": [
+        "references/architecture-reference.json",
+        "references/bga-framework-reference.json"
+      ],
       "examples": [
         "examples/manager-example.json",
         "examples/action-example.json",

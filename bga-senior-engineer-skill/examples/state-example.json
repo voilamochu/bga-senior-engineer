@@ -1,0 +1,31 @@
+{
+  "id": "state-example",
+  "title": "Canonical State Class Pattern",
+  "version": "1.0.0",
+  "purpose": "Demonstrate a State class with four ordered public methods (args, action, transition, zombie), semantic transition keys, giveExtraTime wiring, and zombie handling for disconnected players.",
+  "applicable_rules": ["STAT-001", "STAT-002", "STAT-003", "STAT-004", "STAT-005", "STAT-006", "STAT-009", "STAT-010", "STAT-011"],
+  "language": "php",
+  "based_on_project": "earth",
+  "source": "reference-projects/earth/modules/BX/php/",
+  "context": "A PlayerTurn state where the active player chooses a card to play from their hand. The state shows the player their cards via args, receives the cardPlayed action, transitions based on whether the card has additional effects, and handles player disconnection by auto-selecting a card.",
+  "before": "$machinestates = [ 2 => ['name' => 'playerTurn', 'description' => '', 'type' => 'activeplayer', 'action' => 'stPlayerTurn', 'transitions' => ['next' => 3, 'effect' => 4], 'args' => 'argsPlayerTurn', 'updateGameProgression' => true, 'zombie' => 'zombiePlayerTurn'] ]; function stPlayerTurn() { ... } function argsPlayerTurn() { ... } function zombiePlayerTurn() { ... }",
+  "after": "class PlayerTurn extends ActiveState { const STATE_ID = 2; function args(): array { return ['cards' => $this->game->cardManager->getPlayerHand($this->game->getActivePlayerId())]; } #[PossibleAction] function cardPlayed(int $cardId): string { $this->game->cardManager->validateCanPlay($this->game->getActivePlayerId(), $cardId); $this->game->cardManager->play($this->game->getActivePlayerId(), $cardId); $this->game->notifications->cardPlayed($this->game->getActivePlayerId(), $cardId); return $this->game->cardManager->hasEffect($cardId) ? 'effect' : 'next'; } function zombie(): void { $cards = $this->game->cardManager->getPlayerHand($this->game->getActivePlayerId()); if (count($cards) > 0) { $this->cardPlayed($cards[0]->id); } else { $this->game->nextState('next'); } } function onEnteringState(): void { $this->game->giveExtraTime($this->game->getActivePlayerId()); } }",
+  "explanation": "The state is a dedicated class named by purpose (STAT-001) with four ordered methods: args(), cardPlayed(), zombie(), and onEnteringState() (STAT-002). The state ID is a named constant (STAT-004). Transition keys are semantic — 'effect' and 'next' describe what happened (STAT-005). args() returns only data the active player should see (STAT-006). zombie() handles disconnection by selecting the first available card or skipping (STAT-009, STAT-010). onEnteringState calls giveExtraTime (STAT-011).",
+  "common_mistakes": [
+    "Using numeric state IDs inline instead of named constants in StateIds.php",
+    "Returning generic transition keys like 'nextState' or 'ok' instead of semantic strings",
+    "Omitting zombie() entirely or leaving it empty (game must advance for disconnected player)",
+    "Forgetting to call giveExtraTime in onEnteringState",
+    "Returning per-player hidden data in args() without using _private key"
+  ],
+  "related_examples": ["action-example", "manager-example"],
+  "annotations": [
+    {"line": 2, "rule_id": "STAT-004", "reason": "State ID defined as named constant."},
+    {"line": 3, "rule_id": "STAT-006", "reason": "args() returns only active player's data."},
+    {"line": 5, "rule_id": "ACTN-009", "reason": "#[PossibleAction] enables action routing."},
+    {"line": 5, "rule_id": "ACTN-001", "reason": "Action method under 15 lines."},
+    {"line": 9, "rule_id": "STAT-005", "reason": "Semantic transition keys: 'effect', 'next'."},
+    {"line": 10, "rule_id": "STAT-009", "reason": "zombie() advances game for disconnected player."},
+    {"line": 15, "rule_id": "STAT-011", "reason": "giveExtraTime called on entering state."}
+  ]
+}

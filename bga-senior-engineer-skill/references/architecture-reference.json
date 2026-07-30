@@ -1,0 +1,40 @@
+{
+  "id": "architecture-reference",
+  "title": "BGA Game Architecture Reference",
+  "version": "1.0.0",
+  "purpose": "Explain the layered architecture of a modern BGA game implementation — why each layer exists, what it owns, and how data flows between them. This reference gives agents the architectural context they need to understand the component ownership rules.",
+  "summary": "Modern BGA games follow a strict layered architecture. Game.php is a thin coordinator that delegates to Managers. Managers own aggregate roots — each database table group has exactly one Manager with exclusive write access. Managers return Model objects, never raw arrays. Actions orchestrate across Managers through a five-step pipeline. State classes model flow phases. A centralized Notifications class handles all framework notification calls. Client code mirrors this structure with ES module Manager classes. Every layer has defined responsibilities and strict communication protocols.",
+  "sections": [
+    {
+      "title": "Layer Responsibilities",
+      "content": "Game.php is the integration point. It receives framework callbacks (setupNewGame, getAllDatas, zombie) and delegates each to the appropriate Manager or State. Game.php never contains SQL, domain logic, or inline notifications. Managers contain all domain logic for their aggregate — validation, execution, queries. They receive the Game reference and DB connection via constructor injection. State classes model game flow phases, each with four methods: args (read), action (mutate), transition (route), zombie (disconnect). Actions are thin handlers that validate preconditions, delegate to a Manager, send notifications, and return a transition string."
+    },
+    {
+      "title": "Data Flow",
+      "content": "User actions flow: Client sends action name + parameters via bga.actions.performAction. Server routes to the action method via #[PossibleAction]. Action validates against five ordered layers (framework, state, game-rule, domain, persistence). Action delegates mutation to the owning Manager. Manager logs old values, executes the mutation, and returns. Action sends notifications through the centralized Notifications class. Action returns a semantic transition string. The framework calls the target state's onEnteringState and args. The client receives notifications and updates DOM through idempotent handlers."
+    },
+    {
+      "title": "Manager Ownership Model",
+      "content": "Each database table belongs to exactly one Manager. No two Managers write to the same table. Managers never call each other directly — cross-Manager coordination happens in actions or through the Game mediator. A Manager's API includes getter methods (returning Models), validate methods (checking preconditions), execute methods (performing mutations with old-value logging), and check methods (querying state). Managers are testable without the framework because their dependencies (DB, Game) are injectable interfaces."
+    },
+    {
+      "title": "Why Layers Are Strict",
+      "content": "The layer boundaries exist to enforce separation of concerns that directly impacts correctness. SQL in actions bypasses Manager validation, allowing inconsistent state. Domain logic in Game.php creates untestable code that grows with every feature. Direct notifyAllPlayers calls scatter notification logic across the codebase, making audits impossible. Cross-Manager calls create circular dependencies that make the game unreplayable. Each boundary violation reduces testability, increases bug rates, and makes future refactoring harder. The rules exist because every violation has been observed in production BGA games."
+    },
+    {
+      "title": "Client-Server Contract",
+      "content": "The server owns all truth. The client is a viewer that renders state from server notifications. The client never computes game state, never predicts server responses, and never mutates state before server confirmation. On reconnect, the client receives full state through getAllDatas delegation, then subscribes to notification replay. This model ensures that a client can disconnect and reconnect at any point with no loss of state integrity."
+    }
+  ],
+  "key_concepts": [
+    {"concept": "Layer isolation", "explanation": "Each layer (Game.php, Manager, Model, Action, State, Notification) has defined responsibilities and strict communication protocols. No layer may bypass another."},
+    {"concept": "Exclusive write ownership", "explanation": "Each database table is owned by exactly one Manager. Only that Manager may write to its tables. Other components read through public Manager methods."},
+    {"concept": "Action as orchestrator", "explanation": "Actions are not business logic containers. They orchestrate: validate through Managers, execute through Managers, notify through Notifications, and route through state transitions."},
+    {"concept": "Notification as projection", "explanation": "Notifications are projections of state after a mutation, not the mutation itself. They carry absolute values. The client sets state from notification payloads."},
+    {"concept": "Constructor injection", "explanation": "Managers and States receive their dependencies (Game, DB) through constructors. They do not use framework globals. This makes them independently testable."}
+  ],
+  "related_rules": ["ARCH-001", "ARCH-002", "ARCH-003", "ARCH-004", "ARCH-005", "ARCH-006", "ARCH-007", "ARCH-008", "ARCH-009", "ARCH-010", "ARCH-011", "ARCH-012", "ARCH-013", "ARCH-014", "ARCH-015", "ARCH-016", "ARCH-017", "ARCH-018", "ARCH-019", "ARCH-020", "ARCH-021", "ARCH-022", "CORE-001", "CORE-002", "CORE-003", "CORE-010"],
+  "related_examples": ["manager-example", "action-example", "state-example", "model-example"],
+  "related_prompts": ["review-manager", "review-full", "refactor-module", "migrate-manager"],
+  "further_reading": ["docs/ai-os/runtime-skill-architecture.md", "docs/implementation/skill/01-skill-architecture.md"]
+}

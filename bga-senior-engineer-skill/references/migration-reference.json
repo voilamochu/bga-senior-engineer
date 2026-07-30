@@ -1,0 +1,40 @@
+{
+  "id": "migration-reference",
+  "title": "Legacy Migration Reference",
+  "version": "1.0.0",
+  "purpose": "Explain the philosophy, ordering, and strategy for migrating legacy BGA code to the modern architecture. This reference helps agents understand why migration follows a specific sequence and what safety measures protect against regressions.",
+  "summary": "Legacy BGA games typically have a monolithic Game.php containing domain logic, SQL, notifications, and state management in a single file. Migration extracts these concerns into their proper architectural layers incrementally. The sequence is: configuration first (lowest risk), then Managers and Models (core domain), then Notifications (communication), then State classes (flow), and finally Client (UI). Each extraction step is validated against the previous state. Migration never combines extraction with feature addition. The goal is a codebase where every component has one responsibility, one owner, and one reason to change.",
+  "sections": [
+    {
+      "title": "Migration Philosophy",
+      "content": "Migration is not rewriting. It is incremental extraction. Each step preserves behavior while improving structure. The guiding principle: extract one concern per commit, verify parity after each step, and never migrate and add features in the same pass. The goal is a codebase that can be maintained by a stranger six months later. The extraction order is determined by risk: the lowest-risk concerns (configuration, data access) are extracted first, building confidence and test coverage before tackling higher-risk concerns (state logic, client code)."
+    },
+    {
+      "title": "Why Incremental Extraction Wins",
+      "content": "Big-bang rewrites fail because they change everything at once — when something breaks, the cause is unknowable. Incremental extraction isolates each change. After extracting a Manager from Game.php, you can verify that Game.php still works, that the Manager handles its domain correctly, and that tests pass. If something breaks, the cause is in the last extraction. This approach works because the modern architecture is designed for extraction: Manager boundaries align with database tables, notification methods replace inline framework calls, and State classes replace procedural switch statements."
+    },
+    {
+      "title": "Extraction Order Rationale",
+      "content": "Configuration files (material.inc.php, gameoptions.json) are extracted first because they have zero behavioral impact — they are data, not code. DB helpers come next to standardize query patterns. Managers and Models follow because they contain the core domain logic — extracting them removes the bulk of code from Game.php. Notifications are extracted after Managers because notification methods reference Manager data. State classes come next because they depend on Managers and Notifications being in place. Client migration is last because it is the highest risk and complexity — the server must remain functional throughout."
+    },
+    {
+      "title": "Safety During Migration",
+      "content": "Before any extraction, the target code must have adequate test coverage (MIGR-008). Each extraction creates a checkpoint (MIGR-016) — if the step fails validation, roll back to the checkpoint. Temporary adapters (MIGR-017) maintain compatibility between legacy and modern code during the transition. After each extraction, verify parity: the legacy and modern implementations must produce identical state for identical inputs (MIGR-015). Legacy code is marked deprecated when its modern replacement is complete (MIGR-018), and removed only after all references are updated."
+    },
+    {
+      "title": "Migration and Lazy Loading",
+      "content": "During migration, agents load only the rules relevant to the current extraction step. The Prompt Specification's lazy-load model means migration prompts load constitution + the primary domain file as mandatory, and load migration.json only when planning the extraction sequence. This keeps the initial token load small while giving the agent access to full migration guidance when needed. The migration.json rule file itself is the largest single rule file at 19 rules — most extraction decisions are driven by the primary domain rules (architecture, state-machine, notifications, client), not migration rules."
+    }
+  ],
+  "key_concepts": [
+    {"concept": "Incremental extraction", "explanation": "Each migration step extracts one concern into its proper architectural layer. One extraction per commit. Never multiple concerns in one pass."},
+    {"concept": "Parity verification", "explanation": "After each extraction, the legacy and modern implementations must produce identical state for the same inputs. Tests verify parity before the legacy code is removed."},
+    {"concept": "Checkpoint and rollback", "explanation": "Before each extraction step, create a checkpoint. If validation fails, restore from the checkpoint and retry with a smaller extraction scope."},
+    {"concept": "Temporal adapter", "explanation": "During migration, a thin adapter layer translates between legacy callers and modern implementations. This allows incremental adoption without breaking existing consumers."},
+    {"concept": "Risk-based ordering", "explanation": "Lowest-risk concerns are extracted first (config, DB helpers). Highest-risk concerns are extracted last (client code). This builds confidence and coverage progressively."}
+  ],
+  "related_rules": ["MIGR-001", "MIGR-003", "MIGR-004", "MIGR-005", "MIGR-006", "MIGR-007", "MIGR-008", "MIGR-009", "MIGR-010", "MIGR-011", "MIGR-013", "MIGR-014", "MIGR-015", "MIGR-016", "MIGR-017", "MIGR-018", "MIGR-019"],
+  "related_examples": ["manager-example", "notification-example", "state-example", "client-manager-example"],
+  "related_prompts": ["migrate-manager", "migrate-state", "migrate-notifications", "migrate-client", "review-full"],
+  "further_reading": ["docs/ai-os/bga-senior-engineer-doctrine.md section 10", "docs/ai-os/rule-partition-plan.md"]
+}

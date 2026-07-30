@@ -1,0 +1,49 @@
+{
+  "id": "bga-framework-reference",
+  "title": "BGA Framework Lifecycle Reference",
+  "version": "1.0.0",
+  "purpose": "Explain the BGA framework lifecycle events and data flows that every game implementation must handle. This reference gives agents the framework context needed to understand when each method is called, what data is available, and what guarantees the framework provides.",
+  "summary": "The BGA framework follows a request-response lifecycle. Each player action triggers a server round-trip: the framework routes the action, the game code processes it, notifications are sent to all connected clients, and the state machine advances. The framework provides automatic notification replay on reconnect, spectator filtering, undo via gamelog cancellation, and zombie handling for disconnected players. Understanding these lifecycle events is essential for writing code that behaves correctly under all framework conditions — normal play, reconnect, spectator mode, undo, replay, and zombie resolution.",
+  "sections": [
+    {
+      "title": "Server Request Lifecycle",
+      "content": "Every server request follows this sequence: (1) Framework receives the action from the client. (2) Framework identifies the current state and checks that the action is permitted in that state. (3) Framework calls the action method registered with #[PossibleAction]. (4) The action method executes: validates, mutates, notifies, and returns a transition. (5) Framework applies the transition and moves to the next state. (6) Framework calls the new state's onEnteringState method. (7) Framework sends all queued notifications to connected clients. This lifecycle is the same for every action — the game code controls what happens inside steps 4 and 6."
+    },
+    {
+      "title": "Client State Lifecycle",
+      "content": "The client starts by loading the game page, which triggers a getAllDatas call to get the initial state. After that, all state changes come through notifications. Each notification handler updates a specific part of the DOM. On reconnect, the framework replays all notifications since game start — handlers must be idempotent (same payload always produces same DOM). If notification replay would take too long, the framework falls back to a full getAllDatas call. The client must never compute game state from local data or predict server responses."
+    },
+    {
+      "title": "State Machine Lifecycle",
+      "content": "When a state is entered, the framework calls onEnteringState, which should call giveExtraTime for turn-based states. The framework then calls the state's args method to get data for the client, and sends the args to the active player. The framework waits for an action from the active player (or all players for MULTIPLE_ACTIVE_PLAYER states). When an action arrives, the framework routes it to the state's action handler. The handler returns a transition string. The framework applies the transition and enters the next state. For states marked with _no_notify, the framework skips args and notification — the state processes and transitions automatically."
+    },
+    {
+      "title": "Notification Delivery",
+      "content": "Notifications are queued during action execution and sent after the action returns. The framework delivers notifications to all connected clients simultaneously. Each client runs the corresponding notif_<camelCase> handler. Spectators receive only public notifications — the framework filters private notifications automatically based on the notification type and the spectator's player ID (null). On reconnect, the framework replays all notifications in order from the beginning of the game. During replay, handlers must not execute domain logic — they only render the notification payload into the DOM. After all notifications are replayed, the client calls refreshUI and refreshHand to ensure consistency."
+    },
+    {
+      "title": "Reconnect Behaviour",
+      "content": "When a player reconnects, the framework calls getAllDatas on the server to get the complete current state. The server's getAllDatas method should delegate to every Manager's getAllDatas method. The framework then replays all notifications from the beginning of the game. The client sets state from getAllDatas, then processes the notification replay. After replay completes, the client renders the current state. The framework also calls giveExtraTime for the reconnecting player if they have an active turn. This model ensures that a player who disconnects and reconnects sees exactly the same state as players who stayed connected."
+    },
+    {
+      "title": "Zombie Mode",
+      "content": "When a player disconnects and does not reconnect within the timeout period, the framework marks that player as zombie. On the next action from another player, the framework calls the zombie method of the current state for the disconnected player. The zombie method must advance the game for that player — making a legal move, passing, or declining. If multiple players are zombies, the framework calls zombie for each in turn. After all zombies are resolved, the game continues normally. The zombie method must not assume the disconnected player has any particular state — it should check available options and make a valid choice."
+    },
+    {
+      "title": "Hidden Information Model",
+      "content": "BGA distinguishes between public information (visible to all players), private information (visible to one player), and hidden information (visible to no one until revealed). The framework enforces this through state types (PUBLIC vs PRIVATE), notification targets (notifyAllPlayers vs notifyPlayer), and spectator filtering. Private notifications are never delivered to non-owners or spectators. State args marked with _private are sent only to the owning player. The getAllDatas method must return different data depending on the requesting player — the framework identifies the player via the current player ID. Error messages must never reveal private state through stack traces or debug output."
+    }
+  ],
+  "key_concepts": [
+    {"concept": "Action-Response cycle", "explanation": "Every player action triggers a complete server round-trip. The server validates, mutates, notifies, and transitions in a single request."},
+    {"concept": "Notification replay", "explanation": "On reconnect, the framework replays all notifications from game start. Every notification handler must be idempotent."},
+    {"concept": "State machine routing", "explanation": "The framework routes actions based on the current state. Each state defines which actions are valid and what transitions are possible."},
+    {"concept": "Automatic spectator filtering", "explanation": "The framework automatically filters private notifications for spectators. Game code must correctly mark notifications as public or private."},
+    {"concept": "Zombie resolution", "explanation": "Disconnected players are handled automatically. The zombie method must advance the game with a valid legal action."},
+    {"concept": "Per-player state visibility", "explanation": "Public, private, and hidden information are enforced at the framework level. Game code must correctly classify each piece of data."}
+  ],
+  "related_rules": ["STAT-001", "STAT-002", "STAT-003", "STAT-004", "STAT-005", "STAT-006", "STAT-007", "STAT-008", "STAT-009", "STAT-010", "STAT-011", "STAT-012", "STAT-015", "STAT-016", "SYNC-001", "SYNC-002", "SYNC-003", "SYNC-004", "SYNC-005", "SYNC-009", "SYNC-010", "SYNC-011", "ACTN-003", "ACTN-008", "ACTN-009", "ACTN-013", "NOTF-003", "NOTF-005", "NOTF-006", "NOTF-008", "NOTF-009", "NOTF-012", "NOTF-013", "NOTF-014", "CLNT-005", "CLNT-006", "CLNT-007", "CLNT-008", "CLNT-009", "CORE-001", "CORE-005", "CORE-007", "CORE-008", "CORE-009", "CORE-010"],
+  "related_examples": ["state-example", "notification-example", "client-manager-example", "action-example"],
+  "related_prompts": ["review-full", "review-state-machine", "review-notifications", "debug-session", "new-feature"],
+  "further_reading": ["docs/foundation/bga-developer-handbook.md", "docs/ai-os/bga-senior-engineer-doctrine.md", "docs/implementation/skill/01-skill-architecture.md"]
+}

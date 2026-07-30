@@ -1,0 +1,31 @@
+{
+  "id": "action-example",
+  "title": "Canonical Action Handler Pattern",
+  "version": "1.0.0",
+  "purpose": "Demonstrate a thin action handler under 15 lines with five ordered responsibilities: validate, execute, notify, transition. Actions own no data — they orchestrate Managers and Notifications.",
+  "applicable_rules": ["ACTN-001", "ACTN-002", "ACTN-003", "ACTN-005", "ACTN-006", "ACTN-007", "ACTN-008", "ACTN-010", "ACTN-011"],
+  "language": "php",
+  "based_on_project": "earth",
+  "source": "reference-projects/earth/earth.game.php",
+  "context": "A spendResources action that a player triggers to pay for a card. The action validates the player has enough resources, deducts them via the ResourceManager, notifies all players, and transitions to the next state.",
+  "before": "function spendResources($resourceType, $quantity) { $sql = \"SELECT qty FROM resource WHERE player_id = \" . $this->getActivePlayerId() . \" AND type = '$resourceType'\"; $result = self::DbQuery($sql); $row = mysql_fetch_assoc($result); if ($row['qty'] < $quantity) { throw new BgaUserException('Not enough'); } self::DbQuery(\"UPDATE resource SET qty = qty - $quantity WHERE player_id = \" . $this->getActivePlayerId() . \" AND type = '$resourceType'\"); $this->notifyAllPlayers('resourcesChanged', clienttranslate('${player_name} spends ${qty} ${resource}'), ['player_id' => $this->getActivePlayerId(), 'qty' => $quantity, 'resource' => $resourceType]); return 'nextState'; }",
+  "after": "#[PossibleAction] function spendResources(string $resourceType, int $quantity): string { $playerId = $this->game->getActivePlayerId(); $this->game->resourceManager->validateCanSpend($playerId, $resourceType, $quantity); $this->game->resourceManager->spend($playerId, $resourceType, $quantity); $this->game->notifications->resourcesChanged($playerId, $resourceType, $quantity); return 'cardSelected'; }",
+  "explanation": "The action is under 15 lines (ACTN-001). It follows the five ordered responsibilities (ACTN-002): validate (Manager::validateCanSpend), execute (Manager::spend), notify (Notifications::resourcesChanged), and returns a transition string (ACTN-008). There is no SQL (ACTN-010) and no domain logic (ACTN-011). All domain work is delegated to the owning Manager (ACTN-006). The action is registered with #[PossibleAction] (ACTN-009). The transition key 'cardSelected' is semantic (STAT-005). Validation completes before any mutation begins (ACTN-005).",
+  "common_mistakes": [
+    "Exceeding 15 lines by embedding validation or SQL in the action body",
+    "Calling notifyAllPlayers directly instead of going through the Notifications class",
+    "Returning a generic transition string like 'nextState' instead of a semantic key",
+    "Starting mutation before all validation layers pass",
+    "Placing orchestration logic in the Manager that coordinates multiple aggregates"
+  ],
+  "related_examples": ["manager-example", "notification-example"],
+  "annotations": [
+    {"line": 1, "rule_id": "ACTN-009", "reason": "#[PossibleAction] attribute enables framework autodiscovery."},
+    {"line": 1, "rule_id": "ACTN-001", "reason": "Entire method is under 15 lines."},
+    {"line": 2, "rule_id": "ACTN-003", "reason": "Framework-level validation: arg types are checked by PHP type hints."},
+    {"line": 3, "rule_id": "ACTN-005", "reason": "Validation completes before any mutation."},
+    {"line": 4, "rule_id": "ACTN-006", "reason": "Execution delegated to Manager."},
+    {"line": 5, "rule_id": "ACTN-007", "reason": "Notification sent through centralized class after mutation."},
+    {"line": 6, "rule_id": "ACTN-008", "reason": "Semantic transition string returned."}
+  ]
+}
