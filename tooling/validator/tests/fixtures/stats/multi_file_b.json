@@ -1,0 +1,11 @@
+{
+  "domain": "actions",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "test.md",
+  "rules": [
+    { "id": "ACTN-001", "priority": 2, "rule": "A1.", "violation": ["V"], "check": "C.", "fix": "F.", "exceptions": [], "tags": ["actions"], "applies_to": ["Actions"] },
+    { "id": "ACTN-002", "priority": 4, "rule": "A2.", "violation": ["V"], "check": "C.", "fix": "F.", "exceptions": [], "tags": ["undo"], "applies_to": ["Actions"] },
+    { "id": "ACTN-005", "priority": 5, "rule": "A5.", "violation": ["V"], "check": "C.", "fix": "F.", "exceptions": [], "tags": ["actions"], "applies_to": ["Actions"] }
+  ]
+}

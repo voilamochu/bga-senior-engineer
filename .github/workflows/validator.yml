@@ -1,0 +1,74 @@
+name: Runtime Validator
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "tooling/**"
+      - "bga-senior-engineer-skill/rules/**"
+      - ".github/workflows/validator.yml"
+  pull_request:
+    paths:
+      - "tooling/**"
+      - "bga-senior-engineer-skill/rules/**"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run unit tests
+        run: |
+          python -m pytest tooling/_shared/tests/ tooling/validator/tests/ -v
+
+      - name: Run CLI human report
+        run: |
+          python -m tooling.validator \
+            --rules bga-senior-engineer-skill/rules/ \
+            --validators schema,priority,ownership,rule_id \
+            --report human
+
+      - name: Run CLI JSON report
+        run: |
+          python -m tooling.validator \
+            --rules bga-senior-engineer-skill/rules/ \
+            --validators schema,priority \
+            --report json
+
+      - name: Run CLI CI mode
+        run: |
+          python -m tooling.validator \
+            --rules bga-senior-engineer-skill/rules/ \
+            --validators schema,priority \
+            --ci
+
+      - name: Run release validation
+        run: |
+          python -m tooling.validator \
+            --rules bga-senior-engineer-skill/rules/ \
+            --validators release \
+            --release docs/ai-os/runtime-v1.1-release.md
+
+      - name: Run all validators (expected: crossref findings)
+        run: |
+          python -m tooling.validator \
+            --rules bga-senior-engineer-skill/rules/ \
+            --report json \
+            --output validator-report.json
+          echo "=== JSON report generated ==="
+          python -c "import json; d=json.load(open('validator-report.json')); [print(f'  {k}: {v[\"status\"]}') for k,v in d['results'].items()]"

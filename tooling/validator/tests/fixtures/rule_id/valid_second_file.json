@@ -1,0 +1,19 @@
+{
+  "domain": "actions",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "test.md",
+  "rules": [
+    {
+      "id": "ACTN-001",
+      "priority": 2,
+      "rule": "Action rule.",
+      "violation": ["V1"],
+      "check": "C1.",
+      "fix": "F1.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Actions"]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "test.md",
+  "rules": [
+    {
+      "id": "ARCH-001",
+      "priority": 2,
+      "rule": "Rule one.",
+      "violation": ["V1"],
+      "check": "C1.",
+      "fix": "F1.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"]
+    },
+    {
+      "id": "ARCH-002",
+      "priority": 3,
+      "rule": "Rule two.",
+      "violation": ["V2"],
+      "check": "C2.",
+      "fix": "F2.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"]
+    },
+    {
+      "id": "ARCH-005",
+      "priority": 4,
+      "rule": "Gap rule.",
+      "violation": ["V3"],
+      "check": "C3.",
+      "fix": "F3.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"]
+    }
+  ]
+}

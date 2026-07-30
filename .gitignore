@@ -18,6 +18,14 @@ Desktop.ini
 
 # PHP
 vendor/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.coverage
+.pytest_cache/
+.venv/
 composer.lock
 *.php~
 

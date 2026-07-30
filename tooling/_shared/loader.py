@@ -64,6 +64,23 @@ def load_rules(rules_path: str | os.PathLike) -> RuleCollection:
     return collection
 
 
+def read_raw_json(filepath: str | os.PathLike) -> dict[str, Any] | None:
+    """Read a JSON file and return its contents as a dict, or ``None`` on failure.
+
+    Unlike :func:`_parse_json` (which raises on malformed input), this
+    function silently returns ``None`` for any read or parse error.
+    """
+    path = Path(filepath)
+    try:
+        with open(path, encoding="utf-8") as f:
+            data: Any = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    return data
+
+
 def get_load_warnings() -> list[ValidationError]:
     """Return warnings accumulated during the last :func:`load_rules` call."""
     return _LOAD_WARNINGS.copy()

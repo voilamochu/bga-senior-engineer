@@ -1,0 +1,52 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "test.md",
+  "rules": [
+    {
+      "id": "",
+      "priority": 2,
+      "rule": "Empty ID.",
+      "violation": ["V1"],
+      "check": "C1.",
+      "fix": "F1.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"]
+    },
+    {
+      "id": "   ",
+      "priority": 3,
+      "rule": "Whitespace ID.",
+      "violation": ["V2"],
+      "check": "C2.",
+      "fix": "F2.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"]
+    },
+    {
+      "id": "ARCH-001-extra",
+      "priority": 4,
+      "rule": "Extra suffix.",
+      "violation": ["V3"],
+      "check": "C3.",
+      "fix": "F3.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"]
+    },
+    {
+      "id": null,
+      "priority": 5,
+      "rule": "Null ID.",
+      "violation": ["V4"],
+      "check": "C4.",
+      "fix": "F4.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"]
+    }
+  ]
+}

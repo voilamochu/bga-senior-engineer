@@ -394,22 +394,20 @@ class TestInternalHelpers:
     """Test private helper functions for full branch coverage."""
 
     def test_read_raw_json_nonexistent(self):
-        from tooling.validator.src.validators.schema_validator import _read_raw_json
-        from pathlib import Path
+        from tooling._shared.loader import read_raw_json
 
-        result = _read_raw_json(Path("/nonexistent_file_xyz.json"))
+        result = read_raw_json("/nonexistent_file_xyz.json")
         assert result is None
 
     def test_read_raw_json_non_dict(self):
-        from tooling.validator.src.validators.schema_validator import _read_raw_json
+        from tooling._shared.loader import read_raw_json
         import tempfile, json, os
-        from pathlib import Path
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump([1, 2, 3], f)
             tmp = f.name
         try:
-            result = _read_raw_json(Path(tmp))
+            result = read_raw_json(tmp)
         finally:
             os.unlink(tmp)
         assert result is None

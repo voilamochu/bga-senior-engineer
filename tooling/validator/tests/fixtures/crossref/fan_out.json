@@ -1,0 +1,55 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "test.md",
+  "rules": [
+    {
+      "id": "ARCH-001",
+      "priority": 2,
+      "rule": "Root.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-002", "ARCH-003"]
+    },
+    {
+      "id": "ARCH-002",
+      "priority": 3,
+      "rule": "Points to leaf.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-004"]
+    },
+    {
+      "id": "ARCH-003",
+      "priority": 4,
+      "rule": "Also points to leaf.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-004"]
+    },
+    {
+      "id": "ARCH-004",
+      "priority": 5,
+      "rule": "Leaf.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"]
+    }
+  ]
+}

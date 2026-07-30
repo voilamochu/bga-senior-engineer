@@ -1,0 +1,140 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "test.md",
+  "rules": [
+    {
+      "id": "ARCH-001",
+      "priority": 2,
+      "rule": "1 → 2.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-002"]
+    },
+    {
+      "id": "ARCH-002",
+      "priority": 2,
+      "rule": "2 → 3.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-003"]
+    },
+    {
+      "id": "ARCH-003",
+      "priority": 2,
+      "rule": "3 → 4.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-004"]
+    },
+    {
+      "id": "ARCH-004",
+      "priority": 2,
+      "rule": "4 → 5.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-005"]
+    },
+    {
+      "id": "ARCH-005",
+      "priority": 2,
+      "rule": "5 → 6.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-006"]
+    },
+    {
+      "id": "ARCH-006",
+      "priority": 2,
+      "rule": "6 → 7.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-007"]
+    },
+    {
+      "id": "ARCH-007",
+      "priority": 2,
+      "rule": "7 → 8.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-008"]
+    },
+    {
+      "id": "ARCH-008",
+      "priority": 2,
+      "rule": "8 → 9.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-009"]
+    },
+    {
+      "id": "ARCH-009",
+      "priority": 2,
+      "rule": "9 → 10.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-010"]
+    },
+    {
+      "id": "ARCH-010",
+      "priority": 2,
+      "rule": "10 → 11. (hop 10)",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-011"]
+    },
+    {
+      "id": "ARCH-011",
+      "priority": 2,
+      "rule": "11 → 1. (hop 11, exceeds limit)",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-001"]
+    }
+  ]
+}

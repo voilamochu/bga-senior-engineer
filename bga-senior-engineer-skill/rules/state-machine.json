@@ -366,7 +366,7 @@
       ],
       "applies_to": [
         "Engine",
-        "Cards"
+        "Managers"
       ],
       "see_also": [
         "ARCH-017",

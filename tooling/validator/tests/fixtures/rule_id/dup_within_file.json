@@ -1,0 +1,41 @@
+{
+  "domain": "state-machine",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "test.md",
+  "rules": [
+    {
+      "id": "STAT-001",
+      "priority": 2,
+      "rule": "First occurrence.",
+      "violation": ["V1"],
+      "check": "C1.",
+      "fix": "F1.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["States"]
+    },
+    {
+      "id": "STAT-002",
+      "priority": 3,
+      "rule": "Second rule.",
+      "violation": ["V2"],
+      "check": "C2.",
+      "fix": "F2.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["States"]
+    },
+    {
+      "id": "STAT-001",
+      "priority": 3,
+      "rule": "Duplicate STAT-001.",
+      "violation": ["V3"],
+      "check": "C3.",
+      "fix": "F3.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["States"]
+    }
+  ]
+}

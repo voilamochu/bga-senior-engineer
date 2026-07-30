@@ -1,0 +1,30 @@
+{
+  "domain": "testing",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "test.md",
+  "rules": [
+    {
+      "id": "TEST-000",
+      "priority": 5,
+      "rule": "Lowest ID.",
+      "violation": ["V1"],
+      "check": "C1.",
+      "fix": "F1.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"]
+    },
+    {
+      "id": "TEST-999",
+      "priority": 5,
+      "rule": "Highest ID.",
+      "violation": ["V2"],
+      "check": "C2.",
+      "fix": "F2.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"]
+    }
+  ]
+}

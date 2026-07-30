@@ -49,9 +49,9 @@ The specification covers:
 | Publication Date | 2026-07-29 |
 | Schema Version | 1.1 (frozen) |
 | Total Runtime Files | 12 |
-| Total Rules | 227 |
-| Total Lines | 4,595 |
-| Total Cross-References | 185 |
+| Total Rules | 185 |
+| Total Lines | 4,600 |
+| Total Cross-References | 378 |
 | Certification Result | PASS WITH RECOMMENDATIONS |
 | Certification Score | 84 / 100 |
 
@@ -133,12 +133,12 @@ No Manager may own another Manager's table. No Engine node may contain domain lo
 ## 4. Runtime Inventory
 
 | File | Domain | Rules | Lines | Priority Range | Purpose |
-|---|---|---|---|---|---|
-| constitution.json | Constitutional law | 16 | 487 | 1 | Immutable engineering invariants |
-| architecture.json | Component architecture | 22 | 615 | 2–4 | Boundaries, ownership, layering, dependencies |
-| state-machine.json | State machine | 16 | 430 | 2–3 | State class design, transitions, zombie, time |
-| actions.json | Action handlers | 14 | 391 | 2–4 | Handler structure, validation, delegation |
-| persistence.json | Database and data | 14 | 393 | 2–4 | Schema, queries, globals, configuration |
+|---|---|---|---|---|---|---|
+| constitution.json | Constitutional law | 16 | 488 | 1 | Immutable engineering invariants |
+| architecture.json | Component architecture | 22 | 616 | 2–4 | Boundaries, ownership, layering, dependencies |
+| state-machine.json | State machine | 16 | 431 | 2–3 | State class design, transitions, zombie, time |
+| actions.json | Action handlers | 14 | 392 | 2–4 | Handler structure, validation, delegation |
+| persistence.json | Database and data | 14 | 394 | 2–4 | Schema, queries, globals, configuration |
 | notifications.json | Notifications | 14 | 397 | 2–4 | Payload design, i18n, public/private split |
 | client.json | Client architecture | 14 | 396 | 2–5 | Manager pattern, widgets, handlers, DOM |
 | synchronization.json | State recovery | 11 | 319 | 2–4 | Reconnect, spectator, getAllDatas, refresh |
@@ -146,7 +146,7 @@ No Manager may own another Manager's table. No Engine node may contain domain lo
 | testing.json | Testing strategy | 17 | 319 | 4 | Hierarchy, coverage, replay/zombie testing |
 | animations.json | Animation system | 14 | 256 | 4 | Queue, fast-mode, sequencing, cancellation |
 | migration.json | Legacy migration | 19 | 337 | 5 | Extraction order, safety, parity, deprecation |
-| **Total** | **12 files** | **227** | **4,595** | **1–5** | |
+| **Total** | **12 files** | **185** | **4,600** | **1–5** | |
 
 ---
 
@@ -155,17 +155,18 @@ No Manager may own another Manager's table. No Engine node may contain domain lo
 ### Runtime Specification
 
 | Metric | Value |
-|---|---|
+|---|---|---|
 | Runtime files | 12 |
-| Total rules | 227 |
-| Total lines | 4,595 |
-| Cross-references (see_also) | 185 |
+| Total rules | 185 |
+| Total lines | 4,600 |
+| Cross-references (see_also) | 378 |
 | Schema version | 1.1 (frozen) |
 | Files under 800-line hard limit | 12 / 12 |
-| Largest file | architecture.json (615 lines) |
+| Largest file | architecture.json (616 lines) |
 | Smallest file | undo-replay.json (255 lines) |
+| Average rules per file | 15.4 |
 | Priority 1 (constitutional) rules | 16 |
-| Priority 2–5 (runtime) rules | 211 |
+| Priority 2–5 (runtime) rules | 169 |
 
 ### Supporting Documents
 
@@ -185,7 +186,7 @@ No Manager may own another Manager's table. No Engine node may contain domain lo
 
 | Milestone | Date | Result |
 |---|---|---|
-| Implementation complete | 2026-07-29 | 12 files, 227 rules |
+| Implementation complete | 2026-07-29 | 12 files, 185 rules |
 | Reconciliation complete | 2026-07-29 | Cross-file consistency resolved |
 | Interim core audit | 2026-07-29 | 2 critical, 5 high findings |
 | Final certification audit | 2026-07-29 | PASS WITH RECOMMENDATIONS (84/100) |

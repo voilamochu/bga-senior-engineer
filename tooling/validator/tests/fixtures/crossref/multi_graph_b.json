@@ -1,0 +1,32 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "test.md",
+  "rules": [
+    {
+      "id": "ARCH-003",
+      "priority": 4,
+      "rule": "Graph B.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-004"]
+    },
+    {
+      "id": "ARCH-004",
+      "priority": 5,
+      "rule": "Graph B end.",
+      "violation": ["V"],
+      "check": "C.",
+      "fix": "F.",
+      "exceptions": [],
+      "tags": ["t"],
+      "applies_to": ["Game.php"],
+      "see_also": ["ARCH-003"]
+    }
+  ]
+}

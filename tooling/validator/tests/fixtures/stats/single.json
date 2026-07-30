@@ -1,0 +1,9 @@
+{
+  "domain": "constitution",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "test.md",
+  "rules": [
+    { "id": "CORE-001", "priority": 1, "rule": "R1.", "violation": ["V"], "check": "C.", "fix": "F.", "exceptions": [], "tags": ["server"], "applies_to": ["All components"], "rationale": "T." }
+  ]
+}

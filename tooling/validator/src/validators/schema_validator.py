@@ -11,20 +11,18 @@ Contract::
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
 
+from tooling._shared.loader import read_raw_json
 from tooling._shared.schema import (
     ALL_RULE_FIELDS,
     FILE_META_REQUIRED_FIELDS,
     RULE_REQUIRED_FIELDS,
     find_extra_file_fields,
     find_extra_rule_fields,
-    is_array_of_strings,
     is_integer,
     is_integer_in_range,
-    is_non_empty_array,
     is_non_empty_string,
     is_string,
     is_valid_date,
@@ -50,7 +48,7 @@ def validate(rules: RuleCollection) -> ValidatorResult:
         filepath = Path(file_info.path)
         filename = filepath.name
 
-        raw_data = _read_raw_json(filepath)
+        raw_data = read_raw_json(file_info.path)
         if raw_data is None:
             continue
 
@@ -89,22 +87,6 @@ def validate(rules: RuleCollection) -> ValidatorResult:
 
     status = "fail" if errors else "pass"
     return ValidatorResult(name=VALIDATOR_NAME, status=status, errors=errors)
-
-
-# ------------------------------------------------------------------
-# Raw JSON reading for extra-field detection
-# ------------------------------------------------------------------
-
-
-def _read_raw_json(filepath: Path) -> dict[str, Any] | None:
-    try:
-        with open(filepath, encoding="utf-8") as f:
-            data: Any = json.load(f)
-    except (json.JSONDecodeError, OSError):
-        return None
-    if not isinstance(data, dict):
-        return None
-    return data
 
 
 # ------------------------------------------------------------------

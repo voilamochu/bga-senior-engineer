@@ -1,0 +1,11 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "test.md",
+  "rules": [
+    { "id": "ARCH-001", "priority": 2, "rule": "R1.", "violation": ["V"], "check": "C.", "fix": "F.", "exceptions": [], "tags": ["architecture", "game.php"], "applies_to": ["Game.php"] },
+    { "id": "ARCH-002", "priority": 2, "rule": "R2.", "violation": ["V"], "check": "C.", "fix": "F.", "exceptions": [], "tags": ["architecture"], "applies_to": ["Managers"], "see_also": ["ARCH-003"] },
+    { "id": "ARCH-003", "priority": 3, "rule": "R3.", "violation": ["V"], "check": "C.", "fix": "F.", "exceptions": [], "tags": ["testing"], "applies_to": ["All components"] }
+  ]
+}

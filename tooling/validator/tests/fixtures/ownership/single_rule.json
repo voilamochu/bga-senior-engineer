@@ -1,0 +1,9 @@
+{
+  "domain": "testing",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "test.md",
+  "rules": [
+    { "id": "TEST-001", "priority": 4, "rule": "R1.", "violation": ["V"], "check": "C.", "fix": "F.", "exceptions": [], "tags": ["t"], "applies_to": ["All components"] }
+  ]
+}
