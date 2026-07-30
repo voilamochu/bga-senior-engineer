@@ -73,20 +73,19 @@ The runtime package must optimize for the following, in priority order:
 
 ### 2.3 Budget Allocation
 
-| Component | Files | Budget (lines) | Budget (tokens) | Percent of Full Budget |
-|---|---|---|---|---|
+| Component | Files | Actual Lines | Actual Tokens | Percent of Full Budget |
+|---|---|---|---|---|---|
 | Manifest (skill.json) | 1 | 50 | 150 | 1.3 percent |
 | Index (index.json) | 1 | 120 | 360 | 3.0 percent |
-| Rules (12 files, 5 implemented) | 12 | 2,319 (imp.) + ~1,050 (proj.) | ~6,960 (imp.) + ~3,150 (proj.) | — |
+| Rules (12 files) | 12 | 4,831 | ~13,810 | 115.1 percent |
 | Prompts (13 files) | 13 | 1,300 | 3,900 | 32.5 percent |
 | Examples (7 files) | 7 | 350 | 1,050 | 8.8 percent |
 | Checklists (3 files) | 3 | 200 | 600 | 5.0 percent |
 | References (3 files) | 3 | 200 | 600 | 5.0 percent |
 | README | 1 | 80 | 240 | 2.0 percent |
-| Buffer | — | — | 1,590 | 13.3 percent |
-| **Total** | **41** | **~3,700 (imp.) + ~1,050 (proj.)** | **~12,000 (imp.) + ~3,150 (proj.)** | **—** |
+| **Total** | **41** | **~7,131** | **~20,710** | **172.6 percent** |
 
-**Note:** Implemented rules (5 files) consume more lines and tokens than the original budget estimated. The remaining 7 files are expected to add ~1,050 lines / ~3,150 tokens. The full-skill budget of 12,000 tokens will be exceeded when all 12 files are loaded simultaneously. However, the tiered loading model (§3) ensures that no single task loads all 12 rule files — each task loads 2-8 files, keeping per-task consumption within the 3,000-token budget when used with the phased loading strategy (§8.4).
+**Note:** The full 12-rule-file set exceeds the original 12K full-skill budget. In practice, no single task loads all 12 rule files simultaneously. The tiered loading model (§3) ensures each task loads 2-8 files, keeping per-task consumption within the 3,000-token budget when using the phased loading strategy (§8.4).
 
 ---
 

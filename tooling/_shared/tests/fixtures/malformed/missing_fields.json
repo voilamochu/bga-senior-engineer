@@ -1,0 +1,17 @@
+{
+  "domain": "persistence",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "standards/persistence.md",
+  "rules": [
+    {
+      "id": "PERS-001",
+      "priority": 3,
+      "rule": "All data is persisted.",
+      "violation": [],
+      "check": "",
+      "fix": "Add persistence.",
+      "tags": ["data"]
+    }
+  ]
+}

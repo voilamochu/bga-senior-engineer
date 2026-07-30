@@ -1,0 +1,19 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "doc.md",
+  "rules": [
+    {
+      "id": 123,
+      "priority": "3",
+      "rule": 42,
+      "violation": "not an array",
+      "check": true,
+      "fix": null,
+      "exceptions": [],
+      "tags": "single tag",
+      "applies_to": ["Game.php"]
+    }
+  ]
+}

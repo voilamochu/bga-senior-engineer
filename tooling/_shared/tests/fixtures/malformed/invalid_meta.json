@@ -1,0 +1,15 @@
+{
+  "description": "No domain, version, last_updated, or source",
+  "rules": [
+    {
+      "id": "CLNT-001",
+      "priority": 3,
+      "rule": "Client test rule.",
+      "violation": ["Test violation"],
+      "check": "Test check.",
+      "fix": "Test fix.",
+      "exceptions": [],
+      "tags": ["test"]
+    }
+  ]
+}

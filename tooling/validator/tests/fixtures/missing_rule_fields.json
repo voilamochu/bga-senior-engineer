@@ -1,0 +1,11 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "doc.md",
+  "rules": [
+    {
+      "exceptions": []
+    }
+  ]
+}

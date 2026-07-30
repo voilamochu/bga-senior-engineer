@@ -1,0 +1,20 @@
+{
+  "domain": "actions",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "standards/action-architecture.md",
+  "rules": [
+    {
+      "id": "ACTN-001",
+      "priority": 2,
+      "rule": "Actions validate preconditions first.",
+      "violation": [
+        "Action method contains a SQL query"
+      ],
+      "check": "Count non-blank lines in each action method.",
+      "fix": "Move validation to Manager::validate*().",
+      "exceptions": [],
+      "tags": ["actions", "validation"]
+    }
+  ]
+}

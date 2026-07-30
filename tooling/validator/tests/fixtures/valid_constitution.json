@@ -1,0 +1,20 @@
+{
+  "domain": "constitution",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "doctrine.md",
+  "rules": [
+    {
+      "id": "CORE-001",
+      "priority": 1,
+      "rule": "Server owns all truth.",
+      "violation": ["Client mutates state"],
+      "check": "Verify DB writes from PHP.",
+      "fix": "Move state mutation to Manager.",
+      "exceptions": [],
+      "tags": ["server", "authority"],
+      "applies_to": ["Game.php"],
+      "rationale": "Prevents cheating."
+    }
+  ]
+}

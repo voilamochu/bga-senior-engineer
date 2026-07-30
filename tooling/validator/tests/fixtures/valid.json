@@ -1,0 +1,32 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "standards/domain-architecture.md",
+  "rules": [
+    {
+      "id": "ARCH-001",
+      "priority": 2,
+      "rule": "Game.php is orchestration only.",
+      "violation": ["SQL in Game.php"],
+      "check": "Count lines.",
+      "fix": "Extract to Manager.",
+      "exceptions": [],
+      "tags": ["architecture"],
+      "applies_to": ["Game.php"]
+    },
+    {
+      "id": "ARCH-002",
+      "priority": 3,
+      "rule": "Managers own their tables.",
+      "violation": ["Cross-table writes"],
+      "check": "Verify write ownership.",
+      "fix": "Assign table ownership.",
+      "exceptions": [],
+      "tags": ["architecture"],
+      "applies_to": ["Managers"],
+      "see_also": ["ARCH-001"],
+      "rationale": "Prevents data corruption."
+    }
+  ]
+}

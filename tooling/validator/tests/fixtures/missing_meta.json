@@ -1,0 +1,15 @@
+{
+  "rules": [
+    {
+      "id": "ARCH-001",
+      "priority": 2,
+      "rule": "Test rule.",
+      "violation": ["Test"],
+      "check": "Test.",
+      "fix": "Test.",
+      "exceptions": [],
+      "tags": ["test"],
+      "applies_to": ["Game.php"]
+    }
+  ]
+}

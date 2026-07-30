@@ -1,0 +1,47 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "standards/domain-architecture.md",
+  "rules": [
+    {
+      "id": "ARCH-001",
+      "priority": 2,
+      "rule": "Game.php is orchestration only.",
+      "violation": [
+        "Game.php contains SQL on game tables"
+      ],
+      "check": "Count lines in Game.php: assert under 300.",
+      "fix": "Extract domain logic into a Manager class.",
+      "exceptions": [],
+      "tags": ["architecture", "game.php", "orchestration"],
+      "see_also": ["CORE-002"]
+    },
+    {
+      "id": "ARCH-002",
+      "priority": 2,
+      "rule": "setupNewGame must instantiate every Manager.",
+      "violation": [
+        "setupNewGame computes starting resources"
+      ],
+      "check": "Verify setupNewGame calls each Manager constructor.",
+      "fix": "Extract table initialisation into each Manager::setupGame method.",
+      "exceptions": [],
+      "tags": ["architecture", "game.php", "setup"],
+      "see_also": ["ARCH-001", "ARCH-005"]
+    },
+    {
+      "id": "ARCH-005",
+      "priority": 2,
+      "rule": "One aggregate root per Manager.",
+      "violation": [
+        "Manager has methods that read or write tables owned by another Manager"
+      ],
+      "check": "For each Manager: confirm all methods operate on its declared table group.",
+      "fix": "If a Manager needs data from another table, add a read-only get* method.",
+      "exceptions": [],
+      "tags": ["architecture", "managers", "ownership"],
+      "see_also": ["CORE-016", "ARCH-006"]
+    }
+  ]
+}

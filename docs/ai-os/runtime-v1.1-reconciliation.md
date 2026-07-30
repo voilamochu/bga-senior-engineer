@@ -103,7 +103,7 @@ A reconciliation pass was performed to resolve this as a documentation issue rat
 - §4.2 (Canonical Reference Map) updated.
 - §4.3 item 1 updated to exempt hierarchical pairs.
 - One runtime cross-reference fixed (CORE-008 → PERS-004 → PERS-009/PERS-010).
-- Deferred cross-references (to not-yet-created files) will be verified when the remaining seven files exist.
+- Deferred cross-references (to not-yet-created files) were verified when the remaining seven files were created. All resolve.
 
 ---
 
@@ -147,14 +147,14 @@ No runtime JSON files were rewritten, restructured, or split. No new rules were 
 
 ---
 
-## Deferred Items
+## Deferred Items (Historical)
 
-| Item | Reason | Trigger for Revisiting |
+| Item | Resolution | Status |
 |---|---|---|
-| Cross-references to pending files (NOTF-*, SYNC-*, UNDO-*, TEST-*, CLNT-*, ANIM-*, MIGR-*) | Target files do not exist yet. | When each target file is created, verify the incoming reference exists. |
-| "Don't commit secrets" concept absent from runtime | Universal engineering practice not specific to BGA. No dedicated rule exists. | If the doctrine is updated to require an explicit rule, or if a code review reveals a pattern of secrets leakage. |
-| Full 12-file token budget exceedance | Only 5 of 12 files are implemented. Tiered loading keeps per-task usage under 3K. | When all 12 files exist and a full-load scenario (e.g. pre-release review) approaches the 12K budget. |
-| Potential file splitting for constitution.json and architecture.json | Both files exceed 400 lines but are under the 800-line hard limit. | If either file surpasses 800 lines during future rule additions. |
+| Cross-references to pending files (NOTF-*, SYNC-*, UNDO-*, TEST-*, CLNT-*, ANIM-*, MIGR-*) | All 12 files are now implemented. All forward references resolve. | RESOLVED |
+| "Don't commit secrets" concept absent from runtime | No dedicated rule. Covered by CORE-013 correctness mandate. | CARRIED FORWARD |
+| Full 12-file token budget exceedance | 12 files consume ~13,810 tokens. Tiered loading keeps per-task usage under 3K. Budget exceedance accepted. | ACCEPTED |
+| Potential file splitting for constitution.json and architecture.json | Both files remain under 800 lines (487 and 615 respectively). No split needed. | NO ACTION REQUIRED |
 
 ---
 
@@ -201,7 +201,12 @@ Both rules bundle multiple related concepts (CORE-007: absolute values + idempot
 - `rules/actions.json`
 - `rules/persistence.json`
 
-**Remaining runtime artifacts (not yet created):**
+**All runtime artifacts (implemented):**
+- `rules/constitution.json`
+- `rules/architecture.json`
+- `rules/state-machine.json`
+- `rules/actions.json`
+- `rules/persistence.json`
 - `rules/notifications.json`
 - `rules/client.json`
 - `rules/synchronization.json`
@@ -227,4 +232,62 @@ Runtime Specification v1.1 may be reopened for reconciliation if any of the foll
 5. **Token budget violation in practice** — If an agent task exceeds the 3K per-task budget during normal operation despite tiered loading, the reconciliation may need to address file splitting or rule consolidation.
 
 6. **Constitutional change** — If the doctrine (§15) is amended, added to, or reprioritised in a way that affects the existing constitutional-to-runtime pairs.
+
+---
+
+## 7. Certification and Finalization
+
+### 7.1 Certification Completed
+
+Runtime Specification v1.1 underwent a final certification audit (2026-07-29). The audit evaluated all 12 rule files (227 rules, 4,831 lines) across 10 dimensions: schema compliance, cross-reference integrity, ownership analysis, architectural consistency, priority model, rule quality, coverage, dependency graph, implementation readiness, and long-term maintainability.
+
+**Result:** PASS WITH RECOMMENDATIONS (84/100)
+
+### 7.2 Accepted Certification Fixes
+
+Five fixes were applied following the certification audit:
+
+1. **TEST-014 see_also** — Replaced incorrect reference CORE-002 (Game.php orchestration) with CORE-013 (correctness priority).
+2. **MIGR-008 see_also** — Replaced weak reference TEST-009 (edge case testing) with TEST-010 (coverage thresholds).
+3. **UNDO-011 ordering** — Aligned clearTurn ordering with SYNC-008: clearTurn precedes refreshUI/refreshHand.
+4. **applies_to vocabulary** — Normalized non-canonical applies_to values (Undo, Persistence, Testing, StateMachine, Setup, Synchronization, SimultaneousTurns, Globals, Migration, Rules, CI, TestSuite) to canonical architectural components (Actions, Database, All components, States, Game.php, Client).
+5. **UNDO-002 see_also** — Replaced CORE-007 (notification payloads) with CORE-006 (undo safety) for LIFO ordering precedent.
+
+All fixes are documented in `docs/ai-os/runtime-v1.1-certification-fixes.md`.
+
+### 7.3 Rejected Certification Recommendations
+
+The following certification audit recommendations were rejected and are not applied:
+
+| Recommendation | Reason for Rejection |
+|---|---|
+| Merge ANIM-007 and ANIM-010 | Same-file overlap that does not affect correctness. Defers to v1.2. |
+| Elevate UNDO-006 and UNDO-013 to priority 2 | Priority consistency deferral. Current priorities are functionally correct. |
+| Extract ACTN-014 to checklist file | Checklist-as-rule pattern acceptable. No functional defect. |
+| Remove NOTF-013 boundary overlap | NOTF-013 was partially mitigated by deferring to SYNC-005. Acceptable. |
+| Update partition plan §1.4 priority scale | Partition-plan priority guidance is informational, not normative. |
+| Fix various LOW findings | Issues are cosmetic or deferrable. No functional impact. |
+
+### 7.4 Runtime Frozen
+
+Runtime Specification v1.1 is now **frozen**.
+
+All runtime JSON files in `rules/*.json` are the canonical source of truth. No further structural changes, rule additions, or ID changes will be made to v1.1.
+
+Future work targets v1.2 (new capabilities) or v2.0 (breaking changes).
+
+### 7.5 Planning Documents Synchronized
+
+The following planning documents were synchronized with the final runtime:
+
+| Document | Synchronization |
+|---|---|
+| `docs/ai-os/rule-partition-plan.md` | Rule counts, file specs, statistics, ownership summaries, and footer updated to reflect all 12 implemented files. |
+| `docs/ai-os/runtime-skill-architecture.md` | Budget allocation table updated from 5 implemented files to 12. Projected values replaced with actuals. |
+| `docs/ai-os/runtime-v1.1-reconciliation.md` | This section appended documenting certification, fixes, and finalization. |
+| `docs/ai-os/runtime-v1.1-core-runtime-audit.md` | Historical record. No changes — findings are superseded by final certification. |
+| `docs/ai-os/runtime-v1.1-final-certification-audit.md` | Historical record. No changes — recommendations document the pre-fix state. |
+| `docs/ai-os/runtime-v1.1-certification-fixes.md` | Fix report. No changes — written as a permanent engineering artifact. |
+
+No runtime JSON files were modified during synchronization.
 

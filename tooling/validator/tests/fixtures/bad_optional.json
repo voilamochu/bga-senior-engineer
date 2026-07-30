@@ -1,0 +1,22 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "doc.md",
+  "rules": [
+    {
+      "id": "ARCH-001",
+      "priority": 2,
+      "rule": "Test rule.",
+      "violation": ["Test"],
+      "check": "Test.",
+      "fix": "Test.",
+      "exceptions": "not an array",
+      "tags": ["test"],
+      "applies_to": ["Game.php"],
+      "see_also": 42,
+      "rationale": 3.14,
+      "source": false
+    }
+  ]
+}

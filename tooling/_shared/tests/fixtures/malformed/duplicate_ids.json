@@ -1,0 +1,28 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "standards/domain-architecture.md",
+  "rules": [
+    {
+      "id": "ARCH-001",
+      "priority": 2,
+      "rule": "Duplicate rule for testing.",
+      "violation": ["Test violation"],
+      "check": "Test check.",
+      "fix": "Test fix.",
+      "exceptions": [],
+      "tags": ["test"]
+    },
+    {
+      "id": "ARCH-001",
+      "priority": 2,
+      "rule": "Same ID as above.",
+      "violation": ["Test violation"],
+      "check": "Test check.",
+      "fix": "Test fix.",
+      "exceptions": [],
+      "tags": ["test"]
+    }
+  ]
+}
