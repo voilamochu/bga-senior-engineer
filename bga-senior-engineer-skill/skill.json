@@ -1,0 +1,61 @@
+{
+  "$schema": "../schemas/skill-manifest-schema.json",
+  "name": "bga-senior-engineer",
+  "version": "1.0.0",
+  "description": "Production-grade BGA game implementation guidance for AI agents",
+  "runtime": "v1.1",
+  "validator": "^1.0.0",
+  "entry_point": "index.json",
+  "capabilities": [
+    "migrate-manager",
+    "migrate-state",
+    "migrate-notifications",
+    "migrate-client",
+    "review-action",
+    "review-manager",
+    "review-state-machine",
+    "review-notifications",
+    "review-persistence",
+    "review-full",
+    "debug-session",
+    "new-feature",
+    "refactor-module"
+  ],
+  "loading_model": {
+    "tiers": {
+      "tier_0": {
+        "description": "Always-loaded activation artifacts",
+        "files": [
+          "skill.json"
+        ],
+        "max_tokens": 200
+      },
+      "tier_1": {
+        "description": "Task-loaded execution artifacts (prompt + rules + checklist)",
+        "max_tokens": 3000,
+        "max_files": 10
+      },
+      "tier_2": {
+        "description": "Lazy-loaded reference artifacts (examples + references)",
+        "max_tokens": 600,
+        "max_files": 3
+      }
+    },
+    "loading_instructions": "Load Tier 0 on activation (skill.json). On task receipt, load index.json and match task keywords. Load the prompt, rules, and checklist listed in the matching index entry. Load examples and references only when the prompt explicitly requests them."
+  },
+  "compatibility": {
+    "platform": "mercurio",
+    "min_platform_version": "1.0.0",
+    "runtime_version": "v1.1"
+  },
+  "metadata": {
+    "last_updated": "2026-07-30",
+    "source": "docs/ai-os/bga-senior-engineer-doctrine.md",
+    "authors": [
+      "BGA Senior Engineer Team"
+    ],
+    "license": "MIT",
+    "repository": "https://github.com/voilamochu/bga-senior-engineer",
+    "changelog": "CHANGELOG.md"
+  }
+}

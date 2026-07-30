@@ -1,0 +1,457 @@
+{
+  "$schema": "../schemas/skill-index-schema.json",
+  "version": "1.0.0",
+  "last_updated": "2026-07-30",
+  "source": "docs/ai-os/runtime-skill-architecture.md",
+  "loading_instructions": "Read the user request. For each task, count how many keywords appear as case-insensitive substrings in the request. Select the task with the highest match count. Ties go to the first task in task_order. Load the listed prompt, rules, and checklist. Load examples and references only when the prompt requests them.",
+  "fallback_task": "review-full",
+  "task_order": [
+    "debug-session",
+    "migrate-manager",
+    "migrate-state",
+    "migrate-notifications",
+    "migrate-client",
+    "review-action",
+    "review-manager",
+    "review-state-machine",
+    "review-notifications",
+    "review-persistence",
+    "review-full",
+    "new-feature",
+    "refactor-module"
+  ],
+  "tasks": {
+    "migrate-manager": {
+      "description": "Extract a Manager from legacy Game.php into a dedicated Manager class",
+      "priority": 1,
+      "keywords": [
+        "extract",
+        "manager",
+        "migrate",
+        "legacy",
+        "game.php",
+        "refactor"
+      ],
+      "prompt": "prompts/migrate-manager.md",
+      "rules": [
+        "rules/constitution.json",
+        "rules/architecture.json",
+        "rules/persistence.json",
+        "rules/migration.json"
+      ],
+      "checklists": [
+        "checklists/pre-commit.json"
+      ],
+      "examples": [
+        "examples/manager-example.json",
+        "examples/model-example.json"
+      ]
+    },
+    "migrate-state": {
+      "description": "Convert legacy states.inc.php array to State classes",
+      "priority": 1,
+      "keywords": [
+        "state",
+        "migrate",
+        "states.inc.php",
+        "convert",
+        "transition"
+      ],
+      "prompt": "prompts/migrate-state.md",
+      "rules": [
+        "rules/constitution.json",
+        "rules/state-machine.json",
+        "rules/migration.json"
+      ],
+      "checklists": [
+        "checklists/pre-commit.json"
+      ],
+      "examples": [
+        "examples/state-example.json"
+      ]
+    },
+    "migrate-notifications": {
+      "description": "Extract a centralized Notifications class from scattered notifyAllPlayers calls",
+      "priority": 1,
+      "keywords": [
+        "notifications",
+        "migrate",
+        "notify",
+        "centralize",
+        "extract"
+      ],
+      "prompt": "prompts/migrate-notifications.md",
+      "rules": [
+        "rules/constitution.json",
+        "rules/notifications.json",
+        "rules/migration.json"
+      ],
+      "checklists": [
+        "checklists/pre-commit.json"
+      ],
+      "examples": [
+        "examples/notification-example.json"
+      ]
+    },
+    "migrate-client": {
+      "description": "Convert legacy Dojo client to ES modules and BgaCards",
+      "priority": 1,
+      "keywords": [
+        "client",
+        "migrate",
+        "dojo",
+        "es module",
+        "bgacards",
+        "javascript"
+      ],
+      "prompt": "prompts/migrate-client.md",
+      "rules": [
+        "rules/constitution.json",
+        "rules/client.json",
+        "rules/migration.json"
+      ],
+      "checklists": [
+        "checklists/pre-commit.json"
+      ],
+      "examples": [
+        "examples/client-manager-example.json"
+      ]
+    },
+    "review-action": {
+      "description": "Review a single action handler against engineering standards",
+      "priority": 2,
+      "keywords": [
+        "review",
+        "action",
+        "handler",
+        "audit",
+        "check"
+      ],
+      "prompt": "prompts/review-action.md",
+      "rules": [
+        "rules/constitution.json",
+        "rules/actions.json",
+        "rules/undo-replay.json"
+      ],
+      "checklists": [
+        "checklists/pre-review.json"
+      ],
+      "examples": [
+        "examples/action-example.json"
+      ]
+    },
+    "review-manager": {
+      "description": "Review a Manager class against architecture and persistence standards",
+      "priority": 2,
+      "keywords": [
+        "review",
+        "manager",
+        "class",
+        "audit"
+      ],
+      "prompt": "prompts/review-manager.md",
+      "rules": [
+        "rules/constitution.json",
+        "rules/architecture.json",
+        "rules/persistence.json"
+      ],
+      "checklists": [
+        "checklists/pre-review.json"
+      ],
+      "examples": [
+        "examples/manager-example.json"
+      ]
+    },
+    "review-state-machine": {
+      "description": "Review the entire state machine for correct state design and transitions",
+      "priority": 2,
+      "keywords": [
+        "review",
+        "state",
+        "machine",
+        "state machine",
+        "transition",
+        "zombie"
+      ],
+      "prompt": "prompts/review-state-machine.md",
+      "rules": [
+        "rules/constitution.json",
+        "rules/state-machine.json"
+      ],
+      "checklists": [
+        "checklists/pre-review.json"
+      ],
+      "examples": [
+        "examples/state-example.json"
+      ]
+    },
+    "review-notifications": {
+      "description": "Audit the notification system for correctness, i18n, and hidden information",
+      "priority": 2,
+      "keywords": [
+        "review",
+        "notification",
+        "audit",
+        "i18n",
+        "notify"
+      ],
+      "prompt": "prompts/review-notifications.md",
+      "rules": [
+        "rules/constitution.json",
+        "rules/notifications.json",
+        "rules/synchronization.json"
+      ],
+      "checklists": [
+        "checklists/pre-review.json"
+      ],
+      "examples": [
+        "examples/notification-example.json"
+      ]
+    },
+    "review-persistence": {
+      "description": "Audit database schema, globals, and data-driven configuration",
+      "priority": 2,
+      "keywords": [
+        "review",
+        "database",
+        "persistence",
+        "schema",
+        "globals",
+        "sql"
+      ],
+      "prompt": "prompts/review-persistence.md",
+      "rules": [
+        "rules/constitution.json",
+        "rules/persistence.json",
+        "rules/undo-replay.json"
+      ],
+      "checklists": [
+        "checklists/pre-review.json"
+      ]
+    },
+    "review-full": {
+      "description": "Full pre-release audit covering all BGA Studio requirements",
+      "priority": 3,
+      "keywords": [
+        "review",
+        "audit",
+        "complete",
+        "full",
+        "pre-release",
+        "release",
+        "prerelease"
+      ],
+      "prompt": "prompts/review-full.md",
+      "rules": [
+        "rules/constitution.json",
+        "rules/architecture.json",
+        "rules/state-machine.json",
+        "rules/actions.json",
+        "rules/persistence.json",
+        "rules/notifications.json",
+        "rules/client.json",
+        "rules/synchronization.json",
+        "rules/animations.json",
+        "rules/testing.json",
+        "rules/undo-replay.json",
+        "rules/migration.json"
+      ],
+      "checklists": [
+        "checklists/pre-commit.json",
+        "checklists/pre-review.json",
+        "checklists/pre-release.json"
+      ],
+      "examples": [
+        "examples/manager-example.json",
+        "examples/action-example.json",
+        "examples/model-example.json",
+        "examples/notification-example.json",
+        "examples/state-example.json",
+        "examples/client-manager-example.json",
+        "examples/undo-example.json"
+      ],
+      "references": [
+        "references/reference-project-matrix.json",
+        "references/anti-patterns.json",
+        "references/migration-mapping.json"
+      ],
+      "phase_groups": {
+        "architecture_review": {
+          "description": "Phase 1: Review architecture, state machine, and actions",
+          "rules": [
+            "rules/constitution.json",
+            "rules/architecture.json",
+            "rules/state-machine.json",
+            "rules/actions.json"
+          ],
+          "checklists": [
+            "checklists/pre-commit.json"
+          ],
+          "prompt_segment": "## Phase 1: Architecture Review"
+        },
+        "persistence_review": {
+          "description": "Phase 2: Review persistence, notifications, and undo",
+          "rules": [
+            "rules/constitution.json",
+            "rules/persistence.json",
+            "rules/notifications.json",
+            "rules/undo-replay.json"
+          ],
+          "checklists": [
+            "checklists/pre-commit.json"
+          ],
+          "prompt_segment": "## Phase 2: Persistence and Notifications Review"
+        },
+        "client_review": {
+          "description": "Phase 3: Review client, synchronization, animations, testing",
+          "rules": [
+            "rules/constitution.json",
+            "rules/client.json",
+            "rules/synchronization.json",
+            "rules/animations.json",
+            "rules/testing.json"
+          ],
+          "checklists": [
+            "checklists/pre-commit.json"
+          ],
+          "prompt_segment": "## Phase 3: Client and Testing Review"
+        },
+        "final_validation": {
+          "description": "Phase 4: Run full release checklists",
+          "rules": [
+            "rules/constitution.json",
+            "rules/migration.json"
+          ],
+          "checklists": [
+            "checklists/pre-review.json",
+            "checklists/pre-release.json"
+          ],
+          "prompt_segment": "## Phase 4: Final Validation"
+        }
+      }
+    },
+    "debug-session": {
+      "description": "Systematic debugging workflow for identifying and fixing bugs",
+      "priority": 1,
+      "keywords": [
+        "debug",
+        "bug",
+        "fix",
+        "trace",
+        "diagnose",
+        "error",
+        "issue"
+      ],
+      "prompt": "prompts/debug-session.md",
+      "rules": [
+        "rules/constitution.json"
+      ],
+      "checklists": [
+        "checklists/pre-review.json"
+      ]
+    },
+    "new-feature": {
+      "description": "Add a new game feature following the full implementation pipeline",
+      "priority": 3,
+      "keywords": [
+        "add",
+        "feature",
+        "new",
+        "implement",
+        "create",
+        "phase"
+      ],
+      "prompt": "prompts/new-feature.md",
+      "rules": [
+        "rules/constitution.json",
+        "rules/architecture.json",
+        "rules/state-machine.json",
+        "rules/actions.json",
+        "rules/persistence.json",
+        "rules/notifications.json",
+        "rules/client.json",
+        "rules/undo-replay.json"
+      ],
+      "checklists": [
+        "checklists/pre-commit.json"
+      ],
+      "examples": [
+        "examples/manager-example.json",
+        "examples/action-example.json",
+        "examples/model-example.json",
+        "examples/notification-example.json",
+        "examples/state-example.json",
+        "examples/client-manager-example.json",
+        "examples/undo-example.json"
+      ],
+      "phase_groups": {
+        "design": {
+          "description": "Phase 1: Design domain boundary, DB schema, and state flow",
+          "rules": [
+            "rules/constitution.json",
+            "rules/architecture.json",
+            "rules/state-machine.json"
+          ],
+          "prompt_segment": "## Phase 1: Design"
+        },
+        "implementation": {
+          "description": "Phase 2: Implement Manager, Actions, and undo wiring",
+          "rules": [
+            "rules/constitution.json",
+            "rules/persistence.json",
+            "rules/actions.json",
+            "rules/undo-replay.json"
+          ],
+          "examples": [
+            "examples/manager-example.json",
+            "examples/action-example.json",
+            "examples/model-example.json",
+            "examples/undo-example.json"
+          ],
+          "prompt_segment": "## Phase 2: Implementation"
+        },
+        "integration": {
+          "description": "Phase 3: Wire notifications and client handlers",
+          "rules": [
+            "rules/constitution.json",
+            "rules/notifications.json",
+            "rules/client.json"
+          ],
+          "examples": [
+            "examples/notification-example.json",
+            "examples/client-manager-example.json",
+            "examples/state-example.json"
+          ],
+          "checklists": [
+            "checklists/pre-commit.json"
+          ],
+          "prompt_segment": "## Phase 3: Integration"
+        }
+      }
+    },
+    "refactor-module": {
+      "description": "Refactor an existing module to canonical BGA engineering standards",
+      "priority": 2,
+      "keywords": [
+        "refactor",
+        "module",
+        "restructure",
+        "clean",
+        "rewrite",
+        "improve"
+      ],
+      "prompt": "prompts/refactor-module.md",
+      "rules": [
+        "rules/constitution.json",
+        "rules/architecture.json"
+      ],
+      "checklists": [
+        "checklists/pre-commit.json",
+        "checklists/pre-review.json"
+      ],
+      "examples": [
+        "examples/manager-example.json"
+      ]
+    }
+  }
+}
