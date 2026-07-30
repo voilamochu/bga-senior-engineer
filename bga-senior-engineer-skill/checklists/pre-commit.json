@@ -1,0 +1,66 @@
+{
+ "name": "Pre-Commit Validation",
+ "version": "1.0.0",
+ "scope": "pre-commit",
+ "description": "Run before writing any file. All items must pass.",
+ "last_updated": "2026-07-30",
+ "source": "docs/implementation/skill/05-prompt-specification.md",
+ "items": [
+  {
+   "id": "PC-001",
+   "rule_id": "CORE-013",
+   "check": "Are all mandatory rule files loaded and confirmed in the Prerequisites section?",
+   "pass": "All required rules are loaded and confirmed",
+   "fail": "One or more required rules are not confirmed loaded",
+   "fix": "Load the missing rule file. Re-read the Prerequisites section and confirm all files."
+  },
+  {
+   "id": "PC-002",
+   "rule_id": "CORE-013",
+   "check": "Is the correct task prompt selected based on the user request and index.json keyword matching?",
+   "pass": "The correct prompt is selected for the task",
+   "fail": "The wrong prompt or no prompt is loaded",
+   "fix": "Re-run index.json keyword matching against the user request. Load the correct prompt."
+  },
+  {
+   "id": "PC-003",
+   "rule_id": "CORE-013",
+   "check": "Are all lazy-load rule files identified in the Lazy-Load Rules section and their trigger conditions understood?",
+   "pass": "Lazy rules and their triggers are identified",
+   "fail": "One or more lazy rules are not identified or trigger conditions are unclear",
+   "fix": "Re-read the Lazy-Load Rules section. Load the lazy rule file when its trigger condition is met."
+  },
+  {
+   "id": "PC-004",
+   "rule_id": "ARCH-005",
+   "check": "Does the code being written belong in the correct layer (Manager, Model, Action, State, Notification)?",
+   "pass": "Code is placed in the correct architectural layer",
+   "fail": "Code is in the wrong layer (e.g., SQL in an action, domain logic in Game.php)",
+   "fix": "Move the code to the owning component. Follow ARCH-001 through ARCH-022 for component boundaries."
+  },
+  {
+   "id": "PC-005",
+   "rule_id": "ACTN-010",
+   "check": "Is the code free of SQL queries in action handlers and Game.php?",
+   "pass": "No SQL in actions or Game.php",
+   "fail": "SQL found in an action method or Game.php",
+   "fix": "Move all SQL to the owning Manager's methods. Actions and Game.php must contain zero database access."
+  },
+  {
+   "id": "PC-006",
+   "rule_id": "CORE-002",
+   "check": "Is Game.php free of domain logic and under 300 lines?",
+   "pass": "Game.php is orchestration-only and under 300 lines",
+   "fail": "Game.php contains domain logic or exceeds 300 lines",
+   "fix": "Extract domain logic into the owning Manager. Game.php retains only delegation and coordination."
+  },
+  {
+   "id": "PC-007",
+   "rule_id": "CORE-013",
+   "check": "If the prompt references canonical examples, are they loaded before writing code?",
+   "pass": "All referenced examples are loaded",
+   "fail": "One or more examples are not loaded",
+   "fix": "Load the example files before writing code. Follow the load instructions in the workflow steps."
+  }
+ ]
+}

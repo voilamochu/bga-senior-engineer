@@ -104,7 +104,8 @@ No section may be reordered, renamed, or omitted. Unused sections (e.g., Lazy-Lo
 | Filename | `<task-id>.md` — matches the task ID in `index.json` |
 | Task ID pattern | `^[a-z][a-z0-9-]+$` (lowercase, hyphens) |
 | Location | `bga-senior-engineer-skill/prompts/<task-id>.md` |
-| Max lines | 120 lines (soft), 150 lines (hard) |
+| Max lines (simple) | 120 lines (soft), 150 lines (hard) |
+| Max lines (phased) | 250 lines (soft), 300 lines (hard) |
 
 ---
 
@@ -127,7 +128,16 @@ Every prompt begins with a YAML frontmatter block delimited by `---`.
 | `phases` | No | Array of Object | Phase definitions for phased prompts. See §3.2. |
 | `max_tokens` | No | Integer | Estimated token budget for this prompt's Tier 1 load. Informational only. |
 
-### 3.2 Phase Field
+### 3.2 Line Limits by Prompt Type
+
+| Prompt Type | Soft Limit | Hard Limit | Rationale |
+|---|---|---|---|
+| **Simple** (single `## Workflow` section) | 120 lines | 150 lines | Single workflow section, fewer steps. 150 lines fits within Tier 1 token budget. |
+| **Phased** (multiple `## Phase N` sections) | 250 lines | 300 lines | Each phase adds Phase Rules, Steps, and Phase Checklist subsections. 300 lines keeps each phase concise while accommodating full implementation pipelines. |
+
+Phased prompts inherently require more lines because each phase is a self-contained section with its own rule-loading instructions, workflow steps, and completion checklist. The simple limit of 150 lines cannot accommodate a 4-phase or 6-phase structure without sacrificing content quality.
+
+### 3.3 Phase Field
 
 Each entry in `phases`:
 
@@ -1424,14 +1434,15 @@ Every prompt must pass these checks:
 | P23 | Self-Validation section includes Step 2 (verify stop conditions) | ERROR | Contains "Stop Conditions" |
 | P24 | Self-Validation section includes the closing statement | WARNING | Contains "Do not declare" |
 | P25 | Every workflow step references at least one rule ID | WARNING | Regex `[A-Z]{3,5}-\d{3}` in each step |
-| P26 | Prompt does not exceed 150 lines | WARNING | Line count |
-| P27 | Frontmatter `required_rules` matches the `## Prerequisites` list | ERROR | Set comparison |
-| P28 | Frontmatter `lazy_rules` matches the `## Lazy-Load Rules` list | WARNING | Set comparison |
-| P29 | Frontmatter `required_checklists` matches the checklists in `## Self-Validation` Step 1 | WARNING | Set comparison |
-| P30 | Phased prompts have `phases` in frontmatter | ERROR | Presence check for tasks with `phase_groups` in `index.json` |
-| P31 | Non-phased prompts do not have `phases` in frontmatter | WARNING | Absence check for tasks without `phase_groups` |
-| P32 | Lazy-Load Rules section has at least one entry if `lazy_rules` is non-empty | ERROR | Array length check against frontmatter |
-| P33 | Lazy-Load Rules section states "None." if `lazy_rules` is empty or absent | WARNING | String match |
+| P26 | Simple prompt does not exceed 150 lines | WARNING | Line count. Phased prompts skip this rule. |
+| P27 | Phased prompt does not exceed 300 lines | WARNING | Line count. Simple prompts skip this rule. |
+| P28 | Frontmatter `required_rules` matches the `## Prerequisites` list | ERROR | Set comparison |
+| P29 | Frontmatter `lazy_rules` matches the `## Lazy-Load Rules` list | WARNING | Set comparison |
+| P30 | Frontmatter `required_checklists` matches the checklists in `## Self-Validation` Step 1 | WARNING | Set comparison |
+| P31 | Phased prompts have `phases` in frontmatter | ERROR | Presence check for tasks with `phase_groups` in `index.json` |
+| P32 | Non-phased prompts do not have `phases` in frontmatter | WARNING | Absence check for tasks without `phase_groups` |
+| P33 | Lazy-Load Rules section has at least one entry if `lazy_rules` is non-empty | ERROR | Array length check against frontmatter |
+| P34 | Lazy-Load Rules section states "None." if `lazy_rules` is empty or absent | WARNING | String match |
 
 ### 16.2 Quick Validation Command
 

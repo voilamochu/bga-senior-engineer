@@ -1,0 +1,98 @@
+{
+ "name": "Pre-Release Validation",
+ "version": "1.0.0",
+ "scope": "pre-release",
+ "description": "Full pre-release readiness. All items must pass before release.",
+ "last_updated": "2026-07-30",
+ "source": "docs/implementation/skill/05-prompt-specification.md",
+ "items": [
+  {
+   "id": "REL-001",
+   "rule_id": "ARCH-001",
+   "check": "Is Game.php under 300 lines with zero SQL and zero domain logic?",
+   "pass": "Game.php is a thin coordinator under 300 lines",
+   "fail": "Game.php exceeds 300 lines, contains SQL, or has domain logic",
+   "fix": "Extract domain logic into Managers. Extract SQL into Manager methods. Game.php retains only delegation."
+  },
+  {
+   "id": "REL-002",
+   "rule_id": "ARCH-005",
+   "check": "Does every Manager own one aggregate root with exclusive write ownership?",
+   "pass": "All Managers own one aggregate root with no cross-writes",
+   "fail": "A Manager writes to another Manager's table or calls another Manager directly",
+   "fix": "Move writes to the owning Manager. Replace cross-Manager calls with action mediation per ARCH-014."
+  },
+  {
+   "id": "REL-003",
+   "rule_id": "STAT-009",
+   "check": "Does every non-GAME state have a zombie handler? Is giveExtraTime on every turn transition?",
+   "pass": "All non-GAME states have zombie handlers and giveExtraTime is wired",
+   "fail": "A non-GAME state lacks zombie handling or giveExtraTime is missing",
+   "fix": "Add zombie() to every non-GAME state per STAT-009 and STAT-010. Wire giveExtraTime in onEnteringState per STAT-011."
+  },
+  {
+   "id": "REL-004",
+   "rule_id": "PERS-003",
+   "check": "Do all game tables use InnoDB with FK constraints and atomic conditional UPDATEs?",
+   "pass": "All tables use InnoDB with FK and atomic UPDATE patterns",
+   "fail": "A table uses MyISAM, lacks FK, or uses non-conditional UPDATE",
+   "fix": "Change ENGINE to InnoDB. Add FK constraints. Use WHERE with expected state for all UPDATEs."
+  },
+  {
+   "id": "REL-005",
+   "rule_id": "ACTN-001",
+   "check": "Is every action handler under 15 lines with five ordered responsibilities?",
+   "pass": "All action handlers are under 15 lines with correct structure",
+   "fail": "An action handler exceeds 15 lines or misorders responsibilities",
+   "fix": "Extract validation into Manager::validate*. Ensure five ordered responsibilities per ACTN-002."
+  },
+  {
+   "id": "REL-006",
+   "rule_id": "NOTF-001",
+   "check": "Are all notifications sent through a centralized Notifications class?",
+   "pass": "All notifications go through the centralized Notifications class",
+   "fail": "A notifyAllPlayers call exists outside the Notifications class",
+   "fix": "Wrap the external call in a Notifications static method. Remove the direct framework call."
+  },
+  {
+   "id": "REL-007",
+   "rule_id": "CLNT-006",
+   "check": "Are all client notification handlers registered in setupPromiseNotifications and idempotent?",
+   "pass": "All handlers are registered and idempotent",
+   "fail": "A handler is not registered or is not idempotent",
+   "fix": "Register in setupPromiseNotifications with notif_<camelCase> naming. Ensure idempotent DOM updates."
+  },
+  {
+   "id": "REL-008",
+   "rule_id": "SYNC-002",
+   "check": "Does getAllDatas delegate to every Manager? Are refreshUI and refreshHand wired?",
+   "pass": "Reconnect path delegates with refreshUI and refreshHand",
+   "fail": "getAllDatas does not delegate or refreshUI/refreshHand are missing",
+   "fix": "Implement getAllDatas delegation per SYNC-001. Wire refreshUI for public state and refreshHand per SYNC-002."
+  },
+  {
+   "id": "REL-009",
+   "rule_id": "UNDO-001",
+   "check": "Does every mutation record old values? Does undo reverse in LIFO order?",
+   "pass": "All mutations are undoable with logged values and LIFO reversal",
+   "fail": "A mutation lacks old-value logging or undo is not LIFO",
+   "fix": "Add old-value logging before every state mutation. Verify LIFO order within checkpoint boundaries."
+  },
+  {
+   "id": "REL-010",
+   "rule_id": "TEST-001",
+   "check": "Do Manager methods, scoring functions, and unique abilities have dedicated tests?",
+   "pass": "Test coverage meets requirements for Managers, scoring, and abilities",
+   "fail": "A Manager method, scoring function, or unique ability lacks a test",
+   "fix": "Add Manager unit tests per TEST-002. Add scoring tests per TEST-003. Add ability tests per TEST-004."
+  },
+  {
+   "id": "REL-011",
+   "rule_id": "CORE-005",
+   "check": "Is hidden information protected in all notification paths, state args, and error messages?",
+   "pass": "Hidden information is fully protected",
+   "fail": "Hidden information is exposed in a public path",
+   "fix": "Audit all notification payloads. Split into public/private pairs. Spectators and non-participants must never receive private state."
+  }
+ ]
+}
