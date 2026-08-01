@@ -51,6 +51,10 @@ REQUIRED_TOOLS = (
     ToolSpec("php", ["-v"], r"PHP (\d+)\.(\d+)(?:\.(\d+))?", (8, 1)),
     ToolSpec("node", ["-v"], r"v?(\d+)\.(\d+)(?:\.(\d+))?", (18, 0)),
     ToolSpec("git", ["--version"], r"git version (\d+)\.(\d+)(?:\.(\d+))?", None),
+    # The agent execution platform (harness §4.2: any additional tool
+    # used by a run must be recorded in the environment manifest with
+    # its version; a missing platform blocks prepare at P1).
+    ToolSpec("opencode", ["--version"], r"(\d+)\.(\d+)(?:\.(\d+))?", None),
 )
 
 

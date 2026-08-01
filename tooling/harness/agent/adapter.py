@@ -53,6 +53,9 @@ class SessionResult:
     agent_id: str
     model: str
     platform_version: str | None = None
+    # Platform capability facts recorded by the adapter (e.g. the §5.5
+    # temperature capability when the platform cannot set it).
+    capabilities: dict | None = None
 
     def is_timeout(self) -> bool:
         return self.exit_code == SESSION_TIMEOUT_EXIT_CODE

@@ -37,7 +37,7 @@ def test_environment_contains_every_section_4_5_field(git_repo):
 def test_tools_are_captured_not_hardcoded(git_repo):
     env = collect_environment(git_repo)
     tools = {t["name"]: t for t in env["tools"]}
-    assert set(tools) == {"python3", "php", "node", "git"}
+    assert set(tools) == {"python3", "php", "node", "git", "opencode"}
     py = tools["python3"]
     assert py["present"] is True
     assert py["path"]
@@ -48,6 +48,11 @@ def test_tools_are_captured_not_hardcoded(git_repo):
     assert git_tool["present"] is True
     assert git_tool["version_ok"] is True
     assert git_tool["required_version"] == "any"
+    # the execution platform is a required tool: present and versioned
+    opencode_tool = tools["opencode"]
+    assert opencode_tool["present"] is True
+    assert opencode_tool["path"]
+    assert opencode_tool["version"] and opencode_tool["version"].count(".") >= 2
     # version_ok semantics: a present tool either satisfies or mismatches
     for tool in env["tools"]:
         if tool["present"]:

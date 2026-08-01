@@ -108,6 +108,7 @@ def capture_session(
         "restarts": outcome.restarts,
         "environment": environment,
         "platform_version": result.platform_version if result else None,
+        "capabilities": result.capabilities if result else None,
         "artifacts": artifacts,
     }
     write_text_artifact(
