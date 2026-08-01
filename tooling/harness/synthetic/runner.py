@@ -75,6 +75,7 @@ _CLOCK_PATCHES = (
     ("tooling.harness.validation.gates", "utc_now_iso"),
     ("tooling.harness.report.generator", "utc_now_iso"),
     ("tooling.harness.archive.manager", "utc_now_iso"),
+    ("tooling.harness.safety.final_verify", "utc_now_iso"),
     ("tooling.harness.scoring.runner", "utc_now_iso"),
     ("tooling.harness.safety.baseline", "utc_now_iso"),
 )
@@ -151,7 +152,8 @@ def run_synthetic(
                 _run_stage(name, argv)
         for name, argv in (
             ("p8-report", ["report", run_id, "--runs-root", str(runs_root)]),
-            ("p9-archive", ["archive", run_id, "--runs-root", str(runs_root)]),
+            ("p9-archive", ["archive", run_id, "--reference", str(reference),
+                            "--runs-root", str(runs_root)]),
         ):
             _run_stage(name, argv)
 
@@ -434,6 +436,7 @@ def _verify_run(run_root: Path, runs_root, *, variant: str) -> dict:
     from tooling.harness.runtime.manifest import RunManifest
     from tooling.harness.runtime.run_dir import load_run_dir
     from tooling.harness.runtime.status import RunStatus
+    from tooling.harness.safety.final_verify import load_final_verification
 
     divergences: list[str] = []
     run = load_run_dir(run_root.name, runs_root)
@@ -441,6 +444,17 @@ def _verify_run(run_root: Path, runs_root, *, variant: str) -> dict:
     status = RunStatus.load(run.status_path)
     if status.status != "ARCHIVED":
         divergences.append(f"run status is {status.status}, expected ARCHIVED")
+
+    final_verification = load_final_verification(run)
+    if final_verification is None:
+        divergences.append("missing §13 final-verification record")
+    elif not final_verification["passed"]:
+        divergences.append("the recorded §13 final verification did not pass")
+    report_text = (run.reports / "report.md").read_text(encoding="utf-8")
+    if "Final verification (§13): PASS" not in report_text:
+        divergences.append("report.md does not carry the completed §13 section")
+    if any(item["verdict"] != "PASS" for item in (final_verification or {}).get("items", [])):
+        divergences.append("not every §13 item (FV-1..FV-4) passed")
 
     validation = json.loads((run.validation / "validation.json").read_text(encoding="utf-8"))
     summary = validation.get("summary", {})
@@ -505,6 +519,9 @@ def _record_pilot0_seed(run_root: Path, runs_root, *, dataset_path) -> Path | No
     )
     validation = json.loads((run_root / "validation" / "validation.json").read_text(encoding="utf-8"))
     g0 = validation.get("gates", {}).get("G0", {}).get("verdict", "unknown")
+    final_verification = json.loads(
+        (run_root / "validation" / "final-verification.json").read_text(encoding="utf-8")
+    )
 
     versions = manifest.versions or {}
     seed = {
@@ -544,6 +561,13 @@ def _record_pilot0_seed(run_root: Path, runs_root, *, dataset_path) -> Path | No
         "safety": {
             "reference_repo": "scratch synthetic reference (synthetic-reference/)",
             "g0": g0,
+            "final_verification": {
+                "passed": final_verification.get("passed"),
+                "items": [
+                    {"id": item.get("id"), "verdict": item.get("verdict")}
+                    for item in final_verification.get("items", [])
+                ],
+            },
             "note": "synthetic runs verify against a scratch reference "
             "repository; bga-mercurio is never touched",
         },

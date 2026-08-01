@@ -16,11 +16,16 @@ import re
 from pathlib import Path
 
 from tooling.harness.evidence.freeze import verify_frozen_evidence
-from tooling.harness.report.generator import validate_report
+from tooling.harness.report.generator import generate_reports, validate_report
 from tooling.harness.report.data import REQUIRED_METADATA_GROUPS, REQUIRED_SECTIONS
 from tooling.harness.runtime.manifest import RunManifest
 from tooling.harness.runtime.run_dir import RunDir
 from tooling.harness.runtime.status import RunStatus
+from tooling.harness.safety.final_verify import (
+    load_final_verification,
+    run_final_verification,
+    save_final_verification,
+)
 from tooling.harness.archive.packaging import (
     ARCHIVE_MARKER,
     verify_packaging,
@@ -53,8 +58,16 @@ def archive_run(
     status: RunStatus,
     *,
     runs_root: str | Path,
+    reference_root: str | Path,
 ) -> dict:
     """Archive *run* in place: marker, registry, leaderboard, record.
+
+    The §13 final verification (MVB-024) runs immediately before
+    ``ARCHIVED``: the four items are recorded pass/fail in
+    ``validation/final-verification.json`` and through the manifest
+    errata, the reports are regenerated so ``report.md`` carries the
+    completed §13 section, and any failed item blocks ``ARCHIVED`` —
+    the run remains in its pre-archive state.
 
     Returns ``{marker_path, registry_entry, leaderboard_entry,
     divergences}``.  Raises :class:`ArchiveError` when the run is not
@@ -68,6 +81,23 @@ def archive_run(
             "packaged run contains non-packageable contents: "
             + "; ".join(divergences)
         )
+
+    # §13 final verification: blocks ARCHIVED on any failed item.  The
+    # record is persisted pass or fail (recorded, never silent); a
+    # failed attempt leaves the run in its pre-archive status.
+    verification = run_final_verification(run, reference_root=reference_root)
+    save_final_verification(run, manifest, verification)
+    if not verification["passed"]:
+        raise ArchiveError(
+            "final verification failed; the run is not archived: "
+            + "; ".join(verification["divergences"])
+        )
+
+    # Regenerate the reports so report.md carries the completed §13
+    # section (deterministic; identical recorded data produces
+    # byte-identical reports).  Runs before the status transition so
+    # REJECTED runs keep their rejected rendering.
+    generate_reports(run, manifest, status)
 
     marker_path = run.root / ARCHIVE_MARKER
     marker_path.write_text(
@@ -154,6 +184,17 @@ def verify_archive(
     evidence = verify_frozen_evidence(run, manifest)
     if not evidence["passed"]:
         divergences.extend(evidence["divergences"])
+
+    final_verification = load_final_verification(run)
+    if final_verification is None:
+        divergences.append(
+            "missing §13 final-verification record: validation/final-verification.json"
+        )
+    elif not final_verification.get("passed"):
+        divergences.append(
+            "the recorded §13 final verification did not pass; the run "
+            "should not have been archived"
+        )
 
     md_path = run.reports / "report.md"
     json_path = run.reports / "evaluation-report.json"
@@ -354,8 +395,15 @@ def _record_archive_errata(run, manifest, marker_path, runs_root, leaderboard_en
 
 
 def _recorded_report_hashes(manifest: RunManifest) -> tuple[str, str] | None:
+    """Most recently recorded report hashes from the errata history.
+
+    Reports are regenerated at P9 when the §13 final verification is
+    recorded, so multiple "P8 reports generated" entries can exist; the
+    last entry is the current generation.
+    """
+    recorded = None
     for entry in manifest.errata:
         match = _REPORT_ERRATA.search(entry.get("message", ""))
         if match:
-            return match.group(1), match.group(2)
-    return None
+            recorded = (match.group(1), match.group(2))
+    return recorded

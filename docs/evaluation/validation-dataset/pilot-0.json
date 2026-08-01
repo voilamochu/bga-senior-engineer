@@ -69,6 +69,27 @@
     }
   ],
   "safety": {
+    "final_verification": {
+      "items": [
+        {
+          "id": "FV-1",
+          "verdict": "PASS"
+        },
+        {
+          "id": "FV-2",
+          "verdict": "PASS"
+        },
+        {
+          "id": "FV-3",
+          "verdict": "PASS"
+        },
+        {
+          "id": "FV-4",
+          "verdict": "PASS"
+        }
+      ],
+      "passed": true
+    },
     "g0": "PASS",
     "note": "synthetic runs verify against a scratch reference repository; bga-mercurio is never touched",
     "reference_repo": "scratch synthetic reference (synthetic-reference/)"

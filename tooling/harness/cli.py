@@ -227,6 +227,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     archive.add_argument("run_id", help="run ID created by init")
     archive.add_argument(
+        "--reference",
+        help="path to the bga-mercurio reference repository "
+        "(default: sibling bga-mercurio checkout)",
+    )
+    archive.add_argument(
         "--verify",
         action="store_true",
         help="verify an archived run (marker, registry, leaderboard, "
@@ -912,8 +917,16 @@ def cmd_report(args: argparse.Namespace) -> int:
 
 
 def cmd_archive(args: argparse.Namespace) -> int:
-    """P9: archive a completed run or verify an archived run."""
+    """P9: archive a completed run or verify an archived run.
+
+    Archiving runs the §13 final verification (MVB-024) first: the four
+    items are recorded and any failure blocks ``ARCHIVED``, leaving the
+    run in its pre-archive status.  ``--verify`` re-checks an archived
+    run (marker, registry, leaderboard, final-verification record,
+    evidence hashes, reports, packaged contents).
+    """
     runs_root = resolve_runs_root(args.runs_root)
+    reference = Path(args.reference) if args.reference else default_reference_root()
     run = load_run_dir(args.run_id, runs_root)
     log = harness_log(run.root)
     manifest = RunManifest.load(run.manifest_path)
@@ -925,8 +938,9 @@ def cmd_archive(args: argparse.Namespace) -> int:
         result = verify_archive(run, manifest, status, runs_root=runs_root)
         if result["passed"]:
             print(f"Archive verified: {run.run_id}")
-            print("  marker, registry entry, leaderboard entry, evidence "
-                  "hashes, reports, and packaged contents all pass")
+            print("  marker, registry entry, leaderboard entry, final-"
+                  "verification record, evidence hashes, reports, and packaged "
+                  "contents all pass")
             return 0
         print(f"Archive verification FAILED: {run.run_id}", file=sys.stderr)
         for divergence in result["divergences"]:
@@ -934,7 +948,9 @@ def cmd_archive(args: argparse.Namespace) -> int:
         return 1
 
     try:
-        outcome = archive_run(run, manifest, status, runs_root=runs_root)
+        outcome = archive_run(
+            run, manifest, status, runs_root=runs_root, reference_root=reference
+        )
     except ArchiveError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1

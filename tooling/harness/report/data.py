@@ -22,6 +22,7 @@ from tooling.harness.evidence.collect import EVIDENCE_TYPES, load_evidence_catal
 from tooling.harness.runtime.manifest import PHASE_IDS, RunManifest
 from tooling.harness.runtime.run_dir import RunDir
 from tooling.harness.runtime.status import RunStatus
+from tooling.harness.safety.final_verify import load_final_verification
 
 REPORT_SCHEMA = "benchmark-harness-evaluation-report/1.0"
 REPORT_VERSION = "1.0"
@@ -79,6 +80,7 @@ class ReportData:
     common_failure_modes: list[str]
     errata: list[dict]
     rejected: bool
+    final_verification: dict | None
 
 
 def assemble_report_data(
@@ -177,6 +179,7 @@ def assemble_report_data(
         common_failure_modes=_common_failure_modes(eval_doc, identity["task_id"]),
         errata=errata,
         rejected=rejected,
+        final_verification=load_final_verification(run),
     )
 
 

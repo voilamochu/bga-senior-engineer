@@ -182,8 +182,19 @@ def render_report_md(data: ReportData) -> str:
                  "§12.3 checks (head, status_porcelain, reflog_top) were "
                  "recorded in validation/validation.json and compared against "
                  "the P0 baseline")
-    lines.append("- Final §13 verification at P9 is outside the MS-08 scope "
-                 "(recorded by the MVB-024 final-verification work item)")
+    final_verification = data.final_verification
+    if final_verification is None:
+        lines.append("- Final verification (§13): not yet performed (recorded "
+                     "at P9 during archive)")
+    else:
+        verdict = "PASS" if final_verification["passed"] else "FAIL"
+        lines.append(f"- Final verification (§13): {verdict} — the four items "
+                     "were recorded in validation/final-verification.json and "
+                     "compared against the P0 baseline")
+        for item in final_verification["items"]:
+            detail = item.get("detail") or ""
+            lines.append(f"  - {item['id']} {item['name']}: {item['verdict']}"
+                         + (f" — {detail}" if detail else ""))
 
     lines.append("")
     lines.append("## 11. Errata History")
@@ -223,6 +234,7 @@ def render_report_json(data: ReportData) -> dict:
             "review_version": data.review_notes.get("review_version"),
             "manual_review_file": data.review_notes.get("manual_review_file"),
         },
+        "final_verification": data.final_verification,
         "errata": [dict(entry) for entry in data.errata],
     }
 

@@ -25,8 +25,9 @@ from tooling.harness.runtime.status import RunStatus
 from tooling.harness.tests.review_fixtures import rejected_run, reviewed_run
 
 
-def _archive(run, manifest, status, runs_root):
-    return archive_run(run, manifest, status, runs_root=runs_root)
+def _archive(run, manifest, status, runs_root, git_repo):
+    return archive_run(run, manifest, status, runs_root=runs_root,
+                       reference_root=git_repo)
 
 
 class TestArchive:
@@ -35,7 +36,7 @@ class TestArchive:
     ):
         run, manifest, status = reviewed_run(tmp_path, reference_repo=git_repo)
         generate_reports(run, manifest, status)
-        outcome = _archive(run, manifest, status, tmp_path)
+        outcome = _archive(run, manifest, status, tmp_path, git_repo)
         marker = run.root / "ARCHIVED"
         assert marker.is_file()
         assert ARCHIVE_SCHEMA in marker.read_text(encoding="utf-8")
@@ -79,14 +80,14 @@ class TestArchive:
         )
         run, manifest, status = reviewed_run(tmp_path, reference_repo=git_repo)
         generate_reports(run, manifest, status)
-        _archive(run, manifest, status, tmp_path)
+        _archive(run, manifest, status, tmp_path, git_repo)
         first = json.loads((tmp_path / "index.json").read_text(encoding="utf-8"))
         # a second run appends without touching the first entry
         run2, manifest2, status2 = reviewed_run(
             tmp_path / "second", reference_repo=git_repo
         )
         generate_reports(run2, manifest2, status2)
-        _archive(run2, manifest2, status2, tmp_path)
+        _archive(run2, manifest2, status2, tmp_path, git_repo)
         second = json.loads((tmp_path / "index.json").read_text(encoding="utf-8"))
         assert len(second["entries"]) == 2
         assert second["entries"][0] == first["entries"][0]
@@ -94,15 +95,15 @@ class TestArchive:
     def test_rearchive_rejected(self, tmp_path, git_repo):
         run, manifest, status = reviewed_run(tmp_path, reference_repo=git_repo)
         generate_reports(run, manifest, status)
-        _archive(run, manifest, status, tmp_path)
+        _archive(run, manifest, status, tmp_path, git_repo)
         with pytest.raises(ArchiveError) as exc:
-            _archive(run, manifest, status, tmp_path)
+            _archive(run, manifest, status, tmp_path, git_repo)
         assert "already archived" in str(exc.value)
 
     def test_archive_requires_reports(self, tmp_path, git_repo):
         run, manifest, status = reviewed_run(tmp_path, reference_repo=git_repo)
         with pytest.raises(ArchiveError) as exc:
-            _archive(run, manifest, status, tmp_path)
+            _archive(run, manifest, status, tmp_path, git_repo)
         assert "report" in str(exc.value)
 
     def test_archive_refuses_unfinished_run(self, tmp_path, git_repo):
@@ -110,13 +111,13 @@ class TestArchive:
 
         run, manifest, status = scaffolded_run(tmp_path, reference_repo=git_repo)
         with pytest.raises(ArchiveError) as exc:
-            _archive(run, manifest, status, tmp_path)
+            _archive(run, manifest, status, tmp_path, git_repo)
         assert "status" in str(exc.value)
 
     def test_rejected_run_archive_has_no_leaderboard_entry(self, tmp_path, git_repo):
         run, manifest, status = rejected_run(tmp_path, reference_repo=git_repo)
         generate_reports(run, manifest, status)
-        outcome = _archive(run, manifest, status, tmp_path)
+        outcome = _archive(run, manifest, status, tmp_path, git_repo)
         assert outcome["leaderboard_entry"] is None
         registry = load_registry(tmp_path)
         assert registry[0]["verdict"] == "REJECTED"
@@ -129,13 +130,13 @@ class TestArchive:
         generate_reports(run, manifest, status)
         (run.evidence / "e1-transcript.txt").write_text("corrupted", encoding="utf-8")
         with pytest.raises(ArchiveError) as exc:
-            _archive(run, manifest, status, tmp_path)
+            _archive(run, manifest, status, tmp_path, git_repo)
         assert "frozen evidence verification failed" in str(exc.value)
 
     def test_archive_errata_records_version_and_hashes(self, tmp_path, git_repo):
         run, manifest, status = reviewed_run(tmp_path, reference_repo=git_repo)
         generate_reports(run, manifest, status)
-        _archive(run, manifest, status, tmp_path)
+        _archive(run, manifest, status, tmp_path, git_repo)
         errata = RunManifest.load(run.manifest_path).errata[-1]["message"]
         assert "P9 archive" in errata
         assert "archive_version=1.0" in errata
@@ -148,7 +149,7 @@ class TestVerifyArchive:
     def test_verify_passes_for_clean_archive(self, tmp_path, git_repo):
         run, manifest, status = reviewed_run(tmp_path, reference_repo=git_repo)
         generate_reports(run, manifest, status)
-        _archive(run, manifest, status, tmp_path)
+        _archive(run, manifest, status, tmp_path, git_repo)
         result = verify_archive(run, manifest, status, runs_root=tmp_path)
         assert result["passed"] is True
         assert result["divergences"] == []
@@ -156,7 +157,7 @@ class TestVerifyArchive:
     def test_verify_detects_missing_marker(self, tmp_path, git_repo):
         run, manifest, status = reviewed_run(tmp_path, reference_repo=git_repo)
         generate_reports(run, manifest, status)
-        _archive(run, manifest, status, tmp_path)
+        _archive(run, manifest, status, tmp_path, git_repo)
         (run.root / "ARCHIVED").unlink()
         result = verify_archive(run, manifest, status, runs_root=tmp_path)
         assert result["passed"] is False
@@ -165,7 +166,7 @@ class TestVerifyArchive:
     def test_verify_detects_missing_registry_entry(self, tmp_path, git_repo):
         run, manifest, status = reviewed_run(tmp_path, reference_repo=git_repo)
         generate_reports(run, manifest, status)
-        _archive(run, manifest, status, tmp_path)
+        _archive(run, manifest, status, tmp_path, git_repo)
         (tmp_path / "index.json").unlink()
         result = verify_archive(run, manifest, status, runs_root=tmp_path)
         assert any("registry entry" in d for d in result["divergences"])
@@ -173,7 +174,7 @@ class TestVerifyArchive:
     def test_verify_detects_corrupted_evidence(self, tmp_path, git_repo):
         run, manifest, status = reviewed_run(tmp_path, reference_repo=git_repo)
         generate_reports(run, manifest, status)
-        _archive(run, manifest, status, tmp_path)
+        _archive(run, manifest, status, tmp_path, git_repo)
         (run.evidence / "e1-transcript.txt").write_text("tampered", encoding="utf-8")
         result = verify_archive(run, manifest, status, runs_root=tmp_path)
         assert result["passed"] is False
@@ -182,7 +183,7 @@ class TestVerifyArchive:
     def test_verify_detects_missing_reports(self, tmp_path, git_repo):
         run, manifest, status = reviewed_run(tmp_path, reference_repo=git_repo)
         generate_reports(run, manifest, status)
-        _archive(run, manifest, status, tmp_path)
+        _archive(run, manifest, status, tmp_path, git_repo)
         (run.reports / "report.md").unlink()
         result = verify_archive(run, manifest, status, runs_root=tmp_path)
         assert any("reports are missing" in d for d in result["divergences"])
@@ -190,7 +191,7 @@ class TestVerifyArchive:
     def test_verify_detects_tampered_report_vs_recorded_hash(self, tmp_path, git_repo):
         run, manifest, status = reviewed_run(tmp_path, reference_repo=git_repo)
         generate_reports(run, manifest, status)
-        _archive(run, manifest, status, tmp_path)
+        _archive(run, manifest, status, tmp_path, git_repo)
         report = run.reports / "evaluation-report.json"
         doc = json.loads(report.read_text(encoding="utf-8"))
         doc["verdict"]["verdict"] = "POOR"
@@ -202,7 +203,7 @@ class TestVerifyArchive:
     def test_verify_detects_stray_file(self, tmp_path, git_repo):
         run, manifest, status = reviewed_run(tmp_path, reference_repo=git_repo)
         generate_reports(run, manifest, status)
-        _archive(run, manifest, status, tmp_path)
+        _archive(run, manifest, status, tmp_path, git_repo)
         (run.root / "unexpected.txt").write_text("x", encoding="utf-8")
         result = verify_archive(run, manifest, status, runs_root=tmp_path)
         assert any("unexpected top-level entry" in d for d in result["divergences"])

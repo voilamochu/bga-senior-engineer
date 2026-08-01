@@ -125,7 +125,7 @@ class TestArchiveCommand:
     def test_archive_full_flow(self, tmp_path, monkeypatch, git_repo, capsys):
         runs, run_id, run_root = _full_flow(tmp_path, monkeypatch, git_repo)
         assert main(["report", run_id, "--runs-root", str(runs)]) == 0
-        exit_code = main(["archive", run_id, "--runs-root", str(runs)])
+        exit_code = main(["archive", run_id, "--reference", str(git_repo), "--runs-root", str(runs)])
         assert exit_code == 0
         out = capsys.readouterr().out
         assert "Run archived" in out
@@ -145,27 +145,27 @@ class TestArchiveCommand:
 
     def test_archive_requires_reports(self, tmp_path, monkeypatch, git_repo, capsys):
         runs, run_id, _ = _full_flow(tmp_path, monkeypatch, git_repo)
-        assert main(["archive", run_id, "--runs-root", str(runs)]) == 1
+        assert main(["archive", run_id, "--reference", str(git_repo), "--runs-root", str(runs)]) == 1
         assert "report" in capsys.readouterr().err
 
     def test_archive_rejects_second_archive(self, tmp_path, monkeypatch, git_repo, capsys):
         runs, run_id, _ = _full_flow(tmp_path, monkeypatch, git_repo)
         assert main(["report", run_id, "--runs-root", str(runs)]) == 0
-        assert main(["archive", run_id, "--runs-root", str(runs)]) == 0
-        assert main(["archive", run_id, "--runs-root", str(runs)]) == 1
+        assert main(["archive", run_id, "--reference", str(git_repo), "--runs-root", str(runs)]) == 0
+        assert main(["archive", run_id, "--reference", str(git_repo), "--runs-root", str(runs)]) == 1
         assert "already archived" in capsys.readouterr().err
 
     def test_archive_verify_passes(self, tmp_path, monkeypatch, git_repo, capsys):
         runs, run_id, _ = _full_flow(tmp_path, monkeypatch, git_repo)
         assert main(["report", run_id, "--runs-root", str(runs)]) == 0
-        assert main(["archive", run_id, "--runs-root", str(runs)]) == 0
+        assert main(["archive", run_id, "--reference", str(git_repo), "--runs-root", str(runs)]) == 0
         assert main(["archive", run_id, "--verify", "--runs-root", str(runs)]) == 0
         assert "Archive verified" in capsys.readouterr().out
 
     def test_archive_verify_rejects_malformed(self, tmp_path, monkeypatch, git_repo, capsys):
         runs, run_id, run_root = _full_flow(tmp_path, monkeypatch, git_repo)
         assert main(["report", run_id, "--runs-root", str(runs)]) == 0
-        assert main(["archive", run_id, "--runs-root", str(runs)]) == 0
+        assert main(["archive", run_id, "--reference", str(git_repo), "--runs-root", str(runs)]) == 0
         (run_root / "ARCHIVED").unlink()
         assert main(["archive", run_id, "--verify", "--runs-root", str(runs)]) == 1
         err = capsys.readouterr().err
@@ -175,7 +175,7 @@ class TestArchiveCommand:
     def test_archive_verify_rejects_stray_files(self, tmp_path, monkeypatch, git_repo, capsys):
         runs, run_id, run_root = _full_flow(tmp_path, monkeypatch, git_repo)
         assert main(["report", run_id, "--runs-root", str(runs)]) == 0
-        assert main(["archive", run_id, "--runs-root", str(runs)]) == 0
+        assert main(["archive", run_id, "--reference", str(git_repo), "--runs-root", str(runs)]) == 0
         (run_root / "scratch.json").write_text("{}", encoding="utf-8")
         assert main(["archive", run_id, "--verify", "--runs-root", str(runs)]) == 1
         assert "unexpected top-level entry" in capsys.readouterr().err
@@ -224,6 +224,12 @@ class TestDeterminism:
             "tooling.harness.report.generator.utc_now_iso", lambda: fixed_iso
         )
         monkeypatch.setattr(
+            "tooling.harness.archive.manager.utc_now_iso", lambda: fixed_iso
+        )
+        monkeypatch.setattr(
+            "tooling.harness.safety.final_verify.utc_now_iso", lambda: fixed_iso
+        )
+        monkeypatch.setattr(
             "tooling.harness.environment.collect.capture_validator_version",
             lambda rules_path=None, cwd=None: (
                 "=== Runtime Specification Validator ===\n"
@@ -239,7 +245,7 @@ class TestDeterminism:
         for name in ("a", "b"):
             runs, run_id, run_root = _full_flow(tmp_path / name, monkeypatch, git_repo)
             assert main(["report", run_id, "--runs-root", str(runs)]) == 0
-            assert main(["archive", run_id, "--runs-root", str(runs)]) == 0
+            assert main(["archive", run_id, "--reference", str(git_repo), "--runs-root", str(runs)]) == 0
             results.append(
                 (
                     _normalize_report(

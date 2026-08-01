@@ -310,7 +310,8 @@ class TestFailureInjection:
         with pytest.raises(ArchiveError) as exc:
             from tooling.harness.archive.manager import archive_run
 
-            archive_run(run, manifest, status, runs_root=tmp_path)
+            archive_run(run, manifest, status, runs_root=tmp_path,
+                        reference_root=git_repo)
         assert "registry entry" in str(exc.value)
 
 
