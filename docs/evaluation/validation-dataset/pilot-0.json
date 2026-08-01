@@ -1,0 +1,97 @@
+{
+  "anchors": [],
+  "certification": {},
+  "coverage": {},
+  "cycle": {
+    "date": "2026-01-01T12:00:00.000000Z",
+    "id": "pilot-0",
+    "note": "synthetic fixture run (MS-09, MVB-025); statistics, coverage, anchors, and certification fields are deferred post-MVB",
+    "seed": true,
+    "type": "pilot",
+    "version_tuple": {
+      "corpus": "1.0",
+      "evaluation": "1.0",
+      "harness": "1.0"
+    }
+  },
+  "evaluators": [],
+  "revisions": [],
+  "runs": [
+    {
+      "category_scores": {
+        "Architecture": {
+          "comments": "synthetic fixture: consolidated helper verified",
+          "evidence": [
+            "evidence/e1-transcript.txt",
+            "evidence/e8-diff-bundle/modules/php/Game.php"
+          ],
+          "score": 90
+        },
+        "Correctness": {
+          "comments": "synthetic fixture: consolidated helper verified",
+          "evidence": [
+            "evidence/e1-transcript.txt",
+            "evidence/e8-diff-bundle/modules/php/Game.php"
+          ],
+          "score": 80
+        },
+        "Framework Compliance": {
+          "comments": "synthetic fixture: consolidated helper verified",
+          "evidence": [
+            "evidence/e1-transcript.txt",
+            "evidence/e8-diff-bundle/modules/php/Game.php"
+          ],
+          "score": 85
+        },
+        "Maintainability": {
+          "comments": "synthetic fixture: consolidated helper verified",
+          "evidence": [
+            "evidence/e1-transcript.txt",
+            "evidence/e8-diff-bundle/modules/php/Game.php"
+          ],
+          "score": 70
+        },
+        "Testing": {
+          "comments": "synthetic fixture: consolidated helper verified",
+          "evidence": [
+            "evidence/e1-transcript.txt",
+            "evidence/e8-diff-bundle/modules/php/Game.php"
+          ],
+          "score": 75
+        }
+      },
+      "run_id": "run-NOT-02-demo-model-20260101T120000Z-00",
+      "status": "ARCHIVED",
+      "system": "synthetic-stub",
+      "task": "NOT-02",
+      "total": 80.25,
+      "verdict": "ACCEPTABLE"
+    }
+  ],
+  "safety": {
+    "g0": "PASS",
+    "note": "synthetic runs verify against a scratch reference repository; bga-mercurio is never touched",
+    "reference_repo": "scratch synthetic reference (synthetic-reference/)"
+  },
+  "schema": "benchmark-validation-dataset/1.0",
+  "scoring_pairs": [
+    {
+      "first": {
+        "capped": false,
+        "capped_total": 80.25,
+        "total": 80.25,
+        "verdict": "ACCEPTABLE"
+      },
+      "matched": true,
+      "run_id": "run-NOT-02-demo-model-20260101T120000Z-00",
+      "second": {
+        "capped": false,
+        "capped_total": 80.25,
+        "total": 80.25,
+        "verdict": "ACCEPTABLE"
+      }
+    }
+  ],
+  "stats": {},
+  "tooling": {}
+}
