@@ -1,0 +1,74 @@
+{
+ "name": "Pre-Release Validation",
+ "version": "1.0.0",
+ "scope": "pre-release",
+ "description": "Full pre-release readiness. All items must pass.",
+ "last_updated": "2026-07-30",
+ "source": "docs/implementation/skill/05-prompt-specification.md",
+ "items": [
+  {
+   "id": "REL-001",
+   "rule_id": "ARCH-001",
+   "check": "Game.php under 300 lines, zero SQL? Managers own one aggregate each?",
+   "pass": "Game.php thin, Managers own aggregates",
+   "fail": "Game.php over 300 lines or Manager ownership violated",
+   "fix": "Extract into Managers. Fix cross-Manager writes."
+  },
+  {
+   "id": "REL-002",
+   "rule_id": "STAT-009",
+   "check": "Every non-GAME state has zombie? giveExtraTime on turns?",
+   "pass": "All states have zombies, giveExtraTime wired",
+   "fail": "A state lacks zombie or giveExtraTime missing",
+   "fix": "Add zombie(). Wire giveExtraTime()."
+  },
+  {
+   "id": "REL-003",
+   "rule_id": "PERS-003",
+   "check": "All tables InnoDB with FK and atomic conditional UPDATEs?",
+   "pass": "All tables InnoDB with FK and atomic UPDATEs",
+   "fail": "Table uses MyISAM, lacks FK, or non-conditional UPDATE",
+   "fix": "Change to InnoDB. Add FK. Use WHERE with expected state."
+  },
+  {
+   "id": "REL-004",
+   "rule_id": "ACTN-001",
+   "check": "Every action under 15 lines with five responsibilities in order?",
+   "pass": "All actions under 15 lines, correct structure",
+   "fail": "Action over 15 lines or wrong responsibility order",
+   "fix": "Extract into Manager.validate*. Follow ACTN-002."
+  },
+  {
+   "id": "REL-005",
+   "rule_id": "NOTF-001",
+   "check": "All notifications through centralized class?",
+   "pass": "All notifications centralized",
+   "fail": "notifyAllPlayers outside Notifications class",
+   "fix": "Wrap in Notifications static method."
+  },
+  {
+   "id": "REL-006",
+   "rule_id": "CLNT-006",
+   "check": "Client handlers registered and idempotent? getAllDatas delegates?",
+   "pass": "Handlers registered, getAllDatas delegates",
+   "fail": "Handler unregistered or getAllDatas missing delegation",
+   "fix": "Register per CLNT-006. Delegate per SYNC-001."
+  },
+  {
+   "id": "REL-007",
+   "rule_id": "UNDO-001",
+   "check": "Mutations log old values? Undo reverses LIFO?",
+   "pass": "All mutations undoable with LIFO reversal",
+   "fail": "Mutation lacks old-value logging or undo not LIFO",
+   "fix": "Add old-value logging. Verify LIFO within checkpoints."
+  },
+  {
+   "id": "REL-008",
+   "rule_id": "TEST-001",
+   "check": "Managers, scoring, and abilities have tests? Hidden info protected?",
+   "pass": "Test coverage meets requirements, hidden info protected",
+   "fail": "Missing test or hidden info exposed",
+   "fix": "Add tests per TEST-002, TEST-003. Audit payloads per CORE-005."
+  }
+ ]
+}

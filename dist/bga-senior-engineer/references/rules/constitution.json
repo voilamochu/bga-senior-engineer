@@ -1,0 +1,488 @@
+{
+  "domain": "constitution",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "ai-os/bga-senior-engineer-doctrine.md sections 2, 12, 15",
+  "rules": [
+    {
+      "id": "CORE-001",
+      "priority": 1,
+      "rule": "Server owns all truth. Every game state mutation must originate from server-side PHP. Client state is a read-only cache.",
+      "violation": [
+        "Client JS mutates state without server action",
+        "Server trusts client-supplied value without re-validating",
+        "Client computes a score and server accepts without recomputing"
+      ],
+      "check": "Verify every DB write, Deck move, and globals set originates from PHP. Client JS must never call these directly. Server must never accept pre-computed values from client without re-validation.",
+      "fix": "Move all state mutation into server-side Manager methods. Client sends action name and parameters only. Server validates, executes via Manager, sends notification with canonical state.",
+      "exceptions": [],
+      "tags": [
+        "server",
+        "authority",
+        "security",
+        "cheating"
+      ],
+      "rationale": "Client-modifiable state is a cheating vector. One invariant eliminates an entire class of security vulnerabilities.",
+      "applies_to": [
+        "Game.php",
+        "Actions",
+        "Client",
+        "Notifications",
+        "States"
+      ],
+      "see_also": [
+        "CORE-005",
+        "CORE-011"
+      ]
+    },
+    {
+      "id": "CORE-002",
+      "priority": 1,
+      "rule": "Game.php is orchestration only. Under 300 lines. Zero SQL queries. Zero domain logic. Delegates all work to Managers and States.",
+      "violation": [
+        "Game.php contains SQL on game tables",
+        "Game.php implements scoring, resource validation, or card logic",
+        "Game.php exceeds 300 lines and grows with each feature"
+      ],
+      "check": "Count lines in Game.php: assert under 300. Grep for SQL keywords: assert zero matches. Review every method: if it implements game rules rather than delegating to Managers, it is domain logic.",
+      "fix": "Extract domain logic into a Manager class. Extract SQL into Manager methods. Game.php methods should delegate to a Manager and return.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "game.php",
+        "orchestration",
+        "refactor"
+      ],
+      "rationale": "Game.php is the integration point every developer touches. Beyond coordination, it causes merge conflicts, regressions, and untestable code.",
+      "applies_to": [
+        "Game.php"
+      ],
+      "see_also": [
+        "CORE-003",
+        "CORE-010"
+      ]
+    },
+    {
+      "id": "CORE-003",
+      "priority": 1,
+      "rule": "Actions validate preconditions, delegate to a Manager, receive results, send notifications, and return a transition. Under 15 lines of logic. Zero SQL. Five responsibilities in strict order.",
+      "violation": [
+        "Action method contains a SQL query",
+        "Action method implements game rule logic directly",
+        "Action method exceeds 15 lines of executable logic"
+      ],
+      "check": "Count non-blank non-comment lines in each action method: assert under 15. Grep for SQL: zero matches. Confirm the action calls Manager::validate, Manager::execute, Notifications::send, then returns a transition string.",
+      "fix": "Move validation to Manager::validate*(). Move execution to Manager::execute*(). Action becomes: parse args, call validate, call execute, call Notifications::send, return transition string.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "actions",
+        "thin",
+        "delegation"
+      ],
+      "rationale": "Fat actions mix validation, domain logic, and notification concerns. This hides bugs and prevents reuse of domain logic across different entry points.",
+      "applies_to": [
+        "Actions"
+      ],
+      "see_also": [
+        "CORE-004",
+        "CORE-011"
+      ]
+    },
+    {
+      "id": "CORE-004",
+      "priority": 1,
+      "rule": "All validation must complete before any state change begins. Execution is atomic: all mutations succeed or none occur. Never validate after mutating.",
+      "violation": [
+        "DB row is updated, then a validation fails without rollback",
+        "Deck card is moved, then BgaUserException is thrown without restore",
+        "Validation logic is interleaved with mutation logic"
+      ],
+      "check": "Review each action and Manager mutation method. Confirm all validation calls appear before any mutation: Manager::validate* and BgaUserException throws must precede Manager::execute*, DB writes, and Deck moves.",
+      "fix": "Structure every action as: (1) parse args, (2) call all Manager::validate*() methods, (3) call Manager::execute*() for all mutations, (4) send notifications, (5) return transition. If any validate step fails, throw BgaUserException before any mutation occurs.",
+      "exceptions": [],
+      "tags": [
+        "correctness",
+        "validation",
+        "atomicity",
+        "transactions"
+      ],
+      "rationale": "Partial state changes leave the game in an unrecoverable inconsistent state. Validating after mutation means the game is already broken when the error is detected.",
+      "applies_to": [
+        "Actions",
+        "Managers"
+      ],
+      "see_also": [
+        "CORE-003",
+        "CORE-006"
+      ]
+    },
+    {
+      "id": "CORE-005",
+      "priority": 1,
+      "rule": "Hidden game state must never reach a player who should not see it. Not in public notifications, action arguments, state args, error messages, or spectator views.",
+      "violation": [
+        "Public notification includes an opponent hand card ID",
+        "Action arg() returns hidden info about another player resources",
+        "Error message reveals a card position in a deck",
+        "Spectator receives a private notification"
+      ],
+      "check": "For every notification type: verify payload contains only information visible to the receiving player. For every state: verify _private is used for player-specific data. Confirm spectators never receive private notifications.",
+      "fix": "Use the dual notification pattern: public notification with sanitized args, private notification with full details to affected player only. Use _private key for state args. Filter spectator notifications server-side.",
+      "exceptions": [],
+      "tags": [
+        "security",
+        "hidden-information",
+        "notifications",
+        "spectator"
+      ],
+      "rationale": "A single leaked card in a notification payload is a game-breaking bug with zero recovery. The game state is irreversibly compromised.",
+      "applies_to": [
+        "Notifications",
+        "Actions",
+        "States",
+        "Client"
+      ],
+      "see_also": [
+        "CORE-011",
+        "SYNC-003"
+      ]
+    },
+    {
+      "id": "CORE-006",
+      "priority": 1,
+      "rule": "Every mutation must be reversible. Log old values before every state change. Undo reverses mutations in LIFO order. Checkpoints gate commit boundaries.",
+      "violation": [
+        "Resource count decremented but old value not logged",
+        "Undo restores state in wrong order producing incorrect total",
+        "No checkpoint defined so partial-turn undo is impossible"
+      ],
+      "check": "For every mutation in undo flow: verify old value was logged before mutation. Verify LIFO reversal order matches mutation order. Verify checkpoints exist at all commit boundaries.",
+      "fix": "Add an undo log table. Before every mutation INSERT the old value. Undo reverses by SELECTing log entries in reverse order and applying old values. Place checkpoints at all player-commit points.",
+      "exceptions": [
+        "Irreversible random events (die rolls, card draws from shuffled deck). Must be explicitly documented as irreversible."
+      ],
+      "tags": [
+        "undo",
+        "safety",
+        "database",
+        "checkpoints"
+      ],
+      "rationale": "Undo is mandatory in the BGA framework. Without logged old values reversal is impossible. Wrong undo order corrupts game state.",
+      "applies_to": [
+        "Actions",
+        "Managers",
+        "Database"
+      ],
+      "see_also": [
+        "CORE-007",
+        "UNDO-001"
+      ]
+    },
+    {
+      "id": "CORE-007",
+      "priority": 1,
+      "rule": "Notifications must carry absolute values, never deltas. Every notification handler must be idempotent. Seeded RNG ensures replay from move 1 produces identical board state.",
+      "violation": [
+        "Notification sends a delta value instead of the absolute total",
+        "Client handler appends to a counter instead of setting from the payload",
+        "RNG uses unseeded random or wall-clock time"
+      ],
+      "check": "For every notification: verify payload args are absolute values (total_resources: 5) not deltas (delta: -2). For every client handler: confirm running twice with same payload produces identical DOM. Confirm RNG is seeded in setupNewGame.",
+      "fix": "Always compute and send the total value after mutation. Client handlers set state from payload, never add or subtract. Seed RNG with game ID in setupNewGame. Use bgaRand for all randomness.",
+      "exceptions": [],
+      "tags": [
+        "replay",
+        "determinism",
+        "notifications",
+        "idempotency"
+      ],
+      "rationale": "Deltas accumulate drift across replays. Non-idempotent handlers produce different DOM on second render. Determinism is required for debugging and archive replay.",
+      "applies_to": [
+        "Notifications",
+        "Client",
+        "Game.php"
+      ],
+      "see_also": [
+        "CORE-006",
+        "NOTF-005"
+      ]
+    },
+    {
+      "id": "CORE-008",
+      "priority": 1,
+      "rule": "Game constants (capacities, costs, ratios, limits) must live in the database or material.inc.php. Never hardcoded in PHP logic or conditional statements.",
+      "violation": [
+        "Card cost hardcoded as if ( == 1) {  = 3; }",
+        "Maximum hand size is a literal integer in PHP logic",
+        "Scoring thresholds hardcoded in a Manager method"
+      ],
+      "check": "Scan PHP code for numeric literals representing game values (costs, capacities, scores). Verify each comes from database SELECT or material.inc.php constant. Check that no conditional depends on a hardcoded number that should be config data.",
+      "fix": "Move values to a database table or material.inc.php array. Reference them by key. Card costs should be columns in the card definition table queried at load time.",
+      "exceptions": [
+        "Framework constants (max players, default durations) set in gameinfos.inc.php. These are configuration, not game logic."
+      ],
+      "tags": [
+        "data",
+        "configuration",
+        "expansion",
+        "maintainability"
+      ],
+      "rationale": "Hardcoded values require code changes for balance adjustments. Values buried in conditionals are invisible to maintainers. Data-driven config enables expansion content without code changes.",
+      "applies_to": [
+        "Managers",
+        "Actions",
+        "Database",
+        "Game.php"
+      ],
+      "see_also": [
+        "CORE-010",
+        "PERS-009",
+        "PERS-010"
+      ]
+    },
+    {
+      "id": "CORE-009",
+      "priority": 1,
+      "rule": "giveExtraTime() must be called on every turn transition without exception. zombie() handler must exist on every non-GAME state without exception. These are not optional.",
+      "violation": [
+        "State transition does not call giveExtraTime()",
+        "Non-GAME state has no zombie() handler",
+        "zombie() exists but is empty and does not advance the game"
+      ],
+      "check": "Count turn transitions in the state machine: verify giveExtraTime() is called in each onEnteringState. Count non-GAME states: verify each has a zombie() method that advances or skips the disconnected player.",
+      "fix": "Add giveExtraTime() to onEnteringState of every state that begins a player turn. Implement zombie() on every non-GAME state to skip or advance the disconnected player.",
+      "exceptions": [
+        "GAME state does not need zombie() because the game is over."
+      ],
+      "tags": [
+        "framework",
+        "timeout",
+        "zombie",
+        "production"
+      ],
+      "rationale": "The BGA framework depends on these hooks for timeout management and abandoned player handling. Missing either causes hard-to-diagnose production incidents.",
+      "applies_to": [
+        "States",
+        "Game.php"
+      ],
+      "see_also": [
+        "STAT-009",
+        "STAT-011"
+      ]
+    },
+    {
+      "id": "CORE-010",
+      "priority": 1,
+      "rule": "Each layer has exclusive responsibilities. No SQL in Actions or States. No domain logic in Game.php. No database access in Models. No notifyAllPlayers outside the Notifications class.",
+      "violation": [
+        "SQL query inside a State class action method",
+        "Game.php method implementing scoring logic",
+        "Model class accesses the database or calls framework API",
+        "notifyAllPlayers called directly from a Manager"
+      ],
+      "check": "Grep Actions for SQL: zero matches. Grep States for SQL: zero matches. Grep Game.php for non-delegation methods. Grep Models for DB or framework calls. Grep for notifyAllPlayers outside Notifications class.",
+      "fix": "SQL goes in Manager methods only. Domain logic goes in Manager methods only. Models are data wrappers with computed properties and no framework access. Notifications only from Notifications class static methods.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "layers",
+        "separation",
+        "boundaries"
+      ],
+      "rationale": "Layer violations are the root cause of most BGA architecture problems. SQL in actions makes domain logic untestable. Database access in Models makes data mutable in unpredictable ways.",
+      "applies_to": [
+        "Game.php",
+        "Actions",
+        "States",
+        "Managers",
+        "Models",
+        "Notifications"
+      ],
+      "see_also": [
+        "CORE-002",
+        "CORE-003",
+        "CORE-012"
+      ]
+    },
+    {
+      "id": "CORE-011",
+      "priority": 1,
+      "rule": "All notifications sent from a single Notifications class using static methods. One method per notification type. updateArgs() auto-resolves i18n. No notifyAllPlayers called outside this class.",
+      "violation": [
+        "notifyAllPlayers called directly from a Manager or Action",
+        "Multiple classes contain notification sending logic",
+        "Notification method manually resolves i18n strings instead of using updateArgs"
+      ],
+      "check": "Confirm exactly one file named Notifications.php exists. Every notification type has one static method. Grep entire codebase for notifyAllPlayers outside Notifications.php: assert zero matches.",
+      "fix": "Create Notifications.php with one static method per notification type. Each method calls notifyAllPlayers or notifyPlayer through the Game reference. Use updateArgs() to auto-resolve player names and translated strings.",
+      "exceptions": [],
+      "tags": [
+        "notifications",
+        "i18n",
+        "centralization",
+        "audit"
+      ],
+      "rationale": "Scattered notification calls make audit impossible. Duplicated notification logic diverges. Centralization enables single-point i18n verification, payload consistency checks, and notification audit.",
+      "applies_to": [
+        "Notifications",
+        "Actions",
+        "Managers"
+      ],
+      "see_also": [
+        "CORE-005",
+        "CORE-007",
+        "NOTF-001"
+      ]
+    },
+    {
+      "id": "CORE-012",
+      "priority": 1,
+      "rule": "No Manager may call another Manager directly. No Engine node may contain domain logic. Cross-Manager coordination happens through actions or the Game mediator.",
+      "violation": [
+        "Manager A calls Manager B directly to update B tables",
+        "Engine leaf node implements a game rule instead of calling a Manager",
+        "Two Managers hold references to each other"
+      ],
+      "check": "Review every Manager constructor and method: confirm it does not call methods on another Manager. Review Engine nodes: confirm they only call Manager methods, never contain business rules.",
+      "fix": "If Manager A needs data from Manager B tables: action coordinates by calling ManagerA::validate(), then ManagerB::getData(), then passing to ManagerA::execute(). For cross-turn coordination use Game mediator.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "dependencies",
+        "managers",
+        "circular"
+      ],
+      "rationale": "Circular dependencies create initialization deadlocks and untestable code. Manager-to-Manager calls hide control flow making it impossible to reason about data ownership.",
+      "applies_to": [
+        "Managers",
+        "Engine",
+        "Actions"
+      ],
+      "see_also": [
+        "CORE-010",
+        "CORE-016",
+        "ARCH-007"
+      ]
+    },
+    {
+      "id": "CORE-013",
+      "priority": 1,
+      "rule": "Correctness is the highest priority in every decision. Never sacrifice correctness for performance, elegance, or convenience. Never silently change game behaviour without asking.",
+      "violation": [
+        "Performance optimization changes resource calculation order producing different totals",
+        "Code shortcut skips a validation step for speed",
+        "Refactored method returns subtly different values from the original"
+      ],
+      "check": "For every optimization or shortcut: verify it produces identical results to straightforward implementation. For every refactor: verify existing tests pass. If spec says X and code uses different value, flag it.",
+      "fix": "Implement straightforward correct version first. Profile. Optimize only measured bottlenecks. After optimization confirm identical results on all test cases.",
+      "exceptions": [],
+      "tags": [
+        "correctness",
+        "priority",
+        "optimization",
+        "testing"
+      ],
+      "rationale": "Performance optimization producing wrong results is not optimization, it is a bug. Subtle correctness errors from clever shortcuts are the hardest to debug.",
+      "applies_to": [
+        "All components"
+      ],
+      "see_also": [
+        "CORE-014",
+        "TEST-001"
+      ]
+    },
+    {
+      "id": "CORE-014",
+      "priority": 1,
+      "rule": "Every feature must be tested for error conditions, undo correctness, replay determinism, zombie disconnection, and spectator visibility. Happy path alone is insufficient.",
+      "violation": [
+        "Feature has only happy-path tests",
+        "No test verifies that undo restores correct game state",
+        "Replay test missing: play 10 moves from seed, replay, assert identical DB",
+        "Zombie behavior is untested"
+      ],
+      "check": "For each state mutation feature: verify a test exists for (1) invalid input, (2) undo sequence, (3) replay from seed, (4) zombie during action. For each notification: verify spectator does not receive private data.",
+      "fix": "Add Manager unit test for invalid input. Add integration test for undo sequence. Add seed-based replay test. Add zombie test: disconnect mid-action, verify game continues.",
+      "exceptions": [
+        "Purely visual features without server state changes may omit undo, replay, and zombie tests."
+      ],
+      "tags": [
+        "testing",
+        "unhappy-paths",
+        "undo",
+        "replay",
+        "zombie"
+      ],
+      "rationale": "BGA games run unattended with thousands of concurrent players. Disconnections, crashes, and spectator joins are normal, not edge cases. Most production bugs occur on unhappy paths.",
+      "applies_to": [
+        "Managers",
+        "Actions",
+        "States"
+      ],
+      "see_also": [
+        "CORE-006",
+        "CORE-007",
+        "CORE-009"
+      ]
+    },
+    {
+      "id": "CORE-015",
+      "priority": 1,
+      "rule": "Before creating a new architecture pattern, check the four canonical reference projects (Agricola, Ark Nova, Arnak, Earth). Use an existing pattern if one covers the need.",
+      "violation": [
+        "New undo architecture designed without examining Earth command-pattern undo",
+        "Custom Deck implementation built without checking Ark Nova or Agricola Deck patterns",
+        "State machine designed from scratch without reviewing any reference project state machines"
+      ],
+      "check": "Before creating a new class or pattern: search reference projects for similar mechanics. Use the reference project matrix to identify which project to consult. If matching pattern exists, use as starting template.",
+      "fix": "Consult reference-projects/. Use the reference project matrix to identify which project to study for a given problem. Adapt existing pattern rather than inventing.",
+      "exceptions": [
+        "If no reference project implements a similar mechanic, design from engineering standards. Document the decision."
+      ],
+      "tags": [
+        "process",
+        "reference",
+        "patterns",
+        "canon"
+      ],
+      "rationale": "Reference projects represent thousands of hours of BGA development by the most experienced engineers on the platform. Reinventing patterns wastes time and produces inferior implementations.",
+      "applies_to": [
+        "All components"
+      ],
+      "see_also": []
+    },
+    {
+      "id": "CORE-016",
+      "priority": 1,
+      "rule": "One aggregate (one table or closely related table group) equals one Manager. That Manager has exclusive write ownership. No other component writes to that Manager tables.",
+      "violation": [
+        "Two different Managers write to the same database table",
+        "An Action performs a direct DB write on a table owned by a Manager",
+        "A Manager calls another Manager write method to modify its tables"
+      ],
+      "check": "For each database table: identify exactly one Manager class that performs INSERT, UPDATE, or DELETE on it. Grep the codebase for writes to that table outside the owning Manager: assert zero matches.",
+      "fix": "Identify the aggregate root for each table. Assign a single owning Manager. Move all write operations on that table into the owning Manager. Actions coordinate by calling the owning Manager methods.",
+      "exceptions": [
+        "Framework tables (player, global_variables, gamelog) are owned by the framework. Game code reads them but does not write directly to framework-managed columns.",
+        "Read-only cross-Manager access is permitted via get* methods."
+      ],
+      "tags": [
+        "architecture",
+        "managers",
+        "ownership",
+        "aggregate"
+      ],
+      "rationale": "Shared write access is the fastest path to data corruption. When two code paths modify the same table, invariants become unenforceable and bugs require tracing both paths simultaneously.",
+      "applies_to": [
+        "Managers",
+        "Actions",
+        "Database"
+      ],
+      "see_also": [
+        "CORE-012",
+        "ARCH-003"
+      ]
+    }
+  ]
+}

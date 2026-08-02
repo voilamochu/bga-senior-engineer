@@ -1,0 +1,394 @@
+{
+  "domain": "persistence",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "ai-os/bga-senior-engineer-doctrine.md sections 2, 3, 5, 6, 12, 14",
+  "rules": [
+    {
+      "id": "PERS-001",
+      "priority": 2,
+      "rule": "Design the database schema before writing any Manager or Action code. All game tables are defined in dbmodel.sql. Every column has a type, a default where appropriate, and an index for foreign keys and frequent lookup columns.",
+      "violation": [
+        "Manager code is written before the schema — queries are designed around code instead of data",
+        "dbmodel.sql is missing columns that are added ad-hoc during feature development",
+        "Table lacks indices on foreign key columns, causing slow joins in getAllDatas"
+      ],
+      "check": "Verify dbmodel.sql exists and defines every game table with typed columns. Verify every FK column has an index. Verify no ALTER TABLE statements are used to add columns after initial schema — schema changes should be additive in dbmodel.sql.",
+      "fix": "Write dbmodel.sql first. Define all tables, columns, types, defaults, nullability, and indices. Add indices on every FK column and every column used in WHERE clauses. Build Manager methods to match the schema.",
+      "exceptions": [],
+      "tags": [
+        "persistence",
+        "schema",
+        "database",
+        "design"
+      ],
+      "applies_to": [
+        "Database",
+        "Managers"
+      ],
+      "see_also": [
+        "CORE-008",
+        "ARCH-006"
+      ]
+    },
+    {
+      "id": "PERS-002",
+      "priority": 3,
+      "rule": "Database table names use plural snake_case (resources, cards, players). Primary key column is the singular form of the table name plus _id (resource_id, card_id, player_id). All other columns are descriptive snake_case with no Hungarian prefixes.",
+      "violation": [
+        "Table name is singular instead of plural (resource instead of resources)",
+        "Primary key is id instead of resource_id — joins become ambiguous",
+        "Column names use prefixes (f_resource_value, c_card_name) instead of plain snake_case"
+      ],
+      "check": "Review dbmodel.sql table names: verify all are plural snake_case. Verify each primary key is tablename_id. Verify no Hungarian prefixes on column names. Verify consistency across all game tables.",
+      "fix": "Rename tables and columns to follow convention. Update all Manager queries to match. Primary key must be descriptive for unambiguous joins. Column names are plain snake_case without type prefixes.",
+      "exceptions": [],
+      "tags": [
+        "persistence",
+        "schema",
+        "naming",
+        "conventions"
+      ],
+      "applies_to": [
+        "Database"
+      ],
+      "see_also": [
+        "PERS-001"
+      ]
+    },
+    {
+      "id": "PERS-003",
+      "priority": 2,
+      "rule": "All game tables must use ENGINE=InnoDB. Foreign key constraints must be declared on all identity columns that reference another table. Foreign keys enforce referential integrity and prevent orphan rows.",
+      "violation": [
+        "Table uses MyISAM or another engine instead of InnoDB — no FK support and no transactional safety",
+        "Identity column referencing another table has no FOREIGN KEY constraint",
+        "ON DELETE CASCADE is used without verifying that cascade deletion is safe for game state"
+      ],
+      "check": "Verify every CREATE TABLE in dbmodel.sql uses ENGINE=InnoDB. Verify every column referencing another table FK has a FOREIGN KEY constraint. Verify CASCADE deletes are used only on tables where referential cleanup is safe.",
+      "fix": "Change ENGINE to InnoDB. Add FOREIGN KEY constraints on all reference columns. Use ON DELETE CASCADE only for dependent data (log entries, turn state) that must be cleaned up with the parent. Use ON DELETE RESTRICT for game entities.",
+      "exceptions": [],
+      "tags": [
+        "persistence",
+        "schema",
+        "integrity",
+        "constraints"
+      ],
+      "applies_to": [
+        "Database"
+      ],
+      "see_also": [
+        "PERS-001",
+        "ARCH-006"
+      ]
+    },
+    {
+      "id": "PERS-004",
+      "priority": 2,
+      "rule": "Use atomic conditional UPDATE statements to prevent race conditions. The WHERE clause must guarantee the update applies only when the precondition is still true. Patterns: UPDATE table SET count = count - 1 WHERE count > 0, UPDATE table SET player_id = ? WHERE player_id IS NULL.",
+      "violation": [
+        "Code uses SELECT to read a value, checks the condition in PHP, then UPDATE — a race window exists between read and write",
+        "UPDATE has no WHERE condition that validates the pre-mutation state",
+        "Conditional UPDATE does not check the row still satisfies the precondition at write time"
+      ],
+      "check": "Review every mutation query: verify it uses a single atomic UPDATE with the precondition in the WHERE clause. If the pattern is SELECT-then-UPDATE, rewrite as a single conditional UPDATE. Verify the WHERE clause validates the precondition atomically.",
+      "fix": "Replace SELECT+check+UPDATE sequences with a single conditional UPDATE. The WHERE clause expresses the precondition. Check affected row count: if zero, the precondition was violated and the action should throw BgaUserException.",
+      "exceptions": [
+        "Multi-step mutations that cannot be expressed in a single UPDATE may use a transaction with SELECT FOR UPDATE."
+      ],
+      "tags": [
+        "persistence",
+        "queries",
+        "atomicity",
+        "race-conditions"
+      ],
+      "applies_to": [
+        "Database",
+        "Managers"
+      ],
+      "see_also": [
+        "ACTN-010",
+        "PERS-005"
+      ]
+    },
+    {
+      "id": "PERS-005",
+      "priority": 2,
+      "rule": "Use advisory locks or conditional UPDATE WHERE clauses for concurrent operation safety during simultaneous turns. Never assume a resource is available because it was available at the start of the action — verify and claim atomically at write time.",
+      "violation": [
+        "Simultaneous players can both claim the same resource because the check and claim are not atomic",
+        "No locking mechanism exists for shared resources during MULTIPLE_ACTIVE_PLAYER states",
+        "Lock is acquired but never released, causing deadlock on subsequent turns"
+      ],
+      "check": "For every resource that multiple players can claim simultaneously: verify the claim uses an atomic conditional UPDATE or an advisory lock. Verify lock release happens in all paths, including exception paths.",
+      "fix": "Use atomic UPDATE with WHERE precondition for resource claims. If the operation spans multiple tables, use a database transaction with SELECT FOR UPDATE or pg_advisory_lock. Always release locks in a finally block or at the end of the action.",
+      "exceptions": [],
+      "tags": [
+        "persistence",
+        "queries",
+        "locking",
+        "concurrency"
+      ],
+      "applies_to": [
+        "Database",
+        "Managers"
+      ],
+      "see_also": [
+        "PERS-004",
+        "STAT-016"
+      ]
+    },
+    {
+      "id": "PERS-006",
+      "priority": 2,
+      "rule": "global_variables are for cross-turn configuration and transient flow state only. Store game phase, current round number, and Engine tree position here. Never store entity data (card ownership, resource counts, player stats) in global_variables.",
+      "violation": [
+        "global_variables table stores a resource count that should be in a game table — replay and undo cannot track it",
+        "global_variables key stores a serialized game entity that needs to be queried and parsed",
+        "global_variables is used as a primary data store instead of a typed game table"
+      ],
+      "check": "Review every global_variables set and get. Verify the data stored is configuration or flow state — never entity data or game state that should be in a table. Verify no game logic depends on globals values for correctness.",
+      "fix": "Move entity data from global_variables to game tables. Use global_variables only for: current round, current phase, Engine tree serialization, player turn order, and configuration keys. Create typed Globals wrapper class.",
+      "exceptions": [],
+      "tags": [
+        "persistence",
+        "globals",
+        "configuration",
+        "anti-pattern"
+      ],
+      "applies_to": [
+        "Database",
+        "Managers"
+      ],
+      "see_also": [
+        "PERS-008",
+        "STAT-013"
+      ]
+    },
+    {
+      "id": "PERS-007",
+      "priority": 2,
+      "rule": "Store player scores on the player table. Use player_score for the primary score. Use player_score_aux for tiebreaker or secondary scores. Never store scores in a separate table or compute them from scratch on every read.",
+      "violation": [
+        "Score is stored in a custom table instead of the player table player_score column",
+        "player_score_aux is missing for games that need tiebreaker ordering",
+        "Score is computed by summing game state on every read instead of reading from player_score"
+      ],
+      "check": "Verify player_score and player_score_aux are used for all scoring. Verify the player table has both columns. Verify score updates use atomic UPDATE on player_score, not INSERT into a separate table.",
+      "fix": "Add player_score and player_score_aux columns to the player table. Update scoring mutations to use atomic UPDATE on player_score. player_score_aux holds the tiebreaker value. Both are updated incrementally during scoring events.",
+      "exceptions": [],
+      "tags": [
+        "persistence",
+        "scoring",
+        "player",
+        "database"
+      ],
+      "applies_to": [
+        "Database"
+      ],
+      "see_also": [
+        "PERS-011",
+        "PERS-004"
+      ]
+    },
+    {
+      "id": "PERS-008",
+      "priority": 2,
+      "rule": "Entity data must never be stored in global_variables. Cards, resources, tokens, tiles, and any game entity belong in typed game tables with a primary key. globals are for key-value configuration with at most one row per game.",
+      "violation": [
+        "A game entity (card, resource, token) is stored as a serialized value in a global_variable",
+        "Multiple entities are stored in the same global_variable as a serialized array — unqueryable",
+        "global_variables key stores data that should be in a table with foreign keys and indices"
+      ],
+      "check": "Grep global_variables set calls: if the value is a serialized array of entities or a single entity with an ID, it belongs in a table. Verify no game table data is duplicated in globals. Verify every global stores configuration or flow position.",
+      "fix": "Create a game table for the entity data. Write Manager methods for CRUD. Move the data from globals to the table. Update all reads to query the table. Remove the global_variables key.",
+      "exceptions": [
+        "Transient per-request cache of entity data may be stored in globals if it is re-queried from the table each turn. Must be re-fetched on every action."
+      ],
+      "tags": [
+        "persistence",
+        "globals",
+        "entities",
+        "anti-pattern"
+      ],
+      "applies_to": [
+        "Database",
+        "Managers"
+      ],
+      "see_also": [
+        "PERS-006",
+        "ARCH-006"
+      ]
+    },
+    {
+      "id": "PERS-009",
+      "priority": 3,
+      "rule": "material.inc.php holds game configuration constants — card costs, resource ratios, capacity limits, scoring thresholds. Managers reference these constants by key. Material values are never hardcoded in PHP conditionals or Manager logic.",
+      "violation": [
+        "material.inc.php is missing a game constant that is hardcoded in Manager logic",
+        "material.inc.php defines values that are not referenced by Managers — configuration drift",
+        "material.inc.php contains logic or computation instead of static data definitions"
+      ],
+      "check": "Verify material.inc.php exists and defines all game configuration as PHP constants or arrays. Verify Manager methods reference material constants rather than using literal values. Verify material.inc.php contains no executable logic.",
+      "fix": "Extract hardcoded game values into material.inc.php constants. Update Manager methods to reference the constants. Remove all hardcoded costs, capacities, and limits from Manager method bodies.",
+      "exceptions": [],
+      "tags": [
+        "persistence",
+        "configuration",
+        "data-driven",
+        "constants"
+      ],
+      "applies_to": [
+        "Database",
+        "Managers",
+        "Game.php"
+      ],
+      "see_also": [
+        "CORE-008",
+        "PERS-010"
+      ]
+    },
+    {
+      "id": "PERS-010",
+      "priority": 2,
+      "rule": "Capacities, costs, ratios, and game limits must never be hardcoded as numeric literals in PHP logic. Every configurable value comes from a database table or material.inc.php constant. A hardcoded game value is a maintenance liability.",
+      "violation": [
+        "Manager method contains a hardcoded number representing a game cost, capacity, or ratio",
+        "Action validation uses a literal threshold instead of reading from the configuration",
+        "Adding a new variant requires editing PHP code because values are not data-driven"
+      ],
+      "check": "Scan Manager and Action PHP code for numeric literals representing game values. Verify each comes from material.inc.php constant or database SELECT. Check that no conditional depends on a hardcoded number that should be data.",
+      "fix": "Move values to material.inc.php or a database table. Reference them by key. Manager methods read the value once and use the variable. Costs are columns in the card definition table, not inline integers.",
+      "exceptions": [
+        "Framework constants (max players, default durations) set in gameinfos.inc.php. These are platform configuration, not game logic."
+      ],
+      "tags": [
+        "persistence",
+        "configuration",
+        "hardcoded",
+        "anti-pattern"
+      ],
+      "applies_to": [
+        "Managers",
+        "Actions",
+        "Database"
+      ],
+      "see_also": [
+        "CORE-008",
+        "PERS-009"
+      ]
+    },
+    {
+      "id": "PERS-011",
+      "priority": 3,
+      "rule": "Scores are maintained incrementally. On each scoring event, the Manager adds or subtracts from the current player_score value using an atomic UPDATE. Never recompute the total score from scratch by scanning all game state.",
+      "violation": [
+        "Player score is recomputed by summing all resource cards, board positions, and tokens on every score read",
+        "Scoring function iterates over all game entities to calculate total instead of updating incrementally",
+        "Incremental scoring update is not atomic — a race condition produces incorrect totals"
+      ],
+      "check": "Verify score changes use atomic UPDATE on player_score: UPDATE player SET player_score = player_score + ? WHERE player_id = ?. Verify no SELECT-scan-sum pattern exists for score computation. Verify the incremental update includes the tiebreaker.",
+      "fix": "Replace full-scan scoring with atomic incremental UPDATE. When a scoring event occurs, add or subtract the delta to player_score using a conditional UPDATE. Compute player_score_aux at the same time. Verify after each action.",
+      "exceptions": [],
+      "tags": [
+        "persistence",
+        "scoring",
+        "performance",
+        "atomic"
+      ],
+      "applies_to": [
+        "Database",
+        "Managers"
+      ],
+      "see_also": [
+        "PERS-004",
+        "PERS-007"
+      ]
+    },
+    {
+      "id": "PERS-012",
+      "priority": 4,
+      "rule": "Extract reusable query patterns into a Helpers/DB.php class. Common SELECT patterns, atomic conditional UPDATE helpers, batch INSERT methods, and pagination queries live in this class. Managers use the helper instead of writing raw SQL.",
+      "violation": [
+        "The same SELECT pattern is copy-pasted across multiple Manager classes with minor variations",
+        "Atomic conditional UPDATE is written inline in every Manager instead of using a shared helper",
+        "Helpers/DB.php does not exist — every Manager writes raw SQL independently"
+      ],
+      "check": "Count unique query patterns across Manager classes. If the same INSERT or UPDATE structure appears in three or more places with only table/column differences, extract to Helpers/DB.php. Verify the helper handles parameter binding and result mapping.",
+      "fix": "Create Helpers/DB.php. Extract common query patterns as static methods: getById, insertWithId, atomicUpdate, batchInsert. Managers call DB::methodName(table, data) instead of writing raw SQL each time.",
+      "exceptions": [
+        "Complex multi-table queries with unique join conditions may remain in the Manager if extracting to a helper reduces readability."
+      ],
+      "tags": [
+        "persistence",
+        "helpers",
+        "reuse",
+        "maintainability"
+      ],
+      "applies_to": [
+        "Database",
+        "Managers"
+      ],
+      "see_also": [
+        "PERS-004",
+        "ARCH-007"
+      ]
+    },
+    {
+      "id": "PERS-013",
+      "priority": 3,
+      "rule": "Batch database operations to prevent N+1 query patterns. Use WHERE IN for lookups by ID list, bulk INSERT for multi-row inserts, and conditional UPDATE instead of per-row iteration. One batch query replaces N individual round-trips.",
+      "violation": [
+        "Manager iterates over an array and executes one SELECT per element — N+1 queries to the DB",
+        "Multiple individual INSERT statements are executed in a loop instead of a single multi-row INSERT",
+        "getAllDatas performs individual queries for each entity instead of batch loading with JOIN or WHERE IN"
+      ],
+      "check": "Review every loop that executes a DB query. If the query varies only by a parameter value, replace with WHERE IN or batch pattern. Count DB round-trips in getAllDatas: each Manager getAllDatas should execute at most 2-3 queries, not one per entity.",
+      "fix": "Replace per-element SELECT with WHERE IN and a single query. Replace looped INSERT with multi-row INSERT. In getAllDatas, use JOIN or batch WHERE IN to load all entities in one query per table.",
+      "exceptions": [],
+      "tags": [
+        "persistence",
+        "performance",
+        "n-plus-one",
+        "batching"
+      ],
+      "applies_to": [
+        "Database",
+        "Managers"
+      ],
+      "see_also": [
+        "CORE-013",
+        "PERS-001"
+      ]
+    },
+    {
+      "id": "PERS-014",
+      "priority": 2,
+      "rule": "Use explicit transaction boundaries around multi-table mutations. Begin a transaction, perform all validation, execute all mutations, then commit. If any mutation fails, roll back the entire transaction. Single-table conditional UPDATEs that are atomic do not need explicit transactions — multi-table sequences do.",
+      "violation": [
+        "Multi-table mutation sequence has no explicit transaction — partial failure leaves inconsistent state",
+        "Transaction is started but not committed on success path — locks held until connection close",
+        "Transaction is started but not rolled back on exception — subsequent operations see partial state"
+      ],
+      "check": "For every action that mutates multiple tables: verify a transaction wraps the mutation sequence. Verify commit is called after all mutations succeed. Verify rollback or try-finally ensures the transaction is closed on failure.",
+      "fix": "Wrap multi-table mutations in a try-catch block with beginTransaction, commit on success, and rollback on exception. Single-table atomic UPDATE operations that use WHERE precondition do not need a transaction — the atomic UPDATE is the boundary.",
+      "exceptions": [
+        "Single-table atomic conditional UPDATEs are self-contained and do not need explicit transactions. The atomic WHERE clause ensures correctness."
+      ],
+      "tags": [
+        "persistence",
+        "transactions",
+        "atomicity",
+        "correctness"
+      ],
+      "applies_to": [
+        "Database",
+        "Managers"
+      ],
+      "see_also": [
+        "CORE-004",
+        "UNDO-001"
+      ]
+    }
+  ]
+}

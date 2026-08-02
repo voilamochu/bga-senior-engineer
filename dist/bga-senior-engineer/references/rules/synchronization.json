@@ -1,0 +1,319 @@
+{
+  "domain": "synchronization",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "ai-os/bga-senior-engineer-doctrine.md sections 5, 6, 7, 14",
+  "rules": [
+    {
+      "id": "SYNC-001",
+      "priority": 2,
+      "rule": "getAllDatas must delegate to every Manager getAllDatas method and merge the results. It is the source of truth for full client state rebuild. Never compute or query game data directly in getAllDatas — every datum comes from a Manager.",
+      "violation": [
+        "getAllDatas contains SQL queries or game logic instead of delegating to Manager methods",
+        "A Manager exists but has no getAllDatas method — its state is absent from the snapshot",
+        "getAllDatas returns incomplete data that forces the client to infer or request additional state"
+      ],
+      "check": "Verify getAllDatas calls Manager::getAllDatas for every Manager. Verify each Manager getAllDatas method exists and returns the full public state of its aggregate. Verify no direct SQL or game logic in the getAllDatas body.",
+      "fix": "Structure getAllDatas as a series of calls to Manager::getAllDatas. Add getAllDatas to every Manager. Remove direct SQL and game logic from the getAllDatas body. Each Manager returns its full public state as an associative array.",
+      "exceptions": [],
+      "tags": [
+        "synchronization",
+        "getAllDatas",
+        "snapshot",
+        "source-of-truth"
+      ],
+      "applies_to": [
+        "Game.php",
+        "Managers"
+      ],
+      "see_also": [
+        "CORE-001",
+        "ARCH-003",
+        "SYNC-002"
+      ]
+    },
+    {
+      "id": "SYNC-002",
+      "priority": 3,
+      "rule": "refreshUI followed by refreshHand is the canonical reconnect path. On reconnect the client receives refreshUI for complete public state then refreshHand per-player for hidden state. This sequence rebuilds the client without a full page reload.",
+      "violation": [
+        "Reconnect sends refreshUI without refreshHand — the reconnecting player cannot see their private state",
+        "Reconnect sends only refreshHand without refreshUI — the reconnecting player has no public board context",
+        "refreshUI or refreshHand is omitted during reconnect — client state is incomplete after recovery"
+      ],
+      "check": "Verify the reconnect path sends refreshUI to all players then refreshHand to the reconnecting player. Verify both notifications are present in the reconnect sequence. Verify the client rebuilds fully from these two notifications without needing additional data.",
+      "fix": "Add refreshUI as the first step in the reconnect notification sequence. Add refreshHand as the second step targeting the reconnecting player. Ensure the client handler rebuilds full state from these notifications without a page reload.",
+      "exceptions": [],
+      "tags": [
+        "synchronization",
+        "reconnect",
+        "refreshUI",
+        "refreshHand"
+      ],
+      "applies_to": [
+        "Notifications",
+        "Client"
+      ],
+      "see_also": [
+        "NOTF-005",
+        "NOTF-006",
+        "CLNT-005"
+      ]
+    },
+    {
+      "id": "SYNC-003",
+      "priority": 3,
+      "rule": "Notification replay is the primary reconnect path. On reconnect the framework replays all notifications since the last checkpoint in order. Client notification handlers rebuild state without needing getAllDatas. Replay must produce identical DOM to the original play.",
+      "violation": [
+        "Reconnect re-fetches getAllDatas as the first recovery step instead of letting notification replay rebuild state",
+        "Notification handler produces different DOM during replay than during original play — client state diverges",
+        "Notifications are replayed in wrong order — client state is inconsistent after replay"
+      ],
+      "check": "Verify notification replay fires before getAllDatas is requested. Verify every notification handler produces identical DOM when replayed. Review the notification order during a reconnect scenario: it must match the original emission order.",
+      "fix": "Let the framework replay notifications first. Ensure all notification handlers are idempotent and produce identical DOM on replay. Use getAllDatas only as a fallback if notification replay is insufficient. Maintain emission order identically during replay.",
+      "exceptions": [
+        "If notification replay produces incorrect state due to non-idempotent handlers, fall back to full getAllDatas. The handler must be fixed to be replay-safe."
+      ],
+      "tags": [
+        "synchronization",
+        "replay",
+        "reconnect",
+        "ordering"
+      ],
+      "applies_to": [
+        "Client",
+        "Notifications"
+      ],
+      "see_also": [
+        "CORE-007",
+        "CLNT-007",
+        "SYNC-004"
+      ]
+    },
+    {
+      "id": "SYNC-004",
+      "priority": 4,
+      "rule": "Full getAllDatas is the fallback reconnect path when notification replay cannot produce a correct client state. Use when the client detects state divergence, when the replay queue is truncated, or when the session is too far behind. This is not the default path.",
+      "violation": [
+        "getAllDatas is used as the primary reconnect path on every reconnection, bypassing faster notification replay",
+        "getAllDatas fallback is never implemented — client hangs if notification replay fails",
+        "getAllDatas fallback path does not clear stale notification state before applying the snapshot"
+      ],
+      "check": "Verify getAllDatas is available as a fallback mechanism. Verify notification replay is attempted before getAllDatas. Verify the client can recover if getAllDatas is invoked — stale state is cleared before the snapshot is applied.",
+      "fix": "Implement getAllDatas fallback as a backup to notification replay. On fallback: clear all client state, request getAllDatas, apply the full snapshot. Ensure the fallback path produces identical UI to the notification-replay path.",
+      "exceptions": [],
+      "tags": [
+        "synchronization",
+        "getAllDatas",
+        "fallback",
+        "recovery"
+      ],
+      "applies_to": [
+        "Client",
+        "Game.php"
+      ],
+      "see_also": [
+        "SYNC-001",
+        "SYNC-003"
+      ]
+    },
+    {
+      "id": "SYNC-005",
+      "priority": 2,
+      "rule": "Spectators must never receive private notifications. All spectator-bound data must be filtered to public information only. The server must enforce spectator visibility at the notification dispatch level, not rely on client-side filtering.",
+      "violation": [
+        "Spectator receives a notifyPlayer notification intended for an active player",
+        "Spectator receives refreshHand payload containing hidden player state",
+        "Spectator receives a notification payload that includes private args (opponent hand, unrevealed cards)",
+        "Spectator filtering is implemented client-side only — a server bug can leak data"
+      ],
+      "check": "Verify all notifyPlayer calls check the recipient is not a spectator before sending. Verify spectator notification stream contains only notifyAllPlayers calls. Verify refreshHand and other private notifications are never sent to spectators.",
+      "fix": "Add server-side spectator filtering to every private notification path. NotifyPlayer calls must verify the recipient is an active player. Spectators receive only notifyAllPlayers notifications. Remove any client-only spectator filtering — server is authoritative.",
+      "exceptions": [],
+      "tags": [
+        "synchronization",
+        "spectator",
+        "security",
+        "filtering"
+      ],
+      "applies_to": [
+        "Notifications",
+        "Client"
+      ],
+      "see_also": [
+        "CORE-005",
+        "NOTF-013",
+        "SYNC-002"
+      ]
+    },
+    {
+      "id": "SYNC-006",
+      "priority": 3,
+      "rule": "After an undo operation completes, refreshUI must be sent to all players to rebuild public state from the restored snapshot. Undo reverses state — the client must discard stale rendered state and re-render from the fresh payload.",
+      "violation": [
+        "Undo completes but refreshUI is not sent — client still shows the pre-undo state",
+        "refreshUI after undo sends only partial data — some UI elements remain in the pre-undo state",
+        "Undo notification sequence does not include clearTurn before refreshUI — client applies stale incremental updates on top of restored state"
+      ],
+      "check": "Verify every undo path sends clearTurn followed by refreshUI. Verify refreshUI payload contains the full restored public state. Verify the client handler replaces all public state from the payload instead of merging.",
+      "fix": "Add clearTurn at the start of every undo sequence. Follow with refreshUI containing the full restored public state. Client handler clears pending state on clearTurn then rebuilds from refreshUI. Never merge pre-undo state with post-undo payload.",
+      "exceptions": [],
+      "tags": [
+        "synchronization",
+        "undo",
+        "refreshUI",
+        "state-restore"
+      ],
+      "applies_to": [
+        "Notifications",
+        "Client"
+      ],
+      "see_also": [
+        "NOTF-007",
+        "UNDO-010",
+        "SYNC-008"
+      ]
+    },
+    {
+      "id": "SYNC-007",
+      "priority": 3,
+      "rule": "After an undo operation completes, refreshHand must be sent to each affected player to restore per-player hidden state. The undo may have changed private data (hand cards, hidden resources). Players must receive their corrected private state.",
+      "violation": [
+        "Undo changes private player data but refreshHand is not sent — the player still sees pre-undo private state",
+        "refreshHand after undo sends stale pre-undo data — the restored private state is incorrect",
+        "refreshHand is sent to all players instead of each affected player individually"
+      ],
+      "check": "Verify every undo path sends refreshHand to each player whose private state was affected. Verify refreshHand payload contains the restored private state, not the pre-undo values. Verify refreshHand is sent via notifyPlayer, not notifyAllPlayers.",
+      "fix": "After undo, identify which players have changed private state. Send refreshHand via notifyPlayer to each affected player with the restored private data. Ensure the client handler replaces private state from the payload.",
+      "exceptions": [],
+      "tags": [
+        "synchronization",
+        "undo",
+        "refreshHand",
+        "private-state"
+      ],
+      "applies_to": [
+        "Notifications",
+        "Client"
+      ],
+      "see_also": [
+        "NOTF-006",
+        "UNDO-010",
+        "SYNC-006"
+      ]
+    },
+    {
+      "id": "SYNC-008",
+      "priority": 4,
+      "rule": "The clearTurn notification must precede refreshUI and refreshHand in every undo and replay sequence. It signals the client to discard any pending or stale state before the fresh state payload arrives. ClearTurn is a synchronization boundary marker.",
+      "violation": [
+        "Undo sequence sends refreshUI without clearTurn — client merges stale pending state with restored state",
+        "Replay sequence omits clearTurn — incremental handler state from prior notifications contaminates the replay",
+        "clearTurn is sent after refreshUI — the signal arrives too late and stale state has already been applied"
+      ],
+      "check": "Verify clearTurn appears before refreshUI in every undo notification sequence. Verify clearTurn appears before refreshHand in every undo sequence. Verify the client clearTurn handler resets pending state before the next notification arrives.",
+      "fix": "Add clearTurn as the first notification in every undo and replay sequence. Client handler on clearTurn discards all pending incremental state. Subsequent refreshUI and refreshHand notifications build state fresh.",
+      "exceptions": [],
+      "tags": [
+        "synchronization",
+        "clearTurn",
+        "boundary",
+        "ordering"
+      ],
+      "applies_to": [
+        "Notifications",
+        "Client"
+      ],
+      "see_also": [
+        "NOTF-007",
+        "SYNC-006",
+        "UNDO-011"
+      ]
+    },
+    {
+      "id": "SYNC-009",
+      "priority": 4,
+      "rule": "During replay, refreshUI may be used as a shortcut to rebuild public state without replaying every individual notification. When the replay detects a large gap, it can skip intermediate notifications and send a single refreshUI snapshot instead.",
+      "violation": [
+        "Replay replays hundreds of individual notifications when a single refreshUI would be faster and produce identical state",
+        "refreshUI shortcut is used during replay but produces different state than the full notification replay",
+        "Client state diverges between the shortcut path and the full replay path"
+      ],
+      "check": "Verify the replay mechanism can skip intermediate notifications and send refreshUI for large gaps. Verify the client reaches identical state via shortcut and via full notification replay. Verify the shortcut is never used when intermediate side effects matter.",
+      "fix": "Implement the refreshUI shortcut in the replay mechanism. When the gap exceeds a threshold, send clearTurn then refreshUI instead of replaying every notification. Verify the shortcut produces identical client state to full replay.",
+      "exceptions": [
+        "The refreshUI shortcut must not be used when intermediate notifications produce cumulative visual effects that the client must render step by step. Animations during replay may require individual notification replay."
+      ],
+      "tags": [
+        "synchronization",
+        "replay",
+        "refreshUI",
+        "shortcut"
+      ],
+      "applies_to": [
+        "Notifications",
+        "Client"
+      ],
+      "see_also": [
+        "SYNC-003",
+        "UNDO-009",
+        "SYNC-008"
+      ]
+    },
+    {
+      "id": "SYNC-010",
+      "priority": 3,
+      "rule": "giveExtraTime must be called when a player reconnects to an active turn. The reconnecting player may have lost time while disconnected. Call giveExtraTime on session re-entry to grant additional time proportional to the disconnect duration.",
+      "violation": [
+        "Player reconnects mid-turn and does not receive giveExtraTime — the remaining clock may be unfair",
+        "giveExtraTime is called on reconnect with a fixed amount that does not account for disconnect duration",
+        "giveExtraTime is called only on state entry — the reconnecting player who missed the state entry also missed the time extension"
+      ],
+      "check": "Verify the reconnect handler calls giveExtraTime for the reconnecting player. Verify the extra time accounts for the disconnect duration or grants a reasonable minimum. Verify giveExtraTime is idempotent so it does not stack on multiple reconnect attempts.",
+      "fix": "Add giveExtraTime to the reconnect notification sequence. Call it for the reconnecting player only. Use disconnect duration from the session data to calculate the time grant. Ensure idempotency — multiple reconnects do not stack time grants unfairly.",
+      "exceptions": [],
+      "tags": [
+        "synchronization",
+        "reconnect",
+        "timeout",
+        "fairness"
+      ],
+      "applies_to": [
+        "Game.php",
+        "Notifications"
+      ],
+      "see_also": [
+        "CORE-009",
+        "STAT-011",
+        "SYNC-002"
+      ]
+    },
+    {
+      "id": "SYNC-011",
+      "priority": 4,
+      "rule": "During session re-entry, notifications must be loaded and replayed before the client renders the current state. The load sequence is: (1) establish session, (2) load notification history from the last checkpoint, (3) replay notifications, (4) apply refreshUI fallback if replay cannot restore full state, (5) render the final state.",
+      "violation": [
+        "Client renders the board before notification replay completes — partial or incorrect state is visible",
+        "Notification history is loaded from the start of the game instead of the last checkpoint — excessive replay time",
+        "Replay completes but the client does not trigger a refreshUI fallback on divergence — stale state persists"
+      ],
+      "check": "Verify session re-entry loads notifications from the last checkpoint, not the game start. Verify notification replay completes before the client renders. Verify a refreshUI fallback is triggered if replay produces incorrect state.",
+      "fix": "Implement session re-entry as a five-step sequence. Load notifications from the last checkpoint. Replay in order. If the client detects divergence after replay, request getAllDatas as refreshUI fallback. Render only after replay or fallback completes.",
+      "exceptions": [],
+      "tags": [
+        "synchronization",
+        "re-entry",
+        "loading",
+        "ordering"
+      ],
+      "applies_to": [
+        "Client"
+      ],
+      "see_also": [
+        "SYNC-003",
+        "SYNC-004",
+        "CLNT-006"
+      ]
+    }
+  ]
+}

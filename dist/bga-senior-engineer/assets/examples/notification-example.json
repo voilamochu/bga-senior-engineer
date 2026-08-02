@@ -1,0 +1,32 @@
+{
+  "id": "notification-example",
+  "title": "Canonical Notification Pattern",
+  "version": "1.0.0",
+  "purpose": "Demonstrate a centralized Notifications class with one static method per notification type, using updateArgs for i18n and the public/private split for hidden information.",
+  "applicable_rules": ["NOTF-001", "NOTF-002", "NOTF-003", "NOTF-004", "NOTF-005", "NOTF-006", "NOTF-008", "NOTF-009", "NOTF-010", "NOTF-011", "NOTF-012", "NOTF-014"],
+  "language": "php",
+  "based_on_project": "earth",
+  "source": "reference-projects/earth/modules/EA/php/Notifications.php",
+  "context": "A Notifications class that centralizes all BGA framework notify calls. It exposes static methods for each game event. Card draws require a public notification (to announce the draw) and a private notification (to reveal the card only to the drawing player).",
+  "before": "self::notifyAllPlayers('cardDrawn', clienttranslate('${player_name} draws a card'), ['player_id' => $playerId, 'i18n' => ['player_name']]); self::notifyPlayer($playerId, 'cardDrawnPrivate', '', ['card_id' => $cardId, 'card_name' => $cardName]);",
+  "after": "class Notifications { static function cardDrawn(Game $game, int $playerId, int $cardId, string $cardName): void { $game->notifyAllPlayers('cardDrawn', clienttranslate('${player_name} draws a card'), ['player_id' => $playerId]); $game->notifyPlayer($playerId, 'cardDrawnPrivate', '', ['card_id' => $cardId, 'card_name' => $cardName]); } static function refreshUI(Game $game, array $publicState): void { $game->notifyAllPlayers('refreshUI', '', $publicState); } static function refreshHand(Game $game, int $playerId, array $privateState): void { $game->notifyPlayer($playerId, 'refreshHand', '', $privateState); } static function clearTurn(Game $game): void { $game->notifyAllPlayers('clearTurn', '', []); } }",
+  "explanation": "All notifications are sent through a single centralized class (NOTF-001). Each event has exactly one static method (NOTF-003). The card draw uses the dual pattern: a public notification (all players see that a card was drawn) and a private notification (only the drawing player sees which card) following NOTF-008. updateArgs auto-resolves player IDs to names and handles i18n (NOTF-004). User-visible strings are wrapped in clienttranslate (NOTF-014). refreshUI and refreshHand are the canonical reconnect pair (NOTF-005, NOTF-006). clearTurn cleans up after undo (NOTF-007). Every notification carries absolute values, never deltas (NOTF-012). Notifications are sent after all mutations complete (NOTF-011).",
+  "common_mistakes": [
+    "Notifying directly with notifyAllPlayers outside the Notifications class",
+    "Including hidden card data in the public notification payload (leaks information)",
+    "Omitting updateArgs and leaving raw player IDs in notification payloads",
+    "Using delta values instead of absolute state in notification payloads",
+    "Failing to wrap user-visible strings in clienttranslate"
+  ],
+  "related_examples": ["action-example", "client-manager-example"],
+  "annotations": [
+    {"line": 3, "rule_id": "NOTF-001", "reason": "All notifications centralized in one class."},
+    {"line": 3, "rule_id": "NOTF-003", "reason": "One static method per notification type."},
+    {"line": 4, "rule_id": "NOTF-008", "reason": "Public notification: all players see a card was drawn."},
+    {"line": 5, "rule_id": "NOTF-008", "reason": "Private notification: only drawing player sees which card."},
+    {"line": 4, "rule_id": "NOTF-014", "reason": "User-visible strings wrapped in clienttranslate."},
+    {"line": 6, "rule_id": "NOTF-005", "reason": "refreshUI carries complete public state."},
+    {"line": 8, "rule_id": "NOTF-006", "reason": "refreshHand carries per-player hidden state."},
+    {"line": 10, "rule_id": "NOTF-007", "reason": "clearTurn resets client UI after undo."}
+  ]
+}

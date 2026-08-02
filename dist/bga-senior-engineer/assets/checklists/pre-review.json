@@ -1,0 +1,74 @@
+{
+ "name": "Pre-Review Validation",
+ "version": "1.0.0",
+ "scope": "pre-review",
+ "description": "Run before declaring a task complete. All items must pass.",
+ "last_updated": "2026-07-30",
+ "source": "docs/implementation/skill/05-prompt-specification.md",
+ "items": [
+  {
+   "id": "PR-001",
+   "rule_id": "CORE-013",
+   "check": "Are stop conditions verified and rules complied with?",
+   "pass": "Stop conditions pass and rules are satisfied",
+   "fail": "A stop condition fails or a rule is violated",
+   "fix": "Re-read Stop Conditions and workflow rules. Fix violations and re-verify."
+  },
+  {
+   "id": "PR-002",
+   "rule_id": "CORE-001",
+   "check": "Any constitutional violations?",
+   "pass": "No constitutional violations",
+   "fail": "A CORE rule is violated",
+   "fix": "Revert violating change. Re-implement per constitutional law."
+  },
+  {
+   "id": "PR-003",
+   "rule_id": "CORE-013",
+   "check": "Have all referenced checklists been run and passed?",
+   "pass": "All checklists pass",
+   "fail": "A checklist has not been run or has failures",
+   "fix": "Load each referenced checklist. Fix all failures and re-run."
+  },
+  {
+   "id": "PR-004",
+   "rule_id": "CORE-013",
+   "check": "Are edge cases reviewed and escalations resolved?",
+   "pass": "Edge cases handled and no unresolved escalations",
+   "fail": "An edge case unhandled or escalation unresolved",
+   "fix": "Re-read Edge Cases and Escalation sections. Handle or escalate each item."
+  },
+  {
+   "id": "PR-005",
+   "rule_id": "CORE-013",
+   "check": "If lazy rules were loaded, are concerns correctly addressed?",
+   "pass": "Lazy-loaded concerns are correctly addressed",
+   "fail": "A lazy-loaded rule is violated",
+   "fix": "Re-read loaded lazy rule files. Check referenced rule IDs. Fix violations."
+  },
+  {
+   "id": "PR-006",
+   "rule_id": "CORE-006",
+   "check": "Are all mutations undoable with logged old values?",
+   "pass": "All mutations undoable with logged values",
+   "fail": "A mutation lacks old-value logging",
+   "fix": "Add old-value logging before every mutation. Verify LIFO per UNDO-001."
+  },
+  {
+   "id": "PR-007",
+   "rule_id": "CORE-007",
+   "check": "Are notification handlers idempotent?",
+   "pass": "All handlers idempotent",
+   "fail": "A handler is not idempotent",
+   "fix": "Remove state-dependent branches. Produce identical DOM from identical payload."
+  },
+  {
+   "id": "PR-008",
+   "rule_id": "CORE-005",
+   "check": "Is hidden information protected?",
+   "pass": "Hidden info protected in all paths",
+   "fail": "Hidden info exposed in a public path",
+   "fix": "Split into public/private. Use _private state keys per STAT-006."
+  }
+ ]
+}

@@ -1,0 +1,319 @@
+{
+  "domain": "testing",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "ai-os/bga-senior-engineer-doctrine.md, ai-os/rule-partition-plan.md",
+  "rules": [
+    {
+      "id": "TEST-001",
+      "priority": 4,
+      "rule": "Tests are layered by priority: Manager unit tests highest, then scoring, card interaction, undo, replay, integration, and client tests lowest.",
+      "violation": [
+        "Client rendering tests exist but Manager unit tests are missing",
+        "Integration tests exist for every action but undo path tests are absent",
+        "Test suite has no replay test despite having card interaction tests",
+        "Test investment is uniform across layers rather than weighted by priority"
+      ],
+      "check": "Audit the test suite. Verify Manager tests exist for every public mutation method. Verify scoring tests exist for every scoring function. Verify undo and replay tests exist before integration tests. Client tests are the final layer.",
+      "fix": "Implement missing tests in priority order: Managers first, then scoring, card, undo, replay, integration, client. Do not write lower-priority tests while higher-priority layers have gaps.",
+      "tags": ["testing", "priority", "hierarchy"],
+      "applies_to": ["All components"],
+      "exceptions": [],
+      "see_also": ["CORE-013"]
+    },
+    {
+      "id": "TEST-002",
+      "priority": 4,
+      "rule": "Every Manager public method must have a unit test that exercises it without framework bootstrap where possible.",
+      "violation": [
+        "Manager has a public mutation method with no corresponding test",
+        "Manager test requires full game setup instead of direct Manager instantiation",
+        "Manager test verifies return values but does not assert DB state after mutation",
+        "Manager test uses mock objects that bypass the Manager's DB access layer"
+      ],
+      "check": "Map every public method on every Manager to its test. Assert each method has at least one test. Verify each test can run with a minimal DB fixture rather than a full game state. Grep for Manager method signatures without a matching test method name.",
+      "fix": "Add a unit test class per Manager following the canonical Manager test pattern. Each test method should instantiate the Manager directly with a test DB connection, call the method under test, and assert both the return value and the post-mutation DB state.",
+      "tags": ["testing", "manager", "unit-test"],
+      "applies_to": ["Managers"],
+      "exceptions": [
+        "Methods that delegate entirely to another Manager (disallowed by ARCH-014) need not be independently tested"
+      ],
+      "see_also": ["ARCH-007"]
+    },
+    {
+      "id": "TEST-003",
+      "priority": 4,
+      "rule": "Every scoring function must have a test with known hardcoded input and expected output.",
+      "violation": [
+        "Scoring function has no dedicated test",
+        "Scoring test reads input from live game state instead of hardcoded fixture",
+        "Scoring test asserts only that it runs without error, not the computed score value",
+        "Scoring test uses the same calculation logic as the implementation, masking errors"
+      ],
+      "check": "Identify all scoring functions in the codebase. For each, verify a test exists that provides a hardcoded game state and asserts the exact expected score. Verify the expected score is computed independently (written by hand, not copied from the implementation).",
+      "fix": "Create a scoring test per function using a hardcoded fixture. Compute the expected score manually. Assert the function returns exactly that value.",
+      "tags": ["testing", "scoring", "correctness"],
+      "applies_to": ["Managers"],
+      "exceptions": [],
+      "see_also": ["PERS-007", "PERS-011"]
+    },
+    {
+      "id": "TEST-004",
+      "priority": 4,
+      "rule": "Every unique card or component ability must have at least one dedicated test for its happy path.",
+      "violation": [
+        "Card ability with unique logic has no dedicated test",
+        "Card ability test only tests the base card and assumes variants behave identically",
+        "Card ability test covers only the happy path and omits interaction with other cards",
+        "Card ability test passes because it never executes the unique ability logic"
+      ],
+      "check": "Enumerate all cards or components with unique abilities. Map each to a test. Verify each test invokes the ability and asserts the resulting state change. Verify no two cards share the same test without verifying their unique logic separately.",
+      "fix": "Add one test per unique ability. Each test should set up the precondition state, trigger the ability, and assert the expected postcondition. Group card tests by ability type with per-card specialisation tests.",
+      "tags": ["testing", "cards", "abilities", "coverage"],
+      "applies_to": ["All components"],
+      "exceptions": [
+        "Cards that differ only in data (cost, capacity, threshold) and share identical logic need not be individually tested"
+      ],
+      "see_also": []
+    },
+    {
+      "id": "TEST-005",
+      "priority": 4,
+      "rule": "Every mutation path that supports undo must have a test that verifies undo restores the exact pre-mutation state.",
+      "violation": [
+        "Reversible mutation has no test that verifies its undo path",
+        "Undo test verifies only the first undo step, not full reversal of a multi-step sequence",
+        "Undo test asserts the action reversed but does not verify full DB row equality",
+        "Undo test does not verify that undo is idempotent (second undo has no effect)"
+      ],
+      "check": "For each reversible action, write a test that: (1) snapshots pre-mutation state, (2) executes the action, (3) executes undo, (4) compares post-undo state against the pre-mutation snapshot. Assert byte-identical equality for all affected rows. Assert the undo log marks the entries as cancelled.",
+      "fix": "Add an undo test per reversible action. Use a snapshot-comparison pattern: capture affected rows before the mutation, apply the mutation, apply undo, assert captured rows match post-undo rows. Verify the undo log cancel column is set.",
+      "tags": ["testing", "undo", "verification"],
+      "applies_to": ["All components", "Actions"],
+      "exceptions": [],
+      "see_also": ["UNDO-001", "UNDO-002", "UNDO-004"]
+    },
+    {
+      "id": "TEST-006",
+      "priority": 4,
+      "rule": "Every game must have a replay test that executes N moves, captures the final state, replays from the initial seed, and asserts byte-identical final state.",
+      "violation": [
+        "No replay test exists in the test suite",
+        "Replay test replays fewer than 10 actions, missing mid-game state complexity",
+        "Replay test compares only specific tables instead of the full game database",
+        "Replay test uses a different seed for original execution and replay",
+        "Replay test does not assert byte-identical equality but uses loose comparison"
+      ],
+      "check": "Verify a replay test exists. Assert it: (1) sets up game with a persisted seed, (2) executes at least 10 actions covering different game phases, (3) snapshots every game table, (4) replays from game start using the same seed and action sequence, (5) compares every row and column for byte-identical equality.",
+      "fix": "Implement the replay test following the canonical pattern: setup with seed, play N moves via the action API, capture all game tables, call the replay entry point, capture all game tables again, diff the two snapshots. Assert zero differences.",
+      "tags": ["testing", "replay", "determinism", "regression"],
+      "applies_to": ["All components"],
+      "exceptions": [],
+      "see_also": ["UNDO-006", "UNDO-007", "UNDO-014"]
+    },
+    {
+      "id": "TEST-007",
+      "priority": 4,
+      "rule": "All tests must use a seeded RNG supplied by the test fixture. No test may depend on non-deterministic behavior.",
+      "violation": [
+        "Test calls unseeded rand() or equivalent without providing a seed",
+        "Test reads wall-clock time as part of test logic",
+        "Test passes with one seed but fails with another for the same action sequence",
+        "Test fixture does not expose the seed used, preventing reproduction of failures"
+      ],
+      "check": "Grep for unseeded random calls in test files. Verify every test method that exercises game logic receives a seeded RNG. Run each test three times with the same seed and assert identical results each run.",
+      "fix": "Replace all non-deterministic operations in tests with seeded alternatives. Expose the seed as a test parameter so failures can be reproduced. Add a CI check that runs the full suite with a fixed seed and asserts zero failures.",
+      "tags": ["testing", "determinism", "rng", "seed"],
+      "applies_to": ["All components"],
+      "exceptions": [
+        "Tests that verify non-deterministic behaviour (e.g. animation timing, network latency) are exempt but must be isolated from deterministic game-logic tests"
+      ],
+      "see_also": ["UNDO-006"]
+    },
+    {
+      "id": "TEST-008",
+      "priority": 4,
+      "rule": "Every non-GAME state must have a zombie test that simulates player disconnect mid-state and verifies state integrity.",
+      "violation": [
+        "Non-GAME state has no zombie test",
+        "Zombie test verifies the game continues but does not verify post-zombie state consistency",
+        "Zombie test simulates disconnection at a single point instead of multiple phases within the state",
+        "Zombie test does not verify that remaining players receive correct state after the zombie is handled"
+      ],
+      "check": "Enumerate every non-GAME state. For each, verify a zombie test exists. Assert the test: (1) sets up the state, (2) simulates player disconnection, (3) calls the zombie handler, (4) asserts the resulting state is consistent, (5) asserts remaining players can continue play.",
+      "fix": "Add one zombie test per non-GAME state. Follow the pattern: enter state, mark one player as disconnected, invoke zombie handler, assert data integrity, assert remaining players have correct turn state.",
+      "tags": ["testing", "zombie", "disconnect", "state-integrity"],
+      "applies_to": ["All components", "States"],
+      "exceptions": [
+        "The GAME state itself (setup/cleanup) need not have a zombie test"
+      ],
+      "see_also": ["STAT-009", "STAT-010"]
+    },
+    {
+      "id": "TEST-009",
+      "priority": 4,
+      "rule": "Edge case scenarios must be tested: zero-resource states, capacity-full states, no-valid-move states, and end-of-round boundaries.",
+      "violation": [
+        "No test exists for zero-resource edge case",
+        "No test exists for full-capacity edge case",
+        "No test exists for the no-valid-move condition",
+        "No test exists for the last-round or final-turn boundary",
+        "Edge case tests reuse the normal-path fixture instead of constructing the minimal edge condition"
+      ],
+      "check": "Identify each edge case dimension for the game. Map each to a dedicated test. Verify the test constructs the minimal state that triggers the edge condition rather than building from a full game state. Assert the system handles the edge case without error and produces the correct result.",
+      "fix": "Add edge case tests using minimal fixtures. Each fixture should contain only the rows needed to reach the edge condition. Assertions must verify both the correct handling and the absence of exceptions or error notifications.",
+      "tags": ["testing", "edge-cases", "boundaries"],
+      "applies_to": ["All components"],
+      "exceptions": [
+        "Edge cases that are unreachable by the game rules as designed (proven invariant) need not be tested"
+      ],
+      "see_also": ["CORE-014"]
+    },
+    {
+      "id": "TEST-010",
+      "priority": 4,
+      "rule": "Each code layer must maintain minimum test coverage: Managers at least 90%, Actions at least 80%, Notifications at least 80%.",
+      "violation": [
+        "Manager coverage falls below 90%",
+        "Action coverage falls below 80%",
+        "Notification coverage falls below 80%",
+        "Coverage is measured by line count alone without verifying assertion quality",
+        "Coverage gaps are accepted without documented exceptions"
+      ],
+      "check": "Run coverage analysis per layer. Assert Manager coverage >= 90%, Action coverage >= 80%, Notification coverage >= 80%. Verify that covered lines include meaningful assertions, not merely method invocations without result checks. Document any gaps as exceptions.",
+      "fix": "Add tests to undercovered layers. Prioritise uncovered mutation methods in Managers, then uncovered action handlers, then uncovered notification types. Re-run coverage after each addition until the threshold is met.",
+      "tags": ["testing", "coverage", "quality-gate"],
+      "applies_to": ["Managers", "Actions", "Notifications"],
+      "exceptions": [
+        "Thin delegation methods (one-line calls to another Manager method) may be excluded from coverage minimums if the callee is independently tested"
+      ],
+      "see_also": ["ARCH-018"]
+    },
+    {
+      "id": "TEST-011",
+      "priority": 4,
+      "rule": "Every test must be reproducible: the same seed plus the same action sequence must produce the same result on every run.",
+      "violation": [
+        "Test fails intermittently between CI runs",
+        "Test produces different results on the same seed across environments",
+        "Test uses system time, random ports, or file-system state that varies between runs",
+        "Test depends on the order of tests in the suite (shared mutable state)"
+      ],
+      "check": "Run the full test suite three times with the same global seed. Assert zero flaky failures. Isolate tests that fail: verify they do not share mutable state. Assert each test cleans up its DB fixtures after execution. Assert no test depends on another test's side effects.",
+      "fix": "Identify and fix flaky tests. Eliminate shared mutable state. Add setUp/tearDown that creates and destroys per-test fixtures. Use fixed seeds instead of generated ones. Add a CI job that runs the suite three times with the same seed and fails on any inconsistency.",
+      "tags": ["testing", "reproducibility", "determinism", "flakiness"],
+      "applies_to": ["All components"],
+      "exceptions": [],
+      "see_also": ["UNDO-006", "TEST-007"]
+    },
+    {
+      "id": "TEST-012",
+      "priority": 4,
+      "rule": "Integration tests must verify the full action pipeline: validation, execution, notification emission, and state transition in a single test.",
+      "violation": [
+        "Integration test skips validation and calls the Manager directly",
+        "Integration test executes the action but does not verify notification payload content",
+        "Integration test executes the action but does not verify the state transition",
+        "Integration test verifies only the success path and omits validation-failure scenarios",
+        "Integration test relies on client-side assumptions rather than server-emitted data"
+      ],
+      "check": "For each action, verify an integration test exists that: (1) calls the action through the handler interface, (2) asserts validation passes for valid input and fails for invalid input, (3) asserts correct notifications are emitted with correct payloads, (4) asserts the state transition leads to the expected next state.",
+      "fix": "Add integration tests per action. Each test should exercise the full pipeline from the action entry point through to the state transition. Assert the notification queue contains the expected types and payloads. Assert the state machine is in the correct post-action state.",
+      "tags": ["testing", "integration", "pipeline", "actions"],
+      "applies_to": ["All components", "Actions"],
+      "exceptions": [],
+      "see_also": ["ACTN-002", "ACTN-005", "NOTF-011", "ANIM-001"]
+    },
+    {
+      "id": "TEST-013",
+      "priority": 4,
+      "rule": "Notification contract tests must verify that every notification payload conforms to its declared schema and never contains hidden information.",
+      "violation": [
+        "Notification payload contains a field not declared in its contract",
+        "Notification payload includes data from a different player's hidden state",
+        "Notification payload exposes internal IDs or server-only state",
+        "Notification payload type is emitted but the test does not verify payload completeness"
+      ],
+      "check": "For each notification type, verify a contract test exists that: (1) captures the emitted notification payload, (2) asserts every declared field is present with the correct type, (3) asserts no undeclared fields are present, (4) asserts no hidden information from other players is included.",
+      "fix": "Add a contract test per notification type. The test should execute an action that triggers the notification, capture the emitted payload, and validate it against the declared schema. Add an automated check that runs on every notification in the integration test suite.",
+      "tags": ["testing", "notifications", "contract", "security"],
+      "applies_to": ["All components", "Notifications"],
+      "exceptions": [],
+      "see_also": ["NOTF-008", "NOTF-009", "NOTF-012"]
+    },
+    {
+      "id": "TEST-014",
+      "priority": 4,
+      "rule": "Invariant tests must verify that critical game invariants hold before and after every mutation in a test scenario.",
+      "violation": [
+        "Game invariant (e.g. total resources conserved) is not tested",
+        "Invariant test verifies only the final state, not the invariant at each intermediate step",
+        "Invariant check is embedded in production code rather than in the test fixture",
+        "Invariant test passes because the invariant assertion is too weak to catch violations"
+      ],
+      "check": "Identify all game invariants (conservation laws, count constraints, uniqueness constraints). For each, verify an invariant test exists that: (1) executes a multi-step scenario, (2) asserts the invariant after every mutation, (3) uses a strong assertion (exact equality, not range checking).",
+      "fix": "Add invariant tests per identified invariant. Use a before-and-after assertion pattern: capture the invariant value, execute the mutation, recompute the invariant, assert it is unchanged or transformed according to the game rules.",
+      "tags": ["testing", "invariants", "correctness"],
+      "applies_to": ["All components"],
+      "exceptions": [
+        "Invariants that are trivially enforced by DB constraints (PRIMARY KEY, UNIQUE, NOT NULL) need not be separately tested"
+      ],
+      "see_also": ["CORE-013", "PERS-003"]
+    },
+    {
+      "id": "TEST-015",
+      "priority": 4,
+      "rule": "Transaction integrity tests must verify that partial failures roll back completely and leave no inconsistent state.",
+      "violation": [
+        "No test forces a transaction failure mid-mutation to verify rollback completeness",
+        "Transaction test verifies rollback but does not assert the undo log is also rolled back",
+        "Transaction test simulates failure only at the start of mutation, not at intermediate points",
+        "Transaction test does not verify that notifications are not sent when the transaction rolls back"
+      ],
+      "check": "For each multi-table mutation, verify a transaction integrity test exists that: (1) injects a failure at a specific point during the mutation, (2) asserts all affected tables are in their pre-mutation state, (3) asserts the undo log has no entries for the failed mutation, (4) asserts no notifications were emitted.",
+      "fix": "Add transaction integrity tests per multi-table mutation. Use a test harness that can inject a failure at a controlled point. Assert full rollback of all tables and no notification emission. Assert the undo log has no partial entries.",
+      "tags": ["testing", "transactions", "atomicity", "rollback"],
+      "applies_to": ["All components", "Database"],
+      "exceptions": [],
+      "see_also": ["PERS-014"]
+    },
+    {
+      "id": "TEST-016",
+      "priority": 4,
+      "rule": "Static analysis must verify runtime rule compliance for schema validity, cross-reference resolution, ownership boundaries, and priority consistency.",
+      "violation": [
+        "Rule file violates Schema v1.1 (missing required field, wrong field type)",
+        "Cross-reference in see_also points to a non-existent rule ID",
+        "Rule applies_to references a component owned by a different domain",
+        "Rule priority contradicts the file-level priority assignment in the partition plan",
+        "Two rules in different files own the same concept without hierarchical refinement"
+      ],
+      "check": "Run a schema validator on every rules/*.json file. Resolve every see_also reference against the complete rule ID index. Verify applies_to values respect ownership boundaries. Cross-check rule priorities against partition plan section 1.4. Flag any ownership overlap that is not documented as hierarchical refinement.",
+      "fix": "Fix schema violations per the validator output. Update or forward-reference unresolved cross-references. Move misplaced concepts to their owning file. Adjust priorities to match the partition plan policy.",
+      "tags": ["testing", "static-analysis", "compliance", "schema"],
+      "applies_to": ["All components"],
+      "exceptions": [],
+      "see_also": ["MIGR-011"]
+    },
+    {
+      "id": "TEST-017",
+      "priority": 4,
+      "rule": "A runtime audit automation must verify all rule files are valid, all cross-references resolve, all ownership boundaries are respected, and all incoming references to this file are satisfied.",
+      "violation": [
+        "No automated audit script exists in the repository",
+        "Audit script verifies schema but not cross-reference resolution",
+        "Audit script verifies cross-references but not ownership boundaries",
+        "Audit script does not verify that every incoming reference to a rule ID exists in the target file",
+        "Audit script produces output that requires manual interpretation to identify failures"
+      ],
+      "check": "Verify an audit script exists that: (1) loads every rule file, (2) validates schema v1.1 compliance, (3) builds a complete cross-reference index, (4) resolves every see_also reference, (5) verifies every incoming reference (from other files' see_also and from the audit tracker) points to an existing rule ID, (6) exits with non-zero on any failure.",
+      "fix": "Implement the audit script. It should print a machine-readable report listing all validated references and flagging any failures. Add it to CI so it runs on every change to rules/*.json.",
+      "tags": ["testing", "audit", "automation", "compliance"],
+      "applies_to": ["All components"],
+      "exceptions": [
+        "Forward references to unimplemented files (ANIM-*, MIGR-*) are expected to be unresolved until those files are created"
+      ],
+      "see_also": ["TEST-016"]
+    }
+  ]
+}

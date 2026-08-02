@@ -1,0 +1,29 @@
+{
+  "id": "manager-example",
+  "title": "Canonical Manager Pattern",
+  "version": "1.0.0",
+  "purpose": "Demonstrate a Manager that owns one aggregate root with exclusive write access. This is the fundamental architectural unit for domain logic in modern BGA games.",
+  "applicable_rules": ["ARCH-005", "ARCH-006", "ARCH-007", "ARCH-008", "ARCH-009", "ARCH-010", "ARCH-014", "ARCH-018"],
+  "language": "php",
+  "based_on_project": "earth",
+  "source": "reference-projects/earth/modules/EA/php/",
+  "context": "A ResourceManager that owns the player resource tables. It manages resource production, spending, and income for each player. Game.php delegates resource operations to this Manager; actions never touch resources directly.",
+  "before": "class Game { function spendResource($playerId, $type, $qty) { $sql = \"UPDATE resource SET qty = qty - $qty WHERE player_id = $playerId AND type = '$type'\"; self::DbQuery($sql); } }",
+  "after": "class ResourceManager { function __construct(private Game $game, private DB $db) {} function spend(int $playerId, string $type, int $qty): void { $old = $this->db->get(\"SELECT qty FROM resource WHERE player_id = $playerId AND type = $type\"); $this->db->update(\"UPDATE resource SET qty = qty - $qty WHERE player_id = $playerId AND type = $type AND qty >= $qty\", ['qty' => $qty]); $this->game->log->add('resource.spend', ['player_id' => $playerId, 'type' => $type, 'qty' => $qty, 'old_qty' => $old->qty]); } }",
+  "explanation": "The Manager receives the Game reference and DB connection in its constructor (ARCH-010). It owns the resource table with exclusive write permission (ARCH-005, ARCH-006). Methods are static-callable (ARCH-007). The Manager reads current state, validates via atomic UPDATE with WHERE condition, logs old values for undo, and returns nothing to the caller. The action handler calls this method and handles the response. Read methods return Model objects (ARCH-009), never raw arrays. The Manager never exceeds 800 lines (ARCH-018); if it grows beyond, split by sub-domain.",
+  "common_mistakes": [
+    "Placing SQL directly in Game.php or action handlers instead of the Manager",
+    "Making Managers call each other directly instead of coordinating through actions",
+    "Returning raw arrays from read methods instead of Model objects",
+    "Omitting old-value logging before mutations (breaks undo)",
+    "Using non-atomic UPDATE patterns that allow race conditions between concurrent actions"
+  ],
+  "related_examples": ["model-example", "action-example"],
+  "annotations": [
+    {"line": 3, "rule_id": "ARCH-005", "reason": "One aggregate per Manager. ResourceManager owns only resource tables."},
+    {"line": 4, "rule_id": "ARCH-010", "reason": "Constructor receives Game and DB. No globals."},
+    {"line": 6, "rule_id": "ARCH-006", "reason": "Exclusive write ownership. No other component writes to resource table."},
+    {"line": 7, "rule_id": "UNDO-001", "reason": "Old value logged before mutation for undo support."},
+    {"line": 8, "rule_id": "PERS-004", "reason": "Atomic conditional UPDATE. WHERE clause prevents race conditions."}
+  ]
+}

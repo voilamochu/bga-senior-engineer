@@ -1,0 +1,397 @@
+{
+  "domain": "notifications",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "ai-os/bga-senior-engineer-doctrine.md sections 2, 5, 6, 7, 14",
+  "rules": [
+    {
+      "id": "NOTF-001",
+      "priority": 2,
+      "rule": "All notifications must be sent through a single centralized Notifications class. The class receives a Game reference at construction and exposes static methods for every notification type. No other class may call notifyAllPlayers or notifyPlayer directly.",
+      "violation": [
+        "Notifications class does not exist — notifyAllPlayers calls are scattered across Managers and Actions",
+        "Notification sending logic is duplicated in multiple locations with slightly different payloads",
+        "Notifications class receives no Game reference and cannot send notifications"
+      ],
+      "check": "Verify exactly one file named Notifications.php exists. Verify it has a constructor accepting Game. Verify every notification method calls $this->game->notifyAllPlayers or $this->game->notifyPlayer. Grep codebase for notifyAllPlayers outside Notifications.php: assert zero matches.",
+      "fix": "Create Notifications.php with a constructor that stores the Game reference. Move every notifyAllPlayers call into a static method here. Update all callers to use Notifications::methodName() instead of $this->notifyAllPlayers.",
+      "exceptions": [],
+      "tags": [
+        "notifications",
+        "centralization",
+        "architecture",
+        "audit"
+      ],
+      "applies_to": [
+        "Notifications",
+        "Actions",
+        "Managers",
+        "Game.php"
+      ],
+      "see_also": [
+        "CORE-011",
+        "NOTF-010"
+      ]
+    },
+    {
+      "id": "NOTF-002",
+      "priority": 3,
+      "rule": "The Notifications class must expose all notification types through static methods. Actions and other callers invoke Notifications::methodName(). The class internally resolves the Game reference and dispatches to notifyAllPlayers or notifyPlayer.",
+      "violation": [
+        "Notification method is an instance method requiring a Notifications object to be created by the caller",
+        "Callers must look up the Game reference before calling a notification — logic duplication",
+        "Notifications class has a single generic send method with a type string parameter instead of typed methods"
+      ],
+      "check": "Verify every public method on Notifications is declared static. Verify callers use Notifications::methodName() syntax. Verify no caller instantiates Notifications or passes Game when sending a notification.",
+      "fix": "Make all notification methods static. Store the Game reference as a static property set once during Game.php construction. Remove instance method calls from all callers. Replace type-string dispatch with explicit typed methods.",
+      "exceptions": [],
+      "tags": [
+        "notifications",
+        "static",
+        "api",
+        "convenience"
+      ],
+      "applies_to": [
+        "Notifications"
+      ],
+      "see_also": [
+        "CORE-011",
+        "NOTF-001"
+      ]
+    },
+    {
+      "id": "NOTF-003",
+      "priority": 2,
+      "rule": "Exactly one static method per notification type. The method name describes the event in camelCase (cardPlayed, resourcesGained, turnPassed). Never reuse the same method for multiple event types with a string parameter to distinguish them.",
+      "violation": [
+        "A single method handles multiple event types using a switch or if-else on a type parameter",
+        "Notification type name is generic (notifyUpdate, sendState) instead of specific (resourcesGained)",
+        "Two different events share the same method and payload path"
+      ],
+      "check": "Verify each notification method name maps to one unique event. Grep for methods containing switch or if-else on a type parameter: assert zero matches. Verify method names use camelCase and describe the specific event.",
+      "fix": "Split generic methods into one-per-event. Name each method by the event it represents: resourcesGained, cardPlayed, turnPassed. Each method builds exactly one notification payload for exactly one event type.",
+      "exceptions": [],
+      "tags": [
+        "notifications",
+        "methods",
+        "naming",
+        "granularity"
+      ],
+      "applies_to": [
+        "Notifications"
+      ],
+      "see_also": [
+        "NOTF-001",
+        "NOTF-004"
+      ]
+    },
+    {
+      "id": "NOTF-004",
+      "priority": 3,
+      "rule": "Use updateArgs to auto-resolve i18n and player name substitution for every notification. updateArgs converts player_id to player_name, card_id to card_name, and wraps strings with clienttranslate. Never manually resolve these in notification methods.",
+      "violation": [
+        "Notification method manually queries player name or card name instead of using updateArgs",
+        "Notification payload includes raw player_id or card_id without letting updateArgs resolve them",
+        "updateArgs is not called on the notification args array before sending"
+      ],
+      "check": "Verify every notification method calls $this->game->updateArgs($args) or equivalent before sending. Verify payload keys use player_id and card_id references rather than resolved names. Grep for manual player/card name resolution in Notifications: assert zero matches.",
+      "fix": "Pass player_id and card_id keys to the notification payload. Call updateArgs on the args array before sending. Remove any manual name or i18n resolution from notification methods. updateArgs handles substitution automatically.",
+      "exceptions": [
+        "Notifications that carry no player or card references do not need updateArgs, but should still call it with an empty payload for consistency."
+      ],
+      "tags": [
+        "notifications",
+        "i18n",
+        "updateArgs",
+        "automation"
+      ],
+      "applies_to": [
+        "Notifications"
+      ],
+      "see_also": [
+        "NOTF-014",
+        "CORE-011"
+      ]
+    },
+    {
+      "id": "NOTF-005",
+      "priority": 2,
+      "rule": "The refreshUI notification must carry the complete public game state after a mutation. It is sent to all players and provides enough data for the client to rebuild its full view. refreshUI is the canonical public state broadcast.",
+      "violation": [
+        "refreshUI carries only the delta or partial update — client cannot reconstruct full state from it",
+        "refreshUI payload is missing a table or data set that the client needs to render correctly",
+        "refreshUI is omitted on a mutation that changes visible board state"
+      ],
+      "check": "Verify refreshUI payload contains every public data set the client renders. Verify the payload uses Manager::getAllDatas or equivalent to assemble the full snapshot. Verify refreshUI is called after every mutation that changes public state.",
+      "fix": "Assemble refreshUI payload by calling each Manager for the public snapshot of its aggregate. Include all data the client needs to render the full board. Send refreshUI after every mutation that affects visible state.",
+      "exceptions": [],
+      "tags": [
+        "notifications",
+        "refreshUI",
+        "state",
+        "broadcast"
+      ],
+      "applies_to": [
+        "Notifications"
+      ],
+      "see_also": [
+        "CORE-007",
+        "SYNC-002",
+        "NOTF-006"
+      ]
+    },
+    {
+      "id": "NOTF-006",
+      "priority": 2,
+      "rule": "The refreshHand notification carries per-player hidden state. It is sent to a single player via notifyPlayer and contains only that player private information. Never include refreshHand data in refreshUI or any public notification.",
+      "violation": [
+        "refreshHand data is included in the public refreshUI payload — hidden information leaks to all players",
+        "refreshHand is sent via notifyAllPlayers instead of notifyPlayer — every player receives private data",
+        "refreshHand payload includes another player hidden information"
+      ],
+      "check": "Verify refreshHand is sent via notifyPlayer to exactly one player. Verify its payload contains only that player hidden data. Grep refreshUI payload for fields that belong in refreshHand: assert zero matches.",
+      "fix": "Send refreshHand only through notifyPlayer with the owning player ID. Include only that player hidden data in the payload. Remove any private fields from refreshUI. Use refreshUI for public data and refreshHand for per-player private data.",
+      "exceptions": [],
+      "tags": [
+        "notifications",
+        "refreshHand",
+        "private",
+        "security"
+      ],
+      "applies_to": [
+        "Notifications"
+      ],
+      "see_also": [
+        "CORE-005",
+        "NOTF-005",
+        "NOTF-009"
+      ]
+    },
+    {
+      "id": "NOTF-007",
+      "priority": 3,
+      "rule": "The clearTurn notification is sent after an undo operation to reset the client UI state. It tells the client to discard any stale pending state and re-render from the canonical refreshUI that follows. clearTurn is always paired with refreshUI or refreshHand after undo.",
+      "violation": [
+        "Undo operation completes without sending clearTurn — client retains stale pending state",
+        "clearTurn is sent without a subsequent refreshUI or refreshHand — client has no canonical state to render",
+        "clearTurn carries state data — it should be an empty signal, not a data payload"
+      ],
+      "check": "Verify clearTurn is sent before refreshUI or refreshHand in every undo path. Verify clearTurn payload is minimal or empty — it is a signal, not a data carrier. Verify client handler for clearTurn discards pending state.",
+      "fix": "Add clearTurn notification at the start of every undo sequence. Keep its payload minimal. Always follow with refreshUI for public state and refreshHand for per-player state. Client handler resets pending state on receiving clearTurn.",
+      "exceptions": [],
+      "tags": [
+        "notifications",
+        "undo",
+        "clearTurn",
+        "cleanup"
+      ],
+      "applies_to": [
+        "Notifications",
+        "Actions"
+      ],
+      "see_also": [
+        "UNDO-010",
+        "UNDO-011",
+        "CORE-006"
+      ]
+    },
+    {
+      "id": "NOTF-008",
+      "priority": 2,
+      "rule": "Card draws and hidden information reveals use dual notification pattern. A public notification (notifyAllPlayers) announces the event with sanitized metadata. A private notification (notifyPlayer) sends full details only to the affected player.",
+      "violation": [
+        "Card draw sends full card details to all players — hidden information is leaked",
+        "Card draw sends only sanitized metadata even to the drawing player — that player cannot see what they drew",
+        "Public notification for a draw omits necessary metadata (number of cards drawn, face-up vs face-down)"
+      ],
+      "check": "For every draw or hidden reveal: verify a public notification is sent to all players with sanitized metadata (count, face-up indicator, no card IDs). Verify a private notification is sent to the affected player only with full details.",
+      "fix": "Implement dual notification for every hidden information event. Public notifyAllPlayers with sanitized args (numCards: 2, isFaceDown: true). Private notifyPlayer with full card details to the owning player. Never send the private notification to all players.",
+      "exceptions": [
+        "Events with no hidden component (public scoring, open drafting) need only a single public notification. Verify the event truly has no hidden aspect before omitting the private path."
+      ],
+      "tags": [
+        "notifications",
+        "security",
+        "draw",
+        "dual-pattern"
+      ],
+      "applies_to": [
+        "Notifications"
+      ],
+      "see_also": [
+        "CORE-005",
+        "NOTF-009",
+        "NOTF-013"
+      ]
+    },
+    {
+      "id": "NOTF-009",
+      "priority": 2,
+      "rule": "Notification payloads must never contain hidden information visible to the wrong player. Public notifications (notifyAllPlayers) carry only data every player is allowed to see. Hidden information includes: deck order, unrevealed card IDs, opponent hand contents, hidden resource counts, and undisclosed draft picks.",
+      "violation": [
+        "Public notification includes a card_id from the deck — reveals the deck order to all players",
+        "Public notification includes an opponent player hidden resource total",
+        "Notification payload for one player leaks another player private state through shared args",
+        "Spectator receives a private notification payload containing hidden information"
+      ],
+      "check": "For every public notification: verify every payload field is information every player is permitted to see. Review payload construction for any path that passes hidden data. For every notifyPlayer call: verify the target player is the only player who should see that data.",
+      "fix": "Remove hidden fields from public notification payloads. Use the dual notification pattern for draws and reveals. Verify all payload paths — including conditionally-added fields — are safe. Use updateArgs with only public-safe keys for public notifications.",
+      "exceptions": [],
+      "tags": [
+        "notifications",
+        "security",
+        "hidden-information",
+        "audit"
+      ],
+      "applies_to": [
+        "Notifications",
+        "Actions",
+        "States"
+      ],
+      "see_also": [
+        "CORE-005",
+        "NOTF-008",
+        "NOTF-013"
+      ]
+    },
+    {
+      "id": "NOTF-010",
+      "priority": 2,
+      "rule": "No code outside the Notifications class may call notifyAllPlayers or notifyPlayer directly. Every notification must go through a centralized Notifications static method. This is a layer boundary — not a suggestion.",
+      "violation": [
+        "Action method calls $this->game->notifyAllPlayers directly instead of Notifications::methodName",
+        "Manager method sends a notification inline instead of returning data for the action to notify",
+        "State class calls notifyPlayer directly during state transition"
+      ],
+      "check": "Grep entire codebase for notifyAllPlayers and notifyPlayer. Verify every match is inside Notifications.php. Assert zero matches in Actions, Managers, States, Game.php, or any other file outside the Notifications class.",
+      "fix": "Create a Notifications static method for each direct notifyAllPlayers call found. Replace the direct call with Notifications::methodName(). Ensure the Notifications class is the single file containing framework notification API calls.",
+      "exceptions": [
+        "The Notifications class itself must call notifyAllPlayers and notifyPlayer internally. This is the only permitted location."
+      ],
+      "tags": [
+        "notifications",
+        "layer",
+        "boundary",
+        "enforcement"
+      ],
+      "applies_to": [
+        "All components"
+      ],
+      "see_also": [
+        "CORE-010",
+        "CORE-011",
+        "NOTF-001"
+      ]
+    },
+    {
+      "id": "NOTF-011",
+      "priority": 2,
+      "rule": "Notifications must be sent after all mutations are complete and before the action returns the transition string. This ensures the client receives notifications that reflect the final committed state, not an intermediate or uncommitted state.",
+      "violation": [
+        "Notification is sent before the Manager::execute call — client sees stale pre-mutation state",
+        "Notification is sent after the transition return — client may never receive it if the state machine advances",
+        "Notification is sent from inside Manager::execute before all mutations are complete"
+      ],
+      "check": "Trace each action method: verify all Manager::execute* calls complete before any notification is sent. Verify the transition return is the last statement after all notifications. Verify no notification is sent before commit in a transaction context.",
+      "fix": "Reorder action methods: all Manager::execute* calls first, then all Notifications::methodName calls, then return transition. Move notification calls from inside Manager::execute* into the action after execution completes.",
+      "exceptions": [],
+      "tags": [
+        "notifications",
+        "lifecycle",
+        "ordering",
+        "correctness"
+      ],
+      "applies_to": [
+        "Notifications",
+        "Actions"
+      ],
+      "see_also": [
+        "CORE-004",
+        "ACTN-002",
+        "ACTN-007"
+      ]
+    },
+    {
+      "id": "NOTF-012",
+      "priority": 3,
+      "rule": "Notification payloads must carry absolute values, never deltas. The client sets state from the payload rather than incrementing or decrementing. Absolute values ensure idempotent handlers produce identical DOM from the same payload regardless of how many times they are applied.",
+      "violation": [
+        "Notification sends resourceDelta: -2 instead of resourcesRemaining: 5",
+        "Client handler adds the delta to a local counter — replay applies the notification twice and the counter is wrong",
+        "Notification carries a computed value that depends on client state rather than server state"
+      ],
+      "check": "For every notification payload: verify each numeric field is the absolute total after the mutation. Verify no delta or relative field names (delta, change, diff). Verify client handlers set state = payload.value, not state += payload.value.",
+      "fix": "Replace delta payloads with absolute totals. Compute the post-mutation value server-side and send it. Client handlers assign from the payload directly: this.resources = args.resources. Never add or subtract in the handler.",
+      "exceptions": [],
+      "tags": [
+        "notifications",
+        "idempotency",
+        "absolute-values",
+        "replay"
+      ],
+      "applies_to": [
+        "Notifications",
+        "Client"
+      ],
+      "see_also": [
+        "CORE-007",
+        "UNDO-007",
+        "NOTF-005"
+      ]
+    },
+    {
+      "id": "NOTF-013",
+      "priority": 3,
+      "rule": "Spectator notification filtering is governed by SYNC-005. Notification payloads must be designed so that public notifications contain only spectator-safe data. Private notifications target a single active player.",
+      "violation": [
+        "Public notification payload includes data that is not safe for spectator consumption",
+        "Private notification payload is not scoped to a single active player"
+      ],
+      "check": "For every notification type: verify the public payload contains only information safe for spectators. Verify private notification payloads are scoped to exactly one active player.",
+      "fix": "Design notification payloads with spectator safety as a requirement. Public payloads contain only information visible to non-players. Private payloads target one active player. Refer to SYNC-005 for spectator detection and filtering at dispatch time.",
+      "exceptions": [],
+      "tags": [
+        "notifications",
+        "spectator",
+        "security",
+        "payload"
+      ],
+      "applies_to": [
+        "Notifications"
+      ],
+      "see_also": [
+        "CORE-005",
+        "SYNC-005",
+        "NOTF-009"
+      ]
+    },
+    {
+      "id": "NOTF-014",
+      "priority": 4,
+      "rule": "Every user-visible string in a notification payload must be wrapped in clienttranslate. Player names, card names, ability descriptions, and any text rendered in the client UI must be translatable. Never send raw untranslated strings to the client.",
+      "violation": [
+        "Notification payload includes a raw string without clienttranslate — it appears untranslated in the UI",
+        "Player name is sent as a raw string instead of using player_id with updateArgs auto-resolution",
+        "Card name or description is hardcoded in the notification method instead of referenced by card_id"
+      ],
+      "check": "Review every notification string payload. Verify user-visible text is passed through clienttranslate or resolved via updateArgs from an ID. Verify no raw English strings appear in notification payloads that will be rendered to users.",
+      "fix": "Wrap all user-visible strings in clienttranslate(). Use updateArgs to resolve player_id to player_name and card_id to card_name. Reference translatable data by ID and let updateArgs handle the i18n resolution server-side.",
+      "exceptions": [
+        "Non-user-visible payload data (IDs, counts, internal flags) does not need clienttranslate. Only strings rendered in the UI must be translatable."
+      ],
+      "tags": [
+        "notifications",
+        "i18n",
+        "clienttranslate",
+        "localization"
+      ],
+      "applies_to": [
+        "Notifications"
+      ],
+      "see_also": [
+        "NOTF-004",
+        "CORE-011"
+      ]
+    }
+  ]
+}

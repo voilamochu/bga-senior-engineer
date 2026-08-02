@@ -1,0 +1,29 @@
+{
+  "id": "model-example",
+  "title": "Canonical Model and Value Object Pattern",
+  "version": "1.0.0",
+  "purpose": "Demonstrate a Model that wraps a DB row with computed properties and an immutable Value Object for compound domain concepts. Models have zero framework dependencies.",
+  "applicable_rules": ["ARCH-009", "ARCH-011", "ARCH-012", "ARCH-013", "PERS-001"],
+  "language": "php",
+  "based_on_project": "earth",
+  "source": "reference-projects/earth/modules/EA/php/",
+  "context": "A ResourceCollection value object that represents a set of resources (wood, stone, food) and a PlayerResources Model that wraps the player's resource DB row. The Manager returns these to callers instead of raw arrays.",
+  "before": "$resources = ['wood' => 3, 'stone' => 2, 'food' => 1]; if ($resources['wood'] >= 2) { $resources['wood'] -= 2; self::DbQuery(\"UPDATE player SET resources = '\" . json_encode($resources) . \"' WHERE player_id = $playerId\"); }",
+  "after": "class ResourceCollection { function __construct(private array $resources) {} function has(string $type, int $qty): bool { return ($this->resources[$type] ?? 0) >= $qty; } function spend(string $type, int $qty): self { $new = $this->resources; $new[$type] = ($new[$type] ?? 0) - $qty; return new self($new); } function toArray(): array { return $this->resources; } } class PlayerResources { function __construct(private DB $db, private int $playerId) {} function load(): ResourceCollection { $row = $this->db->get(\"SELECT wood, stone, food, gold FROM player_resource WHERE player_id = $this->playerId\"); return new ResourceCollection(['wood' => (int)$row['wood'], 'stone' => (int)$row['stone'], 'food' => (int)$row['food'], 'gold' => (int)$row['gold']]); } function save(ResourceCollection $resources): void { $data = $resources->toArray(); $this->db->update(\"UPDATE player_resource SET wood = $data[wood], stone = $data[stone], food = $data[food], gold = $data[gold] WHERE player_id = $this->playerId\"); } }",
+  "explanation": "ResourceCollection is an immutable value object (ARCH-013). Each operation returns a new instance — the original is unchanged, preventing accidental mutation. PlayerResources is a Model that wraps a DB row (ARCH-011). It has zero framework dependencies — no Game reference, no globals (ARCH-012). The Manager calls PlayerResources::load() which returns a ResourceCollection, and PlayerResources::save() which persists changes. Callers receive typed objects instead of raw arrays, making the code self-documenting and type-safe (ARCH-009).",
+  "common_mistakes": [
+    "Returning raw associative arrays from Manager read methods instead of Models",
+    "Making Models depend on the Game framework (Game reference, globals, DB queries in the Model)",
+    "Mutating value objects in place instead of returning new instances",
+    "Storing compound data as JSON blobs in a single column instead of normalized columns",
+    "Using the same object for read and write without a clear save path through the Manager"
+  ],
+  "related_examples": ["manager-example", "undo-example"],
+  "annotations": [
+    {"line": 2, "rule_id": "ARCH-013", "reason": "Immutable value object. Each operation returns new instance."},
+    {"line": 4, "rule_id": "ARCH-013", "reason": "has() and spend() are pure — no side effects."},
+    {"line": 9, "rule_id": "ARCH-011", "reason": "Model encapsulates a DB row with typed accessors."},
+    {"line": 10, "rule_id": "ARCH-012", "reason": "Zero framework dependencies. No Game, no globals, no notify."},
+    {"line": 11, "rule_id": "ARCH-009", "reason": "Read method returns Model object, not raw array."}
+  ]
+}

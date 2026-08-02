@@ -1,0 +1,29 @@
+{
+  "id": "undo-example",
+  "title": "Canonical Undo Pattern",
+  "version": "1.0.0",
+  "purpose": "Demonstrate old-value logging before mutation, LIFO undo reversal within checkpoint boundaries, and undo notification sequencing (clearTurn → refreshUI → refreshHand).",
+  "applicable_rules": ["UNDO-001", "UNDO-002", "UNDO-003", "UNDO-004", "UNDO-005", "UNDO-010", "UNDO-011"],
+  "language": "php",
+  "based_on_project": "earth",
+  "source": "reference-projects/earth/modules/BX/php/Action.php",
+  "context": "An undo flow for a resource spend action. The player spent 2 wood on a card, then undoes the action. The undo log recorded the old values; the undo reverses them in LIFO order; notifications restore the client state.",
+  "before": "function spend($playerId, $type, $qty) { self::DbQuery(\"UPDATE resource SET qty = qty - $qty WHERE player_id = $playerId AND type = '$type'\"); } function undoSpend($playerId, $type, $qty) { self::DbQuery(\"UPDATE resource SET qty = qty + $qty WHERE player_id = $playerId AND type = '$type'\"); }",
+  "after": "// START: Checkpoint established at action boundary function spend(Game $game, int $playerId, string $type, int $qty): void { $old = $game->db->get(\"SELECT qty FROM resource WHERE player_id = $playerId AND type = $type\"); $game->db->update(\"UPDATE resource SET qty = qty - $qty WHERE player_id = $playerId AND type = $type AND qty >= $qty\"); $game->db->insert('undo_log', ['player_id' => $playerId, 'table_name' => 'resource', 'row_id' => \"{$playerId}_{$type}\", 'field' => 'qty', 'old_value' => $old->qty, 'new_value' => $old->qty - $qty, 'checkpoint' => $game->getCurrentCheckpoint()]); } // UNDO: Reverses LIFO within checkpoint function undoCheckpoint(Game $game, int $checkpoint): void { $entries = $game->db->getAll(\"SELECT * FROM undo_log WHERE checkpoint = $checkpoint AND cancelled = 0 ORDER BY id DESC\"); foreach ($entries as $entry) { $game->db->update(\"UPDATE {$entry['table_name']} SET {$entry['field']} = {$entry['old_value']} WHERE id = '{$entry['row_id']}'\"); $game->db->update(\"UPDATE undo_log SET cancelled = 1 WHERE id = {$entry['id']}\"); } } // NOTIFY: clearTurn → refreshUI → refreshHand function notifyUndo(Game $game): void { $game->notifications->clearTurn($game); $game->notifications->refreshUI($game, $game->getAllDatas()); foreach ($game->getActivePlayers() as $playerId) { $game->notifications->refreshHand($game, $playerId, $game->cardManager->getPlayerHand($playerId)); } }",
+  "explanation": "Every mutation records old values to the undo_log table before writing new state (UNDO-001). The undo reverses mutations in LIFO order within checkpoint boundaries (UNDO-002). Checkpoints are created at each logical commit boundary (UNDO-003). The undo log marks entries as cancelled rather than deleting them (UNDO-004). After undo completes, notifications fire in order: clearTurn first to reset pending state, then refreshUI for public state, then refreshHand per-player for private state (UNDO-010, UNDO-011). This ordering follows SYNC-006 through SYNC-008.",
+  "common_mistakes": [
+    "Not recording old values before mutation (undo cannot reconstruct previous state)",
+    "Reversing in FIFO instead of LIFO order (wrong state after multi-step undo)",
+    "Deleting undo log entries instead of marking them cancelled (loses audit trail)",
+    "Sending refreshUI and refreshHand without clearTurn first (stale UI indicators)",
+    "Omitting undo logging for some mutation paths (inconsistent undo behavior)"
+  ],
+  "related_examples": ["manager-example", "action-example", "notification-example"],
+  "annotations": [
+    {"line": 3, "rule_id": "UNDO-001", "reason": "Old value read and logged before mutation."},
+    {"line": 6, "rule_id": "UNDO-003", "reason": "Checkpoint ID recorded for grouped undo."},
+    {"line": 9, "rule_id": "UNDO-002", "reason": "LIFO order: ORDER BY id DESC reverses most recent first."},
+    {"line": 11, "rule_id": "UNDO-004", "reason": "Cancelled flag keeps audit trail instead of deleting."},
+    {"line": 14, "rule_id": "UNDO-010", "reason": "clearTurn first, then refreshUI, then refreshHand."}
+  ]
+}

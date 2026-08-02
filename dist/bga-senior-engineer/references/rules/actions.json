@@ -1,0 +1,392 @@
+{
+  "domain": "actions",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "ai-os/bga-senior-engineer-doctrine.md sections 2, 5, 6, 7, 14",
+  "rules": [
+    {
+      "id": "ACTN-001",
+      "priority": 2,
+      "rule": "Every action method must be under 15 lines of executable logic. The structure is: parse arguments, validate preconditions, delegate to Manager, send notifications, return a transition string. No other responsibilities.",
+      "violation": [
+        "Action method exceeds 15 lines of executable PHP (excluding blanks, comments, and closing braces)",
+        "Action method contains game rule logic, SQL, or notification payload construction",
+        "Action method skips a step (validate, delegate, notify, transition) or adds a step outside this sequence"
+      ],
+      "check": "Count non-blank non-comment lines in each action method body: assert under 15. Verify the method calls Manager::validate*, Manager::execute*, Notifications::send*, then returns a transition string. Flag any inline game logic or SQL.",
+      "fix": "Move validation to Manager::validate*(). Move execution to Manager::execute*(). Move notification sending to a Notifications static method. Action becomes: parse args, call validate, call execute, call notify, return transition string.",
+      "exceptions": [],
+      "tags": [
+        "actions",
+        "thin",
+        "lifecycle",
+        "structure"
+      ],
+      "applies_to": [
+        "Actions"
+      ],
+      "see_also": [
+        "CORE-003",
+        "ACTN-002"
+      ]
+    },
+    {
+      "id": "ACTN-002",
+      "priority": 2,
+      "rule": "The five action responsibilities execute in strict order. (1) validate — call all Manager::validate* methods. (2) execute — call Manager::execute* to mutate state. (3) persist — mutations are applied inside execute. (4) notify — send notifications via the Notifications class. (5) transition — return the next state key. Never reorder, skip, or merge these steps.",
+      "violation": [
+        "Notifications are sent before execution completes — player sees incorrect state",
+        "Transition is returned before notifications are sent — client never receives the update",
+        "Validation and execution are interleaved — partial mutation on validation failure",
+        "A responsibility is skipped entirely — game state becomes inconsistent or client desyncs"
+      ],
+      "check": "Trace each action method and verify step order: validate calls, then execute calls, then notification calls, then return. Use a code review checklist that confirms this ordering. Automated assertion: grep for notify* before execute* in action methods.",
+      "fix": "Reorder the action method to follow the strict sequence. Group all Manager::validate* calls first. Group all Manager::execute* calls second. Group all Notifications::send* calls third. End with return of the transition key.",
+      "exceptions": [],
+      "tags": [
+        "actions",
+        "lifecycle",
+        "ordering",
+        "correctness"
+      ],
+      "applies_to": [
+        "Actions"
+      ],
+      "see_also": [
+        "CORE-003",
+        "CORE-004",
+        "ACTN-001"
+      ]
+    },
+    {
+      "id": "ACTN-003",
+      "priority": 2,
+      "rule": "Actions must validate against five ordered layers before any mutation. (1) framework — arg syntax and player session. (2) state — player is in the correct state and has permission to act. (3) game-rule — the requested action is a legal move. (4) domain — business rules specific to the game entity. (5) persistence — DB constraints and uniqueness checks. Each layer is a separate concern validated independently.",
+      "violation": [
+        "Action skips a validation layer — a framework-level check is omitted because game-rule checks pass",
+        "Validation layers are applied after mutation starts — partial state change on failure",
+        "Domain validation is embedded in Manager::execute instead of Manager::validate"
+      ],
+      "check": "For each action: verify all five layers are addressed. Framework validation is handled by BGA automatically — verify args are typed. State validation checks the current state ID. Game-rule calls Manager::validate*. Domain calls Manager::validate*. Persistence relies on DB constraints.",
+      "fix": "Apply layers in order. Framework and state are implicit in the #[PossibleAction] + state machine definition. Add Manager::validate* call for game-rule and domain layers. Ensure DB constraints exist for the persistence layer.",
+      "exceptions": [],
+      "tags": [
+        "actions",
+        "validation",
+        "layers",
+        "security"
+      ],
+      "applies_to": [
+        "Actions"
+      ],
+      "see_also": [
+        "CORE-004",
+        "ACTN-004"
+      ]
+    },
+    {
+      "id": "ACTN-004",
+      "priority": 3,
+      "rule": "Each validation layer verifies a distinct concern. Framework: arg types match expected schema. State: the current state ID matches the expected state for this action. Game-rule: the player can legally perform this action given board state. Domain: the specific entity (card, space, resource) permits the operation. Persistence: DB constraints (UNIQUE, CHECK, FK) will enforce integrity on write.",
+      "violation": [
+        "Game-rule validation checks a concern that belongs to domain validation, mixing layers",
+        "State validation duplicates game-rule logic instead of checking only permission",
+        "Persistence validation is skipped because domain validation was thorough — a DB constraint still fails"
+      ],
+      "check": "Review each Manager::validate* method and confirm it validates exactly one layer. Game-rule validate does not check DB constraints. Domain validate does not check state permission. Persistence relies on DB schema, not PHP logic.",
+      "fix": "Separate validation methods by layer. Game-rule validation lives in its own Manager::validate method. Domain validation is separate. If a check spans layers, split it across two validate methods and call both from the action.",
+      "exceptions": [],
+      "tags": [
+        "actions",
+        "validation",
+        "separation",
+        "concerns"
+      ],
+      "applies_to": [
+        "Actions",
+        "Managers"
+      ],
+      "see_also": [
+        "ACTN-003",
+        "CORE-010"
+      ]
+    },
+    {
+      "id": "ACTN-005",
+      "priority": 2,
+      "rule": "All validation must complete before any state mutation begins. The action calls every Manager::validate* method first. If any validate throws a BgaUserException, no mutation has occurred. Execution (Manager::execute*) starts only after all validations pass.",
+      "violation": [
+        "Action interleaves validate and execute calls — validate for one entity, execute, then validate for another",
+        "Mutation is performed inside a validate method — validate must be read-only",
+        "Exception is thrown after a partial mutation without rollback — game state is corrupted"
+      ],
+      "check": "For each action: verify all Manager::validate* calls precede all Manager::execute* calls. Verify validate methods perform no writes (INSERT, UPDATE, DELETE). Use a code review checklist to catch interleaving.",
+      "fix": "Restructure the action: group all Manager::validate* calls at the top. If any throws, catch and rethrow. Only after all validate calls pass, begin Manager::execute* calls. If multiple Managers are involved, validate all before executing any.",
+      "exceptions": [],
+      "tags": [
+        "actions",
+        "validation",
+        "atomicity",
+        "correctness"
+      ],
+      "applies_to": [
+        "Actions",
+        "Managers"
+      ],
+      "see_also": [
+        "CORE-004",
+        "ACTN-002"
+      ]
+    },
+    {
+      "id": "ACTN-006",
+      "priority": 2,
+      "rule": "Actions delegate all domain work to the owning Manager. The action calls Manager::validate* for preconditions, then Manager::execute* for mutations. Actions never contain SQL, domain logic, or framework API calls that belong in the Manager layer.",
+      "violation": [
+        "Action method contains a SQL query on a game table",
+        "Action method implements game rule logic (scoring, validation, resource computation) directly",
+        "Action method calls a framework method that should be wrapped by a Manager"
+      ],
+      "check": "Grep action methods for SQL keywords: assert zero matches. Review each action method: if it implements a game rule rather than calling a Manager method, it is domain logic. Verify all DB writes go through Manager::execute*.",
+      "fix": "Move SQL to Manager methods. Move game rule logic to Manager validate*/execute* methods. Actions parse args, call Manager methods, send notifications, return transition. Zero game logic in the action method body.",
+      "exceptions": [],
+      "tags": [
+        "actions",
+        "delegation",
+        "managers",
+        "separation"
+      ],
+      "applies_to": [
+        "Actions"
+      ],
+      "see_also": [
+        "CORE-003",
+        "CORE-016",
+        "ARCH-005",
+        "ARCH-006"
+      ]
+    },
+    {
+      "id": "ACTN-007",
+      "priority": 2,
+      "rule": "Actions send notifications through the centralized Notifications class after all mutations have completed. The action calls Notifications::methodName() after Manager::execute*. Never send notifications from inside Manager methods or before execution completes.",
+      "violation": [
+        "Notification is sent from inside a Manager::execute method instead of from the action",
+        "Notification is sent before Manager::execute* completes — player sees stale state",
+        "notifyAllPlayers is called directly in the action instead of through the Notifications class"
+      ],
+      "check": "Grep Manager methods for notifyAllPlayers or notifyPlayer calls: assert zero matches. Verify action methods call Notifications::methodName() after all Manager::execute* calls. Verify no direct notify* calls in actions.",
+      "fix": "Move notification calls from Manager methods into the action. Use the centralized Notifications class static method. Notifications are sent after execute returns but before the action returns the transition string.",
+      "exceptions": [
+        "Manager may notify about internal error conditions only if the action cannot reasonably detect them. Must be documented and approved."
+      ],
+      "tags": [
+        "actions",
+        "notifications",
+        "delegation",
+        "lifecycle"
+      ],
+      "applies_to": [
+        "Actions",
+        "Managers"
+      ],
+      "see_also": [
+        "CORE-011",
+        "NOTF-001",
+        "ACTN-002"
+      ]
+    },
+    {
+      "id": "ACTN-008",
+      "priority": 2,
+      "rule": "Every action method must return a valid transition string that maps to an entry in the state machine definition. The return is the last line of the action. Every code path must either return a transition or throw. Never return void or null.",
+      "violation": [
+        "Action returns null or void — the state machine has no transition and hangs",
+        "Action returns a transition key that does not exist in the current state machine definition",
+        "Action returns a transition before sending notifications — client never receives the update"
+      ],
+      "check": "Verify every action method ends with return of a string. Verify the returned string is a valid transition key in the state machine definition for the current state. Verify notification calls appear before the return statement.",
+      "fix": "Ensure every action method returns a transition string. Verify the transition key exists in the state machine definition for the action source state. Add notification calls before the return. If an error occurs, throw BgaUserException instead of returning null.",
+      "exceptions": [],
+      "tags": [
+        "actions",
+        "transitions",
+        "lifecycle",
+        "state-machine"
+      ],
+      "applies_to": [
+        "Actions"
+      ],
+      "see_also": [
+        "STAT-005",
+        "ACTN-002"
+      ]
+    },
+    {
+      "id": "ACTN-009",
+      "priority": 3,
+      "rule": "Action methods must be registered with the #[PossibleAction] attribute. The framework discovers available actions through this attribute. Every public action method must have this attribute. Never rely on naming conventions or manual registration.",
+      "violation": [
+        "Action method has no #[PossibleAction] attribute and is unreachable by the client",
+        "Action method is registered via a legacy array or config file instead of the attribute",
+        "Attribute references a state ID that does not match the action source state"
+      ],
+      "check": "For every action method: verify #[PossibleAction] attribute is present. Verify the attribute state parameter matches the intended source state. Verify no action methods are registered through legacy mechanisms.",
+      "fix": "Add #[PossibleAction] attribute to every action method. Set the state parameter to the source state ID constant. Remove any legacy action registration arrays. The framework discovers #[PossibleAction] automatically.",
+      "exceptions": [],
+      "tags": [
+        "actions",
+        "registration",
+        "framework",
+        "discovery"
+      ],
+      "applies_to": [
+        "Actions"
+      ],
+      "see_also": [
+        "STAT-004"
+      ]
+    },
+    {
+      "id": "ACTN-010",
+      "priority": 2,
+      "rule": "Zero SQL queries in action methods. All database access — reads and writes — must be delegated to Manager methods. An action method that contains a SQL statement is a layer violation that must be fixed.",
+      "violation": [
+        "Action method contains a SELECT, INSERT, UPDATE, DELETE, or REPLACE statement",
+        "Action method calls a raw DB method (self::getObjectList, self::DbQuery) instead of a Manager method",
+        "Action method constructs a query string and passes it to the database layer"
+      ],
+      "check": "Grep all action method files for SQL keywords, getObjectList, DbQuery, DbCommand, or direct table access. Assert zero matches. Verify every data access goes through a Manager::get* or Manager::execute* call.",
+      "fix": "Move SELECT queries to Manager::get* methods. Move INSERT/UPDATE/DELETE to Manager::execute* methods. The action calls the Manager method. If a query is needed for validation, add it to Manager::validate*.",
+      "exceptions": [],
+      "tags": [
+        "actions",
+        "sql",
+        "layers",
+        "violation"
+      ],
+      "applies_to": [
+        "Actions"
+      ],
+      "see_also": [
+        "CORE-010",
+        "ACTN-006",
+        "ARCH-016"
+      ]
+    },
+    {
+      "id": "ACTN-011",
+      "priority": 2,
+      "rule": "Zero domain logic in action methods. Actions orchestrate — they do not implement game rules. Scoring, validation computations, resource calculations, and conditional game decisions belong in Manager methods, not in the action.",
+      "violation": [
+        "Action method computes a score, validates a precondition against game state, or applies a game rule inline",
+        "Action method contains a switch or if-else chain based on game entity type",
+        "Action method calculates resource costs, card effects, or interaction results"
+      ],
+      "check": "Review each action method: if it contains a conditional based on game state, a computation of game values, or a rule lookup, it is domain logic. Move that logic to a Manager::validate* or Manager::execute* method.",
+      "fix": "Move game rules from the action into the owning Manager. Action calls Manager::validate* for precondition checks and Manager::execute* for mutations. The action should contain no conditionals based on game entity types.",
+      "exceptions": [],
+      "tags": [
+        "actions",
+        "domain-logic",
+        "layers",
+        "separation"
+      ],
+      "applies_to": [
+        "Actions"
+      ],
+      "see_also": [
+        "CORE-010",
+        "ACTN-006",
+        "ARCH-016"
+      ]
+    },
+    {
+      "id": "ACTN-012",
+      "priority": 3,
+      "rule": "Actions must ensure old values are recorded before any mutation that affects undoable state. The action reads current state before calling Manager::execute* and passes it to the Manager so the Manager can log the pre-mutation value to the undo log table.",
+      "violation": [
+        "Action mutates state but does not read or pass the old value — undo cannot restore previous state",
+        "Manager::execute* logs an incorrect old value because the action did not provide the pre-mutation snapshot",
+        "Action calls Manager::execute* for an undoable mutation without first calling Manager::get* for the current value"
+      ],
+      "check": "For every action that calls a mutation method: verify the action reads the pre-mutation value via Manager::get* before calling Manager::execute*. Verify the old value is passed as a parameter or the Manager reads it internally before mutation.",
+      "fix": "Before calling Manager::execute* for a mutation, call Manager::get* to retrieve the current value. Pass the current value to execute* or ensure the Manager reads it at the top of the execute* method. The Manager logs the old value before applying the change.",
+      "exceptions": [
+        "Irreversible mutations (die rolls, deck shuffles) do not need old-value logging. Must be explicitly documented as irreversible."
+      ],
+      "tags": [
+        "actions",
+        "undo",
+        "logging",
+        "safety"
+      ],
+      "applies_to": [
+        "Actions",
+        "Managers"
+      ],
+      "see_also": [
+        "CORE-006",
+        "UNDO-001"
+      ]
+    },
+    {
+      "id": "ACTN-013",
+      "priority": 3,
+      "rule": "Use BgaUserException for all player-facing errors. The message must be wrapped in clienttranslate or _ for i18n. Use BgaSystemException for internal errors that should never reach the player. Never expose debug information, stack traces, or internal state in BgaUserException messages.",
+      "violation": [
+        "Player-visible error uses a generic Exception instead of BgaUserException — message is not i18n",
+        "BgaUserException message contains a technical detail (table name, variable value, file path)",
+        "Internal invariant failure uses BgaUserException — player sees a confusing system error",
+        "BgaSystemException message contains sensitive game state that could leak hidden information"
+      ],
+      "check": "Review all throw statements in action and Manager validate methods. Player errors (invalid move, insufficient resources) throw BgaUserException with translated message. System errors (null entity, impossible state) throw BgaSystemException.",
+      "fix": "Replace generic Exception with BgaUserException for player-facing conditions. Replace with BgaSystemException for internal bugs. Wrap all player-facing messages in clienttranslate() or _(). Remove technical details from player-facing messages.",
+      "exceptions": [],
+      "tags": [
+        "actions",
+        "errors",
+        "i18n",
+        "security"
+      ],
+      "applies_to": [
+        "Actions",
+        "Managers",
+        "States"
+      ],
+      "see_also": [
+        "CORE-005",
+        "CORE-013"
+      ]
+    },
+    {
+      "id": "ACTN-014",
+      "priority": 4,
+      "rule": "Every action must pass a fixed review checklist before being committed. (1) does the action enforce the correct state? (2) are all five validation layers addressed? (3) does validation complete before mutation? (4) is the action under 15 lines? (5) does it delegate to the correct Manager? (6) are notifications sent through the Notifications class? (7) does every path return a transition or throw? (8) is old-value logging in place for undoable mutations? (9) are player-facing errors using BgaUserException with i18n? (10) is hidden information protected in all notification payloads?",
+      "violation": [
+        "Action is committed without passing the review checklist — a known failure mode is introduced",
+        "Action passes the checklist informally without verifying each item against the code",
+        "Checklist item is skipped because it seemed irrelevant — it was relevant and introduced a bug"
+      ],
+      "check": "Before committing an action, run the 10-item checklist from this rule. Verify each item against the action code. If any item fails, fix before committing. Do not skip items.",
+      "fix": "Fix each failing checklist item before committing. Use the rule violations in this file as guidance for each item. Re-run the checklist after fixes.",
+      "exceptions": [],
+      "tags": [
+        "actions",
+        "review",
+        "checklist",
+        "quality"
+      ],
+      "applies_to": [
+        "Actions"
+      ],
+      "see_also": [
+        "ACTN-001",
+        "ACTN-003",
+        "ACTN-005",
+        "ACTN-012",
+        "ACTN-013"
+      ]
+    }
+  ]
+}

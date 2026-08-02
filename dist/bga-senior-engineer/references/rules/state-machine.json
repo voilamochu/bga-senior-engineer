@@ -1,0 +1,431 @@
+{
+  "domain": "state-machine",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "ai-os/bga-senior-engineer-doctrine.md sections 4, 5, 6, 7, 12",
+  "rules": [
+    {
+      "id": "STAT-001",
+      "priority": 2,
+      "rule": "One PHP class per game state. Each class is named by its purpose (PlayerTurn, ResolveChoice, GameEnd) and lives in modules/php/States/. Never use a single switch statement or array to handle multiple states.",
+      "violation": [
+        "State logic is implemented in a single switch statement inside Game.php or a handler class",
+        "State class name does not describe the state purpose (e.g. StateHandler, StateManager)",
+        "Multiple state IDs share the same class, using conditionals to distinguish behaviour"
+      ],
+      "check": "Count modules/php/States/ classes: must equal number of state IDs (excluding GAME states). Verify each class name maps to one state ID. Grep for switch statements on state ID: assert zero matches.",
+      "fix": "Extract each state branch into its own class file. Name by purpose. Register in the state machine definition by class name. Remove the switch statement. Each class handles exactly one state ID.",
+      "exceptions": [],
+      "tags": [
+        "state-machine",
+        "states",
+        "classes",
+        "structure"
+      ],
+      "applies_to": [
+        "States"
+      ],
+      "see_also": [
+        "CORE-010"
+      ]
+    },
+    {
+      "id": "STAT-002",
+      "priority": 2,
+      "rule": "Every state class defines four public methods in order: args() returns per-player state data, action() handles the player submitted action, zombie() handles player disconnection, and transitions() maps action outcomes to the next state ID.",
+      "violation": [
+        "State class is missing args() so the client cannot render the state",
+        "State class is missing action() so player input is not handled",
+        "State class is missing zombie() — a production bug for non-GAME states",
+        "State class is missing transitions() so the state machine cannot advance"
+      ],
+      "check": "For each state class: verify args() exists and returns an array. Verify action() exists and processes player input. Verify zombie() exists for non-GAME states. Verify transitions() exists and returns a valid state ID or transition key.",
+      "fix": "Add the missing method. args() returns state-specific data for client rendering. action() validates and delegates to Manager. zombie() advances the disconnected player. transitions() maps action results to state IDs or transition keys.",
+      "exceptions": [
+        "The GAME (terminal) state may omit action() and zombie() because the game is complete."
+      ],
+      "tags": [
+        "state-machine",
+        "states",
+        "methods",
+        "lifecycle"
+      ],
+      "applies_to": [
+        "States"
+      ],
+      "see_also": [
+        "STAT-001",
+        "STAT-009"
+      ]
+    },
+    {
+      "id": "STAT-003",
+      "priority": 2,
+      "rule": "State class constructor receives the Game reference. All state logic accesses game data through this injected reference. States must not instantiate Managers directly — Managers are accessed through the Game reference.",
+      "violation": [
+        "State constructor creates a Manager instance directly instead of going through Game",
+        "State method accesses globals or static data instead of using the Game reference",
+        "State constructor requires parameters beyond the Game reference"
+      ],
+      "check": "Verify every state constructor accepts only Game as a parameter. Grep state methods for Manager instantiation: assert zero matches. Verify all game data access goes through the injected Game reference.",
+      "fix": "Remove direct Manager instantiation from state classes. Access Managers via $this->game->getManager(). Remove any non-Game constructor parameters — inject data through onEnteringState or args() instead.",
+      "exceptions": [],
+      "tags": [
+        "state-machine",
+        "states",
+        "dependencies",
+        "injection"
+      ],
+      "applies_to": [
+        "States"
+      ],
+      "see_also": [
+        "ARCH-010"
+      ]
+    },
+    {
+      "id": "STAT-004",
+      "priority": 2,
+      "rule": "All state IDs must be defined as named constants in a StateIds.php file. Never use numeric state IDs in transition calls, state machine definitions, or conditional checks.",
+      "violation": [
+        "State machine definition uses a numeric literal instead of a StateIds constant",
+        "Transition call passes a raw integer instead of StateIds::TURN_END",
+        "Conditional check compares state ID against a hardcoded number"
+      ],
+      "check": "Verify StateIds.php exists and defines every state ID as a const. Grep state machine definition, transition methods, and state comparisons for numeric literals that match a state ID: assert zero matches.",
+      "fix": "Create StateIds.php if absent. Define all state IDs as const with camelCase names. Replace all numeric state ID references with StateIds::CONSTANT_NAME. Use constants in state machine definition and all transition calls.",
+      "exceptions": [],
+      "tags": [
+        "state-machine",
+        "states",
+        "ids",
+        "constants"
+      ],
+      "applies_to": [
+        "States",
+        "Game.php"
+      ],
+      "see_also": [
+        "STAT-005"
+      ]
+    },
+    {
+      "id": "STAT-005",
+      "priority": 2,
+      "rule": "Transition keys must be semantic strings describing what happened (cardPlayed, passed, resourcesSelected). Never use generic keys (nextState, done, ok) that do not communicate intent.",
+      "violation": [
+        "Transition key is 'nextState' — does not describe what triggered the transition",
+        "Multiple transitions from the same state use the same generic key with different destinations",
+        "Transition key is a number or boolean instead of a descriptive string"
+      ],
+      "check": "Review all transition keys in every state class. Verify each key describes the player action or game event that triggered it. If two different actions use the same transition key, rename them to be distinct.",
+      "fix": "Replace generic transition keys with semantic ones. 'cardPlayed' instead of 'nextState'. 'passed' instead of 'done'. 'resourcesSelected' instead of 'ok'. Update state machine definition to match the new keys.",
+      "exceptions": [],
+      "tags": [
+        "state-machine",
+        "transitions",
+        "semantics",
+        "readability"
+      ],
+      "applies_to": [
+        "States"
+      ],
+      "see_also": [
+        "STAT-004"
+      ]
+    },
+    {
+      "id": "STAT-006",
+      "priority": 2,
+      "rule": "args() must return only the data the active player is permitted to see. Use the _private key for player-specific data. Public args must never include hidden information (opponent hands, deck order, unrevealed cards).",
+      "violation": [
+        "args() returns opponent hand sizes, card IDs, or resource counts that are hidden",
+        "args() does not use _private key so all players receive the same data in a multi-player selection state",
+        "args() includes internal state machine values that are meaningless to the client"
+      ],
+      "check": "Review the args() return value for every state. Verify public args contain only common board state. Verify _private args contain per-player data and are only visible to the owning player. Verify no hidden information in any args path.",
+      "fix": "Move player-specific data into _private key inside args(). Public args contain board state visible to all. Verify _private is set for every state that has per-player data. Strip hidden information from all args paths.",
+      "exceptions": [],
+      "tags": [
+        "state-machine",
+        "args",
+        "security",
+        "private"
+      ],
+      "applies_to": [
+        "States"
+      ],
+      "see_also": [
+        "CORE-005",
+        "STAT-008"
+      ]
+    },
+    {
+      "id": "STAT-007",
+      "priority": 3,
+      "rule": "Use _no_notify for auto-skipped states where no player action is required and no client notification should fire. These states resolve immediately and transition without the player seeing them.",
+      "violation": [
+        "An auto-skip state fires a notification that the player sees despite the state being invisible",
+        "A state with no player interaction does not use _no_notify, wasting a player page load",
+        "_no_notify state includes args() data that is never rendered on the client"
+      ],
+      "check": "For every state with no player input: verify it is declared as _no_notify in the state machine definition. Verify the state machine advances without a client round-trip. Verify no notification fires for entry or exit of this state.",
+      "fix": "Add 'no_notify' => true to the state machine entry for auto-skip states. Remove any notification calls from these states. Keep args() minimal since it is never rendered.",
+      "exceptions": [],
+      "tags": [
+        "state-machine",
+        "no_notify",
+        "auto-skip",
+        "notifications"
+      ],
+      "applies_to": [
+        "States"
+      ],
+      "see_also": [
+        "CORE-010"
+      ]
+    },
+    {
+      "id": "STAT-008",
+      "priority": 2,
+      "rule": "Use PRIVATE state type for states where each player makes a decision independently and must not see other player choices until the state resolves. _private in args() delivers different data per player.",
+      "violation": [
+        "Simultaneous selection state uses ACTIVE state type instead of PRIVATE",
+        "_private args not implemented in MULTIPLE_ACTIVE_PLAYER state, so all players see the same data",
+        "PRIVATE state resolves without collecting input from all active players"
+      ],
+      "check": "For every MULTIPLE_ACTIVE_PLAYER state: verify it is declared as type PRIVATE. Verify args() uses _private key for per-player data. Verify all active players must submit before the state automatically resolves.",
+      "fix": "Set 'type' => 'private' in the state machine definition for multi-player decision states. Implement _private in args() to return player-specific data. Ensure the framework waits for all active players before resolving transitions.",
+      "exceptions": [],
+      "tags": [
+        "state-machine",
+        "private",
+        "simultaneous",
+        "multiplayer"
+      ],
+      "applies_to": [
+        "States"
+      ],
+      "see_also": [
+        "CORE-005",
+        "STAT-016"
+      ]
+    },
+    {
+      "id": "STAT-009",
+      "priority": 2,
+      "rule": "Every non-GAME state class must implement zombie(). zombie() receives the disconnected player ID and must advance or skip that player so the game can continue. This is mandatory — not optional.",
+      "violation": [
+        "Non-GAME state has no zombie() method",
+        "zombie() exists but only logs the disconnection without advancing game state",
+        "zombie() throws an exception instead of handling the disconnection gracefully"
+      ],
+      "check": "For every non-GAME state class: verify zombie() method exists. Verify zombie() performs a default action for the disconnected player (pass, select first option, discard minimum). Verify zombie() does not throw or crash.",
+      "fix": "Add zombie() to every state that lacks it. The method should perform a reasonable default action: pass, select the first valid option, or discard the minimum required resources. The game must be able to complete with a disconnected player.",
+      "exceptions": [
+        "GAME state does not need zombie() because the game is over and no more player actions are expected."
+      ],
+      "tags": [
+        "state-machine",
+        "zombie",
+        "disconnection",
+        "production"
+      ],
+      "applies_to": [
+        "States"
+      ],
+      "see_also": [
+        "CORE-009",
+        "ARCH-004",
+        "STAT-010"
+      ]
+    },
+    {
+      "id": "STAT-010",
+      "priority": 2,
+      "rule": "zombie() must actually advance the game for the disconnected player. An empty zombie() body that does nothing is a production bug. The zombie must perform a valid default action and return the next transition.",
+      "violation": [
+        "zombie() has an empty body — the game hangs when a player disconnects",
+        "zombie() returns a transition but does not apply any default action, leaving game state inconsistent",
+        "zombie() applies a default action that would be illegal for a non-disconnected player"
+      ],
+      "check": "Verify every zombie() method performs at least one game action (pass, select, discard, skip). Verify zombie() returns a valid transition key. Verify the default action does not violate game rules (it applies only because the player is disconnected).",
+      "fix": "Implement zombie() to perform the least harmful default action: pass if passing is allowed, select the first valid choice, discard minimum resources. Ensure the action advances the state machine. Do not leave zombie() empty.",
+      "exceptions": [],
+      "tags": [
+        "state-machine",
+        "zombie",
+        "default",
+        "advance"
+      ],
+      "applies_to": [
+        "States"
+      ],
+      "see_also": [
+        "CORE-009",
+        "STAT-009"
+      ]
+    },
+    {
+      "id": "STAT-011",
+      "priority": 2,
+      "rule": "onEnteringState must call giveExtraTime for every state that begins or continues a player turn. This is a framework requirement — never skip. giveExtraTime is called once on entry, not on every page load.",
+      "violation": [
+        "State transition enters a player-turn state without calling giveExtraTime",
+        "giveExtraTime is called from action() instead of onEnteringState",
+        "giveExtraTime is called on every AJAX request instead of once on state entry"
+      ],
+      "check": "For every active state with a player-turn type: verify onEnteringState calls $this->game->giveExtraTime(). Verify the call is in onEnteringState, not in action() or args(). Verify no duplicate calls during the same state session.",
+      "fix": "Add giveExtraTime() call to onEnteringState of every turn-based state. Place it at the top of the method. The framework calls onEnteringState once when the state becomes active, which is the correct timing for time extension.",
+      "exceptions": [],
+      "tags": [
+        "state-machine",
+        "timeout",
+        "framework",
+        "turn"
+      ],
+      "applies_to": [
+        "States"
+      ],
+      "see_also": [
+        "CORE-009"
+      ]
+    },
+    {
+      "id": "STAT-012",
+      "priority": 2,
+      "rule": "The Engine tree (Seq, Or, Xor, Parallel, Leaf) defines the game flow structure. The state machine defines the player permissions and action boundaries at each step. Engine manages flow between game phases; States manage player interaction within a phase.",
+      "violation": [
+        "State class implements flow branching logic that should be in an Engine tree node",
+        "Engine node defines player permissions or action validation — that belongs in States",
+        "A linear turn sequence uses Engine complexity when manual state transitions suffice"
+      ],
+      "check": "Determine if flow is linear (manual states suffice) or requires branching across 50+ card types (use Engine). Verify states define player-facing actions. Verify Engine defines behind-the-scenes flow. Verify both do not overlap in responsibility.",
+      "fix": "For linear turn sequences: use manual state transitions from action() and transitions(). For complex branching with cross-card interactions: introduce Engine with Seq/Or/Xor/Parallel/Leaf nodes. Engine delegates to Manager methods. States do the same.",
+      "exceptions": [
+        "Engine is recommended only for 50+ card types with cross-reactions. Manual state transitions are simpler and preferred for smaller games."
+      ],
+      "tags": [
+        "state-machine",
+        "engine",
+        "flow",
+        "architecture"
+      ],
+      "applies_to": [
+        "States",
+        "Engine"
+      ],
+      "see_also": [
+        "ARCH-017",
+        "STAT-013"
+      ]
+    },
+    {
+      "id": "STAT-013",
+      "priority": 3,
+      "rule": "Engine state is serialized to global_variables. The Engine writes and reads globals for flow state tracking — not game tables. globals hold transient flow position; tables hold authoritative game data.",
+      "violation": [
+        "Engine writes flow state to a game table instead of a global_variable",
+        "Engine stores game data (card positions, resource counts) in globals instead of tables",
+        "global_variables key for Engine state collides with game configuration globals"
+      ],
+      "check": "Verify Engine writes flow position to global_variables only. Grep Engine code for game table writes: assert zero matches. Verify game data is stored in tables, not globals. Verify Engine globals have a clear naming prefix to avoid collisions.",
+      "fix": "Move Engine flow state from game tables to global_variables. Use a prefix like 'engine_' for all Engine globals. Ensure game table writes remain exclusively in Manager methods.",
+      "exceptions": [],
+      "tags": [
+        "state-machine",
+        "engine",
+        "globals",
+        "persistence"
+      ],
+      "applies_to": [
+        "Engine"
+      ],
+      "see_also": [
+        "PERS-006",
+        "PERS-008"
+      ]
+    },
+    {
+      "id": "STAT-014",
+      "priority": 3,
+      "rule": "Cards with cross-reactions register beforeAction and computeReplace listeners with the Engine. These listeners declare which Manager to call — they do not implement the reaction logic themselves.",
+      "violation": [
+        "beforeAction listener implements game rule logic directly instead of calling a Manager method",
+        "computeReplace listener modifies game state instead of returning a replacement action descriptor",
+        "Card listener bypasses Manager validation and performs DB writes directly"
+      ],
+      "check": "Verify every beforeAction listener calls $this->manager->validate() or similar — never contains game rules inline. Verify every computeReplace listener returns a replacement action descriptor — never mutates state. Verify no DB access in listeners.",
+      "fix": "Refactor listeners to delegate to Manager methods. beforeAction listeners call Manager::evaluatePrecondition. computeReplace listeners call Manager::computeReplacement. Listener code is one line: a Manager method call.",
+      "exceptions": [],
+      "tags": [
+        "state-machine",
+        "engine",
+        "listeners",
+        "cards"
+      ],
+      "applies_to": [
+        "Engine",
+        "Managers"
+      ],
+      "see_also": [
+        "ARCH-017",
+        "STAT-012"
+      ]
+    },
+    {
+      "id": "STAT-015",
+      "priority": 2,
+      "rule": "States model flow phases — player turn, selection, game end. Never create one state per card, per board space, per action variant, or per resource type. A single state with data-driven configuration handles all variants.",
+      "violation": [
+        "Each card type has its own state instead of using a generic CardAction state with card-specific data in args",
+        "Each board space has a separate state instead of one ChooseSpace state with space data from the DB",
+        "Adding a new card type requires adding a new state rather than adding a row to the card definition table"
+      ],
+      "check": "For each state: verify it models a phase of play, not a specific game entity. If adding a new variant requires a new state, redesign with a data-driven approach. State count should stay stable as content expands.",
+      "fix": "Consolidate per-entity states into a single data-driven state. Pass variant-specific data through args() using DB-driven configuration. Remove per-card and per-space state IDs. The state handles entities generically.",
+      "exceptions": [
+        "A game entity with fundamentally different interaction patterns (draft vs deploy vs discard) may warrant separate states. The interaction pattern must differ — not just the data."
+      ],
+      "tags": [
+        "state-machine",
+        "states",
+        "anti-pattern",
+        "data-driven"
+      ],
+      "applies_to": [
+        "States"
+      ],
+      "see_also": [
+        "CORE-008",
+        "ARCH-022"
+      ]
+    },
+    {
+      "id": "STAT-016",
+      "priority": 2,
+      "rule": "Simultaneous turns use MULTIPLE_ACTIVE_PLAYER state type with PRIVATE visibility. Each player submits decisions independently. The state auto-resolves when all active players have submitted. Use MULTIPLE_ACTIVE_PLAYER with PRIVATE for draft, simultaneous selection, and parallel action phases.",
+      "violation": [
+        "Simultaneous selection uses ACTIVE state instead of MULTIPLE_ACTIVE_PLAYER, blocking on one player at a time",
+        "MULTIPLE_ACTIVE_PLAYER state does not use PRIVATE type, leaking choices between players",
+        "State does not auto-resolve after all players submit, requiring unnecessary extra input"
+      ],
+      "check": "For every simultaneous phase: verify state type is MULTIPLE_ACTIVE_PLAYER. Verify visibility is PRIVATE. Verify args() uses _private to return per-player data. Verify transitions() waits for all active players before advancing.",
+      "fix": "Set 'type' => MULTIPLE_ACTIVE_PLAYER and 'visibility' => PRIVATE in the state machine definition. Implement _private args for per-player state. The framework auto-resolves MULTIPLE_ACTIVE_PLAYER states when all players have submitted their actions.",
+      "exceptions": [],
+      "tags": [
+        "state-machine",
+        "simultaneous",
+        "multiplayer",
+        "private"
+      ],
+      "applies_to": [
+        "States"
+      ],
+      "see_also": [
+        "STAT-008",
+        "UNDO-005"
+      ]
+    }
+  ]
+}

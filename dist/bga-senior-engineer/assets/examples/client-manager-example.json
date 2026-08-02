@@ -1,0 +1,31 @@
+{
+  "id": "client-manager-example",
+  "title": "Canonical Client Manager Pattern",
+  "version": "1.0.0",
+  "purpose": "Demonstrate a client-side ES module Manager that mirrors a server Manager, registers notification handlers, wires BgaCards, and calls bga.actions for all server interaction.",
+  "applicable_rules": ["CLNT-001", "CLNT-002", "CLNT-003", "CLNT-005", "CLNT-006", "CLNT-007", "CLNT-008", "CLNT-009", "CLNT-010", "CLNT-013", "CLNT-014"],
+  "language": "javascript",
+  "based_on_project": "earth",
+  "source": "reference-projects/earth/earth.js",
+  "context": "A client-side ResourceManager class that manages the resource display, handles resource change notifications, and wires the spend-resources action button. The server counterpart is the PHP ResourceManager.",
+  "before": "dojo.declare('bgagame.resource', null, { setup: function() { dojo.connect(gameui, 'onPlayerAction', this, 'onAction'); }, onResourcesChanged: function(notif) { var qty = notif.args.qty; var el = dojo.byId('resource_' + notif.args.type); el.innerHTML = qty; } });",
+  "after": "import { BgaCards } from 'ebg/bga-cards'; export class ResourceManager { constructor(private game: GameView, private cards: BgaCards) { this.cards = cards; } setupPromiseNotifications() { this.game.setupPromiseNotifications('resourceManager', [['resourcesChanged', this.notif_resourcesChanged.bind(this)], ['refreshUI', this.notif_refreshUI.bind(this)]]); } notif_resourcesChanged(notif: Notification) { const qty = notif.args.qty; const type = notif.args.type; const el = document.getElementById(`resource_${type}`); if (el) el.textContent = qty; } notif_refreshUI(notif: Notification) { const state = notif.args; Object.entries(state.resources).forEach(([type, qty]) => { const el = document.getElementById(`resource_${type}`); if (el) el.textContent = qty; }); } async spendResources(type: string, qty: number) { await this.game.bga.actions.performAction('spendResources', { resourceType: type, quantity: qty }); } }",
+  "explanation": "The client Manager mirrors the server Manager structure (CLNT-001). It receives the game view and BgaCards instance via constructor injection (CLNT-002). Notification handlers are named notif_<camelCase> (CLNT-005) and registered in setupPromiseNotifications (CLNT-006). Handlers are idempotent — they set DOM from payload values without assuming current state (CLNT-007). All server actions go through bga.actions.performAction (CLNT-008). DOM is never mutated before server confirmation (CLNT-009). The module uses ES module import/export syntax (CLNT-010). Action buttons are wired through the owning client Manager (CLNT-013). State args from the server are consumed through this Manager (CLNT-014).",
+  "common_mistakes": [
+    "Keeping all client code in a single monolithic file instead of Manager classes",
+    "Mutating DOM before the server confirms the action (risks state inconsistency)",
+    "Bypassing bga.actions.performAction and calling server endpoints directly",
+    "Writing handlers that assume DOM state from previous notifications (non-idempotent)",
+    "Using Dojo syntax or legacy widget patterns in new code"
+  ],
+  "related_examples": ["manager-example", "notification-example"],
+  "annotations": [
+    {"line": 1, "rule_id": "CLNT-010", "reason": "ES module import syntax."},
+    {"line": 2, "rule_id": "CLNT-001", "reason": "Client Manager class mirrors server Manager."},
+    {"line": 4, "rule_id": "CLNT-002", "reason": "Constructor receives game view and dependent components."},
+    {"line": 6, "rule_id": "CLNT-006", "reason": "Handlers registered in setupPromiseNotifications."},
+    {"line": 7, "rule_id": "CLNT-005", "reason": "Handler named notif_resourcesChanged matching server type."},
+    {"line": 7, "rule_id": "CLNT-007", "reason": "Handler sets DOM from payload without preconditions."},
+    {"line": 14, "rule_id": "CLNT-008", "reason": "Server action called through bga.actions.performAction."}
+  ]
+}

@@ -1,0 +1,616 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "last_updated": "2026-07-29",
+  "source": "ai-os/bga-senior-engineer-doctrine.md sections 2, 3, 4, 5, 6, 7, 8, 12, 14",
+  "rules": [
+    {
+      "id": "ARCH-001",
+      "priority": 2,
+      "rule": "Game.php is orchestration only. Under 300 lines. Zero SQL queries. Zero domain logic. Delegates all game work to Managers and States.",
+      "violation": [
+        "Game.php contains SQL on game tables",
+        "Game.php implements scoring, resource validation, card logic, or turn flow rules",
+        "Game.php grows with each new feature rather than delegating to existing Managers"
+      ],
+      "check": "Count lines in Game.php: assert under 300. Grep for SQL keywords on game tables: assert zero matches. Review every method body: if it applies game rules instead of calling Manager methods and returning, it is domain logic.",
+      "fix": "Extract domain logic into a Manager class. Extract SQL into Manager mutation methods. Game.php methods should call Manager::method() and return. The only logic in Game.php is orchestration sequencing.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "game.php",
+        "orchestration",
+        "refactor"
+      ],
+      "applies_to": [
+        "Game.php"
+      ],
+      "see_also": [
+        "CORE-002"
+      ]
+    },
+    {
+      "id": "ARCH-002",
+      "priority": 2,
+      "rule": "setupNewGame must instantiate every Manager, initialise every game table with starting data, seed the RNG, and transition to the first game state. No domain logic. No player interaction.",
+      "violation": [
+        "setupNewGame computes starting resources using hardcoded formulas instead of calling Manager methods",
+        "setupNewGame omits Manager instantiation for a table group, leaving Manager without its aggregate",
+        "setupNewGame performs player interaction or notification sending"
+      ],
+      "check": "Verify setupNewGame calls each Manager constructor. Verify DB tables are populated via Manager init methods. Confirm bgaRand is seeded. Confirm transition to state ID 1 or equivalent initial state. Assert zero notifyAllPlayers calls.",
+      "fix": "Extract table initialisation into each Manager::setupGame method. setupNewGame loops: new ResourceManager, new CardManager, etc. Call Manager::setupGame on each. Seed RNG with game ID. Transition to initial state.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "game.php",
+        "setup",
+        "initialisation"
+      ],
+      "applies_to": [
+        "Game.php",
+        "Managers"
+      ],
+      "see_also": [
+        "ARCH-001",
+        "ARCH-005"
+      ]
+    },
+    {
+      "id": "ARCH-003",
+      "priority": 2,
+      "rule": "getAllDatas must delegate to each Manager getAllDatas method and merge the results. Never compute game data inside getAllDatas. This is the client source-of-truth contract.",
+      "violation": [
+        "getAllDatas computes game data directly instead of calling Manager methods",
+        "getAllDatas omits a Manager dataset, leaving the client without that Manager state on reconnect",
+        "getAllDatas returns raw DB rows instead of aggregated Manager data"
+      ],
+      "check": "Verify getAllDatas calls Manager::getAllDatas for every Manager. Verify no SQL queries or game rule logic in getAllDatas body. Confirm every Manager provides an getAllDatas method returning the full public state of its aggregate.",
+      "fix": "Structure getAllDatas as a series of calls to Manager::getAllDatas(). Each Manager returns an associative array of its public data. Game.php merges and returns. Add getAllDatas to any Manager that lacks it.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "game.php",
+        "synchronization",
+        "reconnect"
+      ],
+      "applies_to": [
+        "Game.php",
+        "Managers"
+      ],
+      "see_also": [
+        "SYNC-001",
+        "SYNC-002"
+      ]
+    },
+    {
+      "id": "ARCH-004",
+      "priority": 2,
+      "rule": "Game.php zombie must delegate to the current state zombie method. Every non-GAME state must provide a zombie handler. Game.php zombie is a one-line dispatch — never inline zombie logic here.",
+      "violation": [
+        "Game.php zombie contains switch logic for each state instead of delegating",
+        "Game.php zombie implements zombie behaviour inline for any state",
+        "Game.php zombie does not delegate because the target state has no zombie method"
+      ],
+      "check": "Verify Game.php zombie is a single expression delegating to the active state. Verify every non-GAME state class has a zombie method. Verify the state zombie advances or skips the disconnected player.",
+      "fix": "Replace Game.php zombie body with $this->gamestate->state()['type'] === 'active' ? $this->activeState()->zombie() : null; or equivalent one-line delegation. Implement zombie on every non-GAME state.",
+      "exceptions": [
+        "GAME state does not need zombie because the game is complete."
+      ],
+      "tags": [
+        "architecture",
+        "game.php",
+        "zombie",
+        "delegation"
+      ],
+      "applies_to": [
+        "Game.php",
+        "States"
+      ],
+      "see_also": [
+        "STAT-009",
+        "STAT-010"
+      ]
+    },
+    {
+      "id": "ARCH-005",
+      "priority": 2,
+      "rule": "One aggregate root per Manager. Each Manager owns one table group. The Manager API includes get*, validate*, execute*, count*, and check* methods for every operation on that aggregate.",
+      "violation": [
+        "Manager has methods that read or write tables owned by another Manager",
+        "Manager is missing validate* methods so callers must duplicate validation logic",
+        "Manager get* methods return raw DB arrays instead of Model objects"
+      ],
+      "check": "For each Manager: confirm all methods operate on its declared table group. Grep for writes to tables outside the group: assert zero matches. Verify validate* exists for every execute*. Verify get* returns Models.",
+      "fix": "If a Manager needs data from another table, add a read-only get* method on the owning Manager. Add validate* methods matching every execute*. Replace raw array returns with Model objects.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "managers",
+        "ownership",
+        "aggregate"
+      ],
+      "applies_to": [
+        "Managers"
+      ],
+      "see_also": [
+        "CORE-016",
+        "ARCH-006",
+        "ARCH-009"
+      ]
+    },
+    {
+      "id": "ARCH-006",
+      "priority": 2,
+      "rule": "Each database table has exactly one Manager with exclusive write ownership. No Action, no State, no other Manager may directly INSERT, UPDATE, or DELETE rows on a table it does not own.",
+      "violation": [
+        "Action performs a direct DB write on a table owned by a Manager",
+        "Two Managers both write to the same game table",
+        "Manager A calls Manager B internal write methods instead of going through the action layer"
+      ],
+      "check": "For every game table: identify exactly one Manager class that performs writes. Grep entire codebase for INSERT/UPDATE/DELETE on that table outside the owning Manager: assert zero matches.",
+      "fix": "Move all write operations on each table into its owning Manager. Actions must call Manager::execute* methods rather than writing to tables directly. Cross-Manager writes must be coordinated through the action layer.",
+      "exceptions": [
+        "Framework tables (player, global_variables, gamelog) are framework-owned. Game code may read them but must not write to framework-managed columns directly."
+      ],
+      "tags": [
+        "architecture",
+        "managers",
+        "ownership",
+        "database"
+      ],
+      "applies_to": [
+        "Managers",
+        "Actions",
+        "States"
+      ],
+      "see_also": [
+        "CORE-016",
+        "ARCH-005",
+        "ARCH-014"
+      ]
+    },
+    {
+      "id": "ARCH-007",
+      "priority": 2,
+      "rule": "Manager mutation methods must be callable statically or via the Manager instance without requiring Action dispatch. Testability requires that any Manager method can be invoked directly with a Game reference and arguments.",
+      "violation": [
+        "Manager execute* method can only be reached through an Action handler, not directly",
+        "Manager method reads internal Game state that must be set up through a full action stack",
+        "Manager validation logic is embedded in Action methods instead of Manager::validate*"
+      ],
+      "check": "For each Manager::execute* method: verify it can be called from a unit test by constructing Manager with a test Game and DB connection. Verify no dependency on framework request state, session, or action context.",
+      "fix": "Manager constructor receives Game, DB, and typed interfaces for dependent Managers. All mutation methods take typed parameters, not framework args. Make validate* methods static where they do not need instance state.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "managers",
+        "testability",
+        "static"
+      ],
+      "applies_to": [
+        "Managers"
+      ],
+      "see_also": [
+        "TEST-002"
+      ]
+    },
+    {
+      "id": "ARCH-008",
+      "priority": 2,
+      "rule": "A set of DB tables with shared invariants forms a new aggregate. Create a new Manager for each aggregate. A feature within an existing aggregate extends the existing Manager — never create a second Manager for the same table group.",
+      "violation": [
+        "New feature adds tables but reuses an unrelated Manager instead of creating a new one",
+        "Two Managers are created for tables that share the same aggregate invariants",
+        "A feature that extends an existing aggregate creates a separate Manager instead of adding methods"
+      ],
+      "check": "Before creating a new Manager: verify the table group has invariants distinct from all existing Managers. If the feature reads and writes existing Manager tables: add methods to that Manager. If new tables with new invariants: create new Manager.",
+      "fix": "If feature extends existing aggregate: add get*/validate*/execute* methods to the owning Manager. If feature introduces a new table group: create Manager class, add to Game.php constructor, wire into getAllDatas.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "managers",
+        "aggregate",
+        "design"
+      ],
+      "applies_to": [
+        "Managers",
+        "Actions",
+        "Game.php"
+      ],
+      "see_also": [
+        "ARCH-005",
+        "ARCH-022"
+      ]
+    },
+    {
+      "id": "ARCH-009",
+      "priority": 3,
+      "rule": "Manager read methods must return Model objects, not raw arrays. Models encapsulate the row structure, computed properties, and UI formatting. No client code should access raw DB columns through arrays.",
+      "violation": [
+        "Manager::getResource returns an array with column names instead of a ResourceModel",
+        "Client code accesses DB column names directly from a returned array",
+        "Multiple callers duplicate the same computed value logic because the Model does not expose it"
+      ],
+      "check": "For every Manager get* method: verify return type is a Model class or array of Model classes. Grep action and client code for associative array access on Manager return values: assert zero matches.",
+      "fix": "Create a Model class for each entity. Move DB column access and computed properties into the Model. Manager get* methods instantiate and return Models. Update all callers to use Model methods instead of array keys.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "managers",
+        "models",
+        "encapsulation"
+      ],
+      "applies_to": [
+        "Managers",
+        "Models"
+      ],
+      "see_also": [
+        "ARCH-011"
+      ]
+    },
+    {
+      "id": "ARCH-010",
+      "priority": 3,
+      "rule": "Manager constructor receives Game reference, DB connection, and typed interfaces for dependent Managers only. Never access Game::get global state, framework singletons, or static globals inside Manager methods.",
+      "violation": [
+        "Manager reads global game state via parent::get instead of constructor-injected dependency",
+        "Manager accesses a framework singleton or static registry for configuration",
+        "Manager constructor instantiates other Managers directly instead of receiving them"
+      ],
+      "check": "Review Manager constructor arguments: confirm Game, DB, and dependent Manager interfaces are injected. Grep Manager methods for parent::get, global function calls, or static method calls on framework classes: assert zero matches.",
+      "fix": "Inject all dependencies through the constructor. Game.php instantiates Managers and passes the Game reference, DB, and typed Manager dependencies. Manager methods use injected references only, never look up global state.",
+      "exceptions": [
+        "Static validate* methods that operate on pure data may avoid constructor injection. These receive all data as parameters."
+      ],
+      "tags": [
+        "architecture",
+        "managers",
+        "dependencies",
+        "testability"
+      ],
+      "applies_to": [
+        "Managers"
+      ],
+      "see_also": [
+        "ARCH-007",
+        "UNDO-001"
+      ]
+    },
+    {
+      "id": "ARCH-011",
+      "priority": 3,
+      "rule": "Model wraps a single DB row. Computes derived values from its data. Formats values for UI presentation. A Model must not perform DB access or call framework APIs. It is a pure data transformation layer.",
+      "violation": [
+        "Model constructor queries the database for additional data",
+        "Model calls parent::get or any Game method",
+        "Model modifies values that affect the DB row instead of computing derived presentation"
+      ],
+      "check": "Grep Model classes for SQL keywords, framework API calls, parent:: method calls: assert zero matches. Verify every Model field is either a constructor parameter or a computed property from those parameters.",
+      "fix": "Move DB access to the Manager. Models receive all data through constructor. Computed properties derive from stored fields. UI formatting methods return formatted strings without side effects.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "models",
+        "data",
+        "presentation"
+      ],
+      "applies_to": [
+        "Models",
+        "Managers"
+      ],
+      "see_also": [
+        "ARCH-012",
+        "CORE-010"
+      ]
+    },
+    {
+      "id": "ARCH-012",
+      "priority": 3,
+      "rule": "Model has zero framework dependencies. No Game, no globals, no DB connection, no framework API. Models are plain PHP objects testable without any BGA framework bootstrap.",
+      "violation": [
+        "Model class extends a framework base class",
+        "Model method calls framework functions like totranslate or format_string",
+        "Model constructor requires a framework object that cannot be instantiated in a unit test"
+      ],
+      "check": "Verify every Model class has no parent class or extends a plain PHP base. Verify constructor does not accept Game, DB, or any framework type. Verify unit test can instantiate the Model without framework setup.",
+      "fix": "Remove framework parent class. Pass all data through constructor as plain PHP types or arrays. Move framework formatting calls to a presenter layer or handle in the Manager after receiving the Model.",
+      "exceptions": [
+        "Framework-typed getter methods (clienttranslate wrappers) may exist on Models only if they take a plain string and return a plain string with zero framework coupling."
+      ],
+      "tags": [
+        "architecture",
+        "models",
+        "testability",
+        "isolation"
+      ],
+      "applies_to": [
+        "Models"
+      ],
+      "see_also": [
+        "ARCH-011"
+      ]
+    },
+    {
+      "id": "ARCH-013",
+      "priority": 3,
+      "rule": "Compound domain concepts (resources, positions, costs, scores) must be modelled as immutable value objects. Never pass raw integers or arrays to represent a multi-field domain value.",
+      "violation": [
+        "Method signature uses three separate int parameters instead of a Resources value object",
+        "Array with mixed keys is passed around representing the same concept in different callers",
+        "Value object fields can be mutated after construction"
+      ],
+      "check": "For every method that accepts a multi-field domain value: verify a typed value object class exists. Verify value objects are immutable (constructor sets all readonly properties, no setters). Verify comparison uses equals() not field-by-field.",
+      "fix": "Create value object class with typed readonly properties. Accept in method signatures instead of int/array. Implement equals() for comparison. Implement static factory methods for zero/empty values.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "models",
+        "immutability",
+        "types"
+      ],
+      "applies_to": [
+        "Models",
+        "Managers",
+        "Actions"
+      ],
+      "see_also": [
+        "ARCH-011"
+      ]
+    },
+    {
+      "id": "ARCH-014",
+      "priority": 2,
+      "rule": "No Manager may call another Manager method directly. Cross-Manager coordination happens through the action layer or the Game mediator. This prevents circular dependencies and untestable coupling.",
+      "violation": [
+        "Manager A constructor receives Manager B and calls Manager B methods directly",
+        "Manager A execute* method calls Manager B execute* method to modify B tables",
+        "Two Managers hold references to each other creating a circular initialisation dependency"
+      ],
+      "check": "Review every Manager method: confirm it never calls methods on another Manager instance. Verify cross-Manager data access uses read-only get* calls through injected interfaces. Verify Manager-to-Manager write coordination goes through the action.",
+      "fix": "If Manager A needs Manager B data: Action calls ManagerA::validate, ManagerB::getData, then ManagerA::execute with the data as parameter. Manager A receives Manager B read interface through constructor for get* calls only.",
+      "exceptions": [
+        "Manager A may call Manager B get* methods through a read-only interface injected at construction. This is read access only — never write."
+      ],
+      "tags": [
+        "architecture",
+        "managers",
+        "dependencies",
+        "circular"
+      ],
+      "applies_to": [
+        "Managers",
+        "Actions"
+      ],
+      "see_also": [
+        "CORE-012",
+        "ACTN-001"
+      ]
+    },
+    {
+      "id": "ARCH-015",
+      "priority": 2,
+      "rule": "Fix bugs at the owning layer. Never patch a downstream layer to work around an upstream defect. A client-side workaround for a server bug will break on reconnect, replay, or the next client update.",
+      "violation": [
+        "Client JS adds client-side validation to hide a missing server validation",
+        "Action handler duplicates Manager logic to work around a Manager bug",
+        "State class contains workaround for incorrect data returned by a Manager"
+      ],
+      "check": "When reviewing a fix: identify the layer where the root cause exists. Verify the fix is applied at that layer. Verify no compensating logic was added to a different layer to hide the symptom.",
+      "fix": "Move the fix to the layer that owns the logic. Remove any compensating logic added to downstream layers. Add a regression test at the owning layer that fails without the fix.",
+      "exceptions": [
+        "Temporary client-side mitigation may be added for UX if server fix requires a deployment cycle. Must be documented with TODO and reverted after server fix is deployed."
+      ],
+      "tags": [
+        "architecture",
+        "debugging",
+        "layers",
+        "quality"
+      ],
+      "applies_to": [
+        "All components"
+      ],
+      "see_also": [
+        "CORE-010"
+      ]
+    },
+    {
+      "id": "ARCH-016",
+      "priority": 2,
+      "rule": "The communication path between layers must follow the defined protocol. Game.php delegates to Managers. Actions delegate to Managers and Notifications. Managers read and write the DB and return Models. States handle game flow transitions.",
+      "violation": [
+        "Game.php bypasses Managers and writes to the DB directly",
+        "Action contains SQL or domain logic instead of delegating to the Manager",
+        "State class modifies a game table or sends notifications directly",
+        "Manager sends notifications instead of delegating to the Notifications class"
+      ],
+      "check": "Trace each method call across layer boundaries. Verify Game.php calls only Manager and State methods. Verify Action calls only Manager and Notifications methods. Verify Manager is the only layer that accesses game DB tables. Verify Notifications is the only layer that calls notifyAllPlayers.",
+      "fix": "Remove direct DB access from Actions and States. Move SQL to Manager methods. Move notifyAllPlayers calls to centralized Notifications class. Move game logic from Game.php into Manager methods.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "layers",
+        "boundaries",
+        "communication"
+      ],
+      "applies_to": [
+        "Game.php",
+        "Actions",
+        "States",
+        "Managers",
+        "Notifications"
+      ],
+      "see_also": [
+        "CORE-010",
+        "ARCH-001",
+        "ACTN-006"
+      ]
+    },
+    {
+      "id": "ARCH-017",
+      "priority": 2,
+      "rule": "Engine tree nodes (Seq, Or, Xor, Parallel, Leaf) must contain zero domain logic. They delegate to Manager methods for all game decisions. Engine defines flow structure — not game rules.",
+      "violation": [
+        "Engine Leaf node contains a card ability implementation instead of calling a Manager method",
+        "Engine node reads game state and makes branching decisions based on game rules",
+        "Engine node directly modifies DB, sends notifications, or performs validation"
+      ],
+      "check": "Review every Engine node: confirm it calls Manager::method() and returns. If a node contains conditional logic based on game state, move that logic to a Manager. Verify Engine nodes are pure orchestration.",
+      "fix": "Move game rule logic from Engine nodes into Manager methods. Engine node calls Manager::evaluateCondition or Manager::getNextState. Node configuration (child ordering, parallel vs sequential) is Engine responsibility. Game logic is Manager responsibility.",
+      "exceptions": [
+        "Engine for 50+ card types with cross-reactions may use lightweight card listener registration (beforeAction/computeReplace) in the Engine. These register which Manager to call — they do not implement game logic."
+      ],
+      "tags": [
+        "architecture",
+        "engine",
+        "flow",
+        "delegation"
+      ],
+      "applies_to": [
+        "Engine",
+        "Managers"
+      ],
+      "see_also": [
+        "STAT-012",
+        "STAT-014"
+      ]
+    },
+    {
+      "id": "ARCH-018",
+      "priority": 4,
+      "rule": "Managers must stay under 800 lines of executable code. One responsibility per Manager. When a Manager exceeds 800 lines, split it before merging. Each resulting Manager owns a coherent subset of the original aggregate.",
+      "violation": [
+        "Manager class exceeds 800 lines and continues to grow",
+        "Manager contains methods for two unrelated concerns (e.g. scoring and deck management)",
+        "Split was deferred until after merge and never happened"
+      ],
+      "check": "Count lines in each Manager class excluding comments and blanks: assert under 800. Review Manager method names: if they reference multiple domain concepts, the Manager has multiple responsibilities. Split before merging to main.",
+      "fix": "Identify the coherent subsets within the oversized Manager. Extract each subset into a new Manager with its own table ownership or read-only dependency. Update Game.php constructor, getAllDatas, and affected actions.",
+      "exceptions": [
+        "A Manager may exceed 800 lines if the aggregate inherently requires extensive validation and execution logic and splitting would create artificial boundaries. Must be documented and approved in code review."
+      ],
+      "tags": [
+        "architecture",
+        "managers",
+        "size",
+        "maintainability"
+      ],
+      "applies_to": [
+        "Managers"
+      ],
+      "see_also": [
+        "ARCH-019",
+        "ARCH-005"
+      ]
+    },
+    {
+      "id": "ARCH-019",
+      "priority": 4,
+      "rule": "Code that changes together must reside in the same module. A Manager and its Models, related value objects, and supporting types live in the same directory. Related Managers may share a module but must not depend on each other.",
+      "violation": [
+        "Manager is in modules/php/Managers/ but its Models are in modules/php/Models/ under a different namespace",
+        "Two Managers that implement the same feature are split across separate module trees",
+        "A bug fix requires editing files in three different module directories"
+      ],
+      "check": "For each feature: verify the Manager, its Models, value objects, and supporting code are in the same module directory. Verify cross-module imports are minimal. Verify a feature change touches at most one module directory.",
+      "fix": "Move Models and value objects into the Manager module directory. If two Managers share invariants, extract shared types into a common subdirectory within the feature module. Keep related code in one tree.",
+      "exceptions": [
+        "Shared value objects used by multiple Managers (Resources, Position) may live in a common module with explicit documentation of all consumers."
+      ],
+      "tags": [
+        "architecture",
+        "modules",
+        "cohesion",
+        "maintainability"
+      ],
+      "applies_to": [
+        "Managers",
+        "Models",
+        "All components"
+      ],
+      "see_also": [
+        "ARCH-018"
+      ]
+    },
+    {
+      "id": "ARCH-020",
+      "priority": 4,
+      "rule": "Naming must be clear and consistent across all components. Manager classes named by aggregate. Model classes named by entity. Methods named by operation type prefix (get, validate, execute). A stranger must understand the codebase in fifteen minutes.",
+      "violation": [
+        "Manager class name does not describe its aggregate (e.g. DataManager, HelperManager)",
+        "Method name does not indicate operation type (e.g. doStuff instead of validateResourceCount)",
+        "Same concept has different names in different Managers (e.g. getCards vs fetchCards vs retrieveCards)"
+      ],
+      "check": "Verify every Manager name matches its aggregate (ResourceManager owns resources). Verify every public method uses get|validate|execute|count|check prefix. Verify the same domain concept uses the same name across all files.",
+      "fix": "Rename Managers to match their aggregate. Standardise method prefixes across all Managers. Create a naming convention section in the project README. Use consistent terminology for the same domain concept everywhere.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "naming",
+        "consistency",
+        "developer-experience"
+      ],
+      "applies_to": [
+        "All components"
+      ],
+      "see_also": [
+        "ARCH-005",
+        "CORE-013"
+      ]
+    },
+    {
+      "id": "ARCH-021",
+      "priority": 4,
+      "rule": "Design every Manager and Model for expansion. A new card, resource type, or action should add data and extend existing patterns — never require rewriting existing classes or restructuring the architecture.",
+      "violation": [
+        "Adding a new card type requires editing Manager method logic instead of adding a data row",
+        "New feature requires splitting a Manager because the original was not designed for extension",
+        "Adding a new resource type requires schema migration and Manager restructuring"
+      ],
+      "check": "For each new feature: identify how many existing files must be edited. If the answer is more than three (excluding new files), the architecture needs extension points. Verify Manager methods use data-driven lookups not hardcoded branches.",
+      "fix": "Replace hardcoded conditionals with data-driven configuration. Manager methods should iterate over configurable data (DB rows, material.inc.php entries) rather than switch on values. Design extension points at the Manager API level.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "expansion",
+        "extensibility",
+        "data-driven"
+      ],
+      "applies_to": [
+        "Managers",
+        "Models",
+        "Actions"
+      ],
+      "see_also": [
+        "CORE-008",
+        "ARCH-022"
+      ]
+    },
+    {
+      "id": "ARCH-022",
+      "priority": 2,
+      "rule": "Follow the architectural decision hierarchy when choosing where to place new logic. (1) Can it be data in DB or material.inc.php? If yes, define it as data. (2) Can it be a computed Model property? If yes, add the method. (3) Can it be a single Manager method? If yes, extend the Manager. (4) Does it require cross-Manager coordination? Coordinate in the action. (5) New aggregate with invariants? Create a new Manager. Never jump to step 5 without attempting steps 1 through 4.",
+      "violation": [
+        "New class created for logic that could be a data row",
+        "New Manager created for methods that could extend an existing Manager",
+        "New architecture pattern designed without checking reference projects for an existing solution"
+      ],
+      "check": "Before creating any new class or architecture pattern: descend the decision hierarchy. Stop at the first step that fully covers the need. If step 5 is reached, verify the new aggregate has invariants distinct from all existing aggregates.",
+      "fix": "Remove unnecessary new classes. Convert data-like logic to DB or material.inc.php configuration. Move new methods into existing Managers where the aggregate matches. If cross-Manager coordination is needed, implement in the action layer.",
+      "exceptions": [],
+      "tags": [
+        "architecture",
+        "design",
+        "decision",
+        "simplicity"
+      ],
+      "applies_to": [
+        "All components"
+      ],
+      "see_also": [
+        "CORE-015",
+        "ARCH-008"
+      ]
+    }
+  ]
+}

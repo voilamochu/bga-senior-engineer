@@ -1,0 +1,153 @@
+{
+  "name": "Reference Project Matrix",
+  "version": "1.0.0",
+  "topic": "reference-projects",
+  "source": "docs/foundation/reference-project-analysis.md",
+  "last_updated": "2026-08-02",
+  "entries": [
+    {
+      "problem": "Complex multi-step actions with card interactions",
+      "best_project": "agricola",
+      "file": "modules/php/Core/Engine.php",
+      "backup_project": "arknova",
+      "backup_file": "modules/php/Core/Engine.php",
+      "notes": "Decision-tree Engine (Seq/Or/Xor/Parallel/Leaf nodes) with card listener hooks (before<Action>, computeReplace<Action>). Ark Nova adds FlowConvertor.php for runtime-generated flows."
+    },
+    {
+      "problem": "Simultaneous / real-time turns",
+      "best_project": "earth",
+      "file": "modules/BX/php/PrivateState.php",
+      "backup_project": "earth",
+      "backup_file": "modules/BX/php/Action.php",
+      "notes": "Only reference with true simultaneous play: private state machines inside a shared multi-active state, backed by the action command queue."
+    },
+    {
+      "problem": "Per-action undo with cross-player invalidation",
+      "best_project": "earth",
+      "file": "modules/BX/php/Action.php",
+      "backup_project": "agricola",
+      "backup_file": "modules/php/Helpers/Log.php",
+      "notes": "Earth: command pattern with do()/undo() and reevaluate() for pending-command invalidation. Agricola: gamelog-based snapshot cancellation for turn-based undo."
+    },
+    {
+      "problem": "Turn-based multi-level undo with partial-turn confirmation",
+      "best_project": "agricola",
+      "file": "modules/php/Helpers/Log.php",
+      "backup_project": "arknova",
+      "backup_file": "modules/php/Helpers/Log.php",
+      "notes": "Logs every mutation to a log table; undo reverts DB rows and cancels gamelog packets via the cancel column."
+    },
+    {
+      "problem": "Modular board or hex grid",
+      "best_project": "arknova",
+      "file": "modules/php/Models/ZooMap.php",
+      "backup_project": "agricola",
+      "backup_file": "modules/php/Models/Game.php",
+      "notes": "Only spatial map system in the references: cube coordinates, adjacency and terrain validation, enclosure management."
+    },
+    {
+      "problem": "Medium card pool (50-200 cards)",
+      "best_project": "arnak",
+      "file": "material.inc.php",
+      "backup_project": "arnak",
+      "backup_file": "modules/card_effects.php",
+      "notes": "Material-driven card definitions plus a single effects class; the right complexity level for medium pools."
+    },
+    {
+      "problem": "Massive card pool (500+ cards)",
+      "best_project": "agricola",
+      "file": "modules/php/Cards/",
+      "backup_project": "arknova",
+      "backup_file": "modules/php/Cards/",
+      "notes": "One PHP class per card with listener-based reactions scales to any card count."
+    },
+    {
+      "problem": "Expansion support from day one",
+      "best_project": "arknova",
+      "file": "modules/php/",
+      "backup_project": "agricola",
+      "backup_file": "modules/php/",
+      "notes": "Marine World integration gated behind runtime flags; new card types, maps, and mechanics without core-flow changes."
+    },
+    {
+      "problem": "Drafting at game start",
+      "best_project": "agricola",
+      "file": "modules/php/States/",
+      "backup_project": "agricola",
+      "backup_file": "modules/php/Cards/",
+      "notes": "Multiple draft modes: Living Hand, 7-of-10, simultaneous async, snake-opening variant."
+    },
+    {
+      "problem": "Multi-track victory point progression",
+      "best_project": "arknova",
+      "file": "modules/php/Models/Player.php",
+      "backup_project": "arknova",
+      "backup_file": "modules/php/Notifications.php",
+      "notes": "Appeal + reputation + conservation tracks with dynamic scoring deltas pushed via the listener system."
+    },
+    {
+      "problem": "Few states, approachable architecture",
+      "best_project": "arnak",
+      "file": "states.inc.php",
+      "backup_project": "arnak",
+      "backup_file": "arnak.game.php",
+      "notes": "~30 states, no custom Engine, single developer; the best baseline for learning BGA state machine fundamentals."
+    },
+    {
+      "problem": "Modern client architecture (Manager pattern)",
+      "best_project": "earth",
+      "file": "modules/EA/js/",
+      "backup_project": "earth",
+      "backup_file": "modules/BX/php/",
+      "notes": "Modular client-side Managers, SCSS modules, JSON config files (stats.json, gameoptions.json), annotation-driven DB mapping."
+    },
+    {
+      "problem": "Hidden information (private hands, hidden scoring)",
+      "best_project": "arknova",
+      "file": "modules/php/Notifications.php",
+      "backup_project": "earth",
+      "backup_file": "modules/BX/php/PrivateState.php",
+      "notes": "Dual notification pattern: public message + private payload. Earth's private state machine carries hidden state natively."
+    },
+    {
+      "problem": "Solo mode",
+      "best_project": "agricola",
+      "file": "modules/php/Models/Game.php",
+      "backup_project": "earth",
+      "backup_file": "modules/EA/php/",
+      "notes": "Full campaign system with persistence across sessions, solo-specific cards, and AI-like mechanics. Earth ships a Gaia solo opponent."
+    },
+    {
+      "problem": "Rich tooltips on cards",
+      "best_project": "arnak",
+      "file": "modules/tooltips.js",
+      "backup_project": "arnak",
+      "backup_file": "arnak.js",
+      "notes": "Dedicated tooltip JS class with comprehensive per-item coverage."
+    },
+    {
+      "problem": "Notification efficiency / payload size",
+      "best_project": "arknova",
+      "file": "modules/php/Notifications.php",
+      "backup_project": "earth",
+      "backup_file": "modules/BX/php/Action.php",
+      "notes": "Listener/delta system caches values and sends only changed fields. Earth differentiates unconfirmed/committed/undo notifiers."
+    },
+    {
+      "problem": "Reconnection reliability",
+      "best_project": "agricola",
+      "file": "modules/js/game.js",
+      "backup_project": "arknova",
+      "backup_file": "modules/js/game.js",
+      "notes": "refreshUI + refreshHand pattern rebroadcasts full state then player-specific hands; gamelog packet cancellation on undo."
+    },
+    {
+      "problem": "Debugging and testing infrastructure",
+      "best_project": "agricola",
+      "file": "modules/php/DebugTrait.php",
+      "backup_project": "earth",
+      "backup_file": "modules/BX/php/Debug.php",
+      "notes": "Seed loading, Studio debug actions, bug-triage records, dedicated debug states."
+    }
+  ]
+}
